@@ -24,6 +24,8 @@ test('public user can submit booking and receive confirmation', function () {
         'booking_enabled' => true,
     ]);
 
+    $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+
     $response = $this->post('/antrian', [
         'service_id' => $service->id,
         'service_date' => now()->addDay()->toDateString(),

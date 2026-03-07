@@ -23,7 +23,7 @@ test('public user can lookup ticket by ticket number and service date', function
     $response = $this->get('/antrian/cek?ticket_number=UMUM-0012&service_date=2026-03-10');
 
     $response->assertOk()
-        ->assertSee('Hasil Pencarian')
+        ->assertSee('Detail Tiket:')
         ->assertSee($ticket->ticket_number)
-        ->assertSee('waiting');
+        ->assertSee('Waiting');
 });

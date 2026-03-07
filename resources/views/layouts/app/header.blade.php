@@ -58,7 +58,15 @@
                 </flux:tooltip>
             </flux:navbar>
 
-            <x-desktop-user-menu />
+            @auth
+                <x-desktop-user-menu />
+            @else
+                <flux:navbar class="ms-2">
+                    <flux:navbar.item icon="arrow-right-end-on-rectangle" href="/login" wire:navigate>
+                        {{ __('Log in') }}
+                    </flux:navbar.item>
+                </flux:navbar>
+            @endauth
         </flux:header>
 
         <!-- Mobile Menu -->
