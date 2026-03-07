@@ -56,3 +56,10 @@
 - Queue display TTS can stay fully client-side in `resources/views/livewire/queue-display.blade.php` by embedding current call JSON in a hidden/template node and parsing it after each Livewire poll update
 - A JS `Map` keyed by ticket ID with `called_at` as the value is enough to suppress repeat announcements while still re-announcing officer recalls when the timestamp changes
 - Because browser speech needs a gesture, keep TTS disabled by default and expose an explicit "Aktifkan Suara" toggle that silently no-ops when `window.speechSynthesis` is unavailable
+
+## [2026-03-07] Task 5 — Booking wizard redesign
+
+### Booking Page
+- `resources/views/pages/public/antrian/booking.blade.php` can preload per-service same-day ticket totals with `$bookableServices->loadCount(['queueTickets as today_tickets_count' => fn (...) => ...])` inside the view to avoid N+1 quota checks without touching the controller.
+- Alpine `x-show` works well for the 3-step public booking wizard because hidden step labels still remain in the DOM, so existing `assertSee()` tests for form labels continue to pass.
+- Public booking flow now fits the refreshed cyan-forward Flux style: hero card + step indicator + clickable service cards + read-only confirmation panel, with zero `dark:` utilities in the file.
