@@ -29,63 +29,58 @@ new class extends Component
         'public_activity' => [],
     ];
 
+    public array $trendData = [];
+
+    public array $serviceDistribution = [];
+
     public function mount(AdminStats $adminStats): void
     {
         $this->stats = $adminStats->build();
+        $this->trendData = $adminStats->getTrendData();
+        $this->serviceDistribution = $adminStats->getServiceDistribution();
+    }
+
+    public function refreshStats(AdminStats $adminStats): void
+    {
+        $this->stats = $adminStats->build();
+        $this->trendData = $adminStats->getTrendData();
+        $this->serviceDistribution = $adminStats->getServiceDistribution();
     }
 };
 ?>
 
 <div class="space-y-6">
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <flux:card>
-            <flux:subheading>Booking Berhasil Hari Ini</flux:subheading>
-            <flux:heading size="lg">{{ $stats['booking_success_today'] }}</flux:heading>
-        </flux:card>
-        <flux:card>
-            <flux:subheading>Booking Gagal Hari Ini</flux:subheading>
-            <flux:heading size="lg">{{ $stats['booking_failed_today'] }}</flux:heading>
-        </flux:card>
-        <flux:card>
-            <flux:subheading>Tiket Dibuat</flux:subheading>
-            <flux:heading size="lg">{{ $stats['tickets_created_today'] }}</flux:heading>
-        </flux:card>
-        <flux:card>
-            <flux:subheading>Tiket Batal</flux:subheading>
-            <flux:heading size="lg">{{ $stats['tickets_cancelled_today'] }}</flux:heading>
-        </flux:card>
-        <flux:card>
-            <flux:subheading>Tiket Selesai</flux:subheading>
-            <flux:heading size="lg">{{ $stats['tickets_completed_today'] }}</flux:heading>
-        </flux:card>
-    </div>
-
-    <div class="grid gap-6 lg:grid-cols-2">
-        <flux:card class="space-y-3">
-            <flux:heading size="lg">Aktivitas Pengguna Layanan</flux:heading>
-            @if (count($stats['public_activity']) === 0)
-                <flux:text class="text-zinc-500">Belum ada aktivitas publik hari ini.</flux:text>
-            @else
-                @foreach ($stats['public_activity'] as $channel => $total)
-                    <div class="flex items-center justify-between">
-                        <flux:text>{{ $channel }}</flux:text>
-                        <flux:badge>{{ $total }}</flux:badge>
-                    </div>
-                @endforeach
-            @endif
-        </flux:card>
-
-        <flux:card class="space-y-3">
-            <flux:heading size="lg">Ringkasan Failure Operasional</flux:heading>
-            <div class="flex items-center justify-between">
-                <flux:text>Cancelled</flux:text>
-                <flux:badge color="red">{{ $stats['failure_summary']['cancelled'] }}</flux:badge>
-            </div>
-            <div class="flex items-center justify-between">
-                <flux:text>Skipped</flux:text>
-                <flux:badge color="amber">{{ $stats['failure_summary']['skipped'] }}</flux:badge>
-            </div>
-        </flux:card>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <x-dashboard.stat-card
+            :value="$stats['booking_success_today']"
+            label="Booking Berhasil"
+            icon="check-circle"
+            color="green"
+        />
+        <x-dashboard.stat-card
+            :value="$stats['booking_failed_today']"
+            label="Booking Gagal"
+            icon="x-circle"
+            color="red"
+        />
+        <x-dashboard.stat-card
+            :value="$stats['tickets_created_today']"
+            label="Tiket Dibuat"
+            icon="ticket"
+            color="blue"
+        />
+        <x-dashboard.stat-card
+            :value="$stats['tickets_cancelled_today']"
+            label="Tiket Batal"
+            icon="minus-circle"
+            color="amber"
+        />
+        <x-dashboard.stat-card
+            :value="$stats['tickets_completed_today']"
+            label="Tiket Selesai"
+            icon="check-badge"
+            color="green"
+        />
     </div>
 
     <flux:card class="space-y-3">
