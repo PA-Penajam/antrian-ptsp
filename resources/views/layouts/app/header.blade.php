@@ -99,9 +99,25 @@
                         </flux:sidebar.item>
                     @endif
                     @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
-                        <flux:sidebar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
-                            {{ __('Admin') }}
-                        </flux:sidebar.item>
+                        <flux:sidebar.group heading="Master Data" expandable :expanded="request()->is('admin/layanan') || request()->is('admin/loket')">
+                            <flux:sidebar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
+                                {{ __('Layanan') }}
+                            </flux:sidebar.item>
+                            <flux:sidebar.item icon="computer-desktop" href="/admin/loket" :current="request()->is('admin/loket')" wire:navigate>
+                                {{ __('Loket') }}
+                            </flux:sidebar.item>
+                        </flux:sidebar.group>
+                        <flux:sidebar.group heading="Manajemen Pengguna" expandable :expanded="request()->is('admin/users') || request()->is('admin/roles') || request()->is('admin/izin-layanan')">
+                            <flux:sidebar.item icon="users" href="/admin/users" :current="request()->is('admin/users')" wire:navigate>
+                                {{ __('Users') }}
+                            </flux:sidebar.item>
+                            <flux:sidebar.item icon="shield-check" href="/admin/roles" :current="request()->is('admin/roles')" wire:navigate>
+                                {{ __('Roles') }}
+                            </flux:sidebar.item>
+                            <flux:sidebar.item icon="key" href="/admin/izin-layanan" :current="request()->is('admin/izin-layanan')" wire:navigate>
+                                {{ __('Izin Layanan') }}
+                            </flux:sidebar.item>
+                        </flux:sidebar.group>
                     @endif
                 </flux:sidebar.group>
                 @endauth
