@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CounterManagementController;
 use App\Http\Controllers\Admin\ServiceManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\FrontdeskQueueController;
+use App\Http\Controllers\KioskController;
 use App\Http\Controllers\OfficerQueueController;
 use App\Http\Controllers\PublicQueueController;
 use App\Http\Controllers\Report\QueueReportController;
@@ -19,9 +20,9 @@ Route::get('/antrian/konfirmasi/{ticket}', [PublicQueueController::class, 'confi
 Route::get('/display', QueueDisplay::class)->name('queue.display');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
+    Route::get('dashboard', function (\Illuminate\Http\Request $request) {
         return view('dashboard', [
-            'activeRole' => auth()->user()?->role,
+            'activeRole' => $request->user()?->role,
         ]);
     })->name('dashboard');
 });
@@ -76,10 +77,12 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(f
 });
 
 // Kiosk routes (no auth - uses own password system)
-Route::get('/kiosk', fn () => view('pages.kiosk.index'))->name('kiosk.index');
-Route::get('/kiosk/login', fn () => view('pages.kiosk.login'))->name('kiosk.login');
-Route::post('/kiosk/login', fn () => redirect('/kiosk'))->name('kiosk.authenticate');
-Route::post('/kiosk/logout', fn () => redirect('/kiosk/login'))->name('kiosk.logout');
+Route::get('/kiosk/login', [KioskController::class, 'showLogin'])->name('kiosk.login');
+Route::post('/kiosk/login', [KioskController::class, 'login'])->name('kiosk.authenticate');
+Route::post('/kiosk/logout', [KioskController::class, 'logout'])->name('kiosk.logout');
+Route::middleware('module.password:kiosk')->group(function () {
+    Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk.index');
+});
 
 // TV Display routes (no auth - uses own password system)
 Route::get('/tv-display', fn () => view('pages.tv-display.index'))->name('tv-display.index');
