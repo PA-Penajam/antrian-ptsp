@@ -7,7 +7,7 @@ use App\Http\Controllers\FrontdeskQueueController;
 use App\Http\Controllers\OfficerQueueController;
 use App\Http\Controllers\PublicQueueController;
 use App\Http\Controllers\Report\QueueReportController;
-use App\Models\QueueTicket;
+use App\Livewire\QueueDisplay;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicQueueController::class, 'index'])->name('home');
@@ -15,26 +15,7 @@ Route::get('/antrian', [PublicQueueController::class, 'booking']);
 Route::post('/antrian', [PublicQueueController::class, 'storeBooking']);
 Route::get('/antrian/cek', [PublicQueueController::class, 'lookup'])->name('queue.cek');
 Route::get('/antrian/konfirmasi/{ticket}', [PublicQueueController::class, 'confirmation'])->name('queue.confirmation');
-Route::get('/display', function () {
-    $currentCalls = QueueTicket::query()
-        ->with('counter')
-        ->where('status', 'called')
-        ->orderByDesc('called_at')
-        ->limit(5)
-        ->get();
-
-    $recentCalls = QueueTicket::query()
-        ->with('counter')
-        ->whereNotNull('called_at')
-        ->orderByDesc('called_at')
-        ->limit(10)
-        ->get();
-
-    return view('pages.display.index', [
-        'currentCalls' => $currentCalls,
-        'recentCalls' => $recentCalls,
-    ]);
-});
+Route::get('/display', QueueDisplay::class)->name('queue.display');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {

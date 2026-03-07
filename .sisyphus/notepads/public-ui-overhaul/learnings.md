@@ -41,3 +41,11 @@
 - NO PII on display page (no visitor name/phone)
 - Status `booked` = no queue position shown (not checked in yet)
 - `daily_quota`: informational only, NO hard enforcement
+
+## [2026-03-07] Task 9 — Queue display
+
+### Display Page
+- `/display` can be routed directly to `App\Livewire\QueueDisplay` as a full-page Livewire component via `Route::get('/display', QueueDisplay::class)`
+- Livewire 4 polling syntax works as `wire:poll.5000ms` on the component root for 5-second refreshes
+- `QueueDisplay` should query current calls with `QueueStatus::Called` and keep history limited to `called_at` rows only
+- `resources/views/pages/display/index.blade.php` can stay as a thin `<livewire:queue-display />` wrapper for compatibility, even when the route points to the full-page component

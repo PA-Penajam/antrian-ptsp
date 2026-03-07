@@ -5,6 +5,8 @@ use App\Models\QueuePool;
 use App\Models\QueueTicket;
 use App\Models\Service;
 
+use function Pest\Laravel\get;
+
 test('display page is public and shows current call with history', function () {
     $pool = QueuePool::factory()->create(['code' => 'UMUM']);
     $service = Service::factory()->for($pool)->create();
@@ -22,11 +24,12 @@ test('display page is public and shows current call with history', function () {
         'called_at' => now()->subMinute(),
     ]);
 
-    $response = $this->get('/display');
+    $response = get('/display');
 
     $response->assertOk()
         ->assertSee('Display Antrian PTSP')
         ->assertSee('Sedang Dipanggil')
+        ->assertSee('wire:poll.5000ms', false)
         ->assertSee('UMUM-0002')
         ->assertSee('Loket Umum 1')
         ->assertSee('Riwayat Panggilan')
