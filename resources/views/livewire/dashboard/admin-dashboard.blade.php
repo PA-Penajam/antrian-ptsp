@@ -37,9 +37,167 @@
         </div>
     </flux:card>
 
-    {{-- Charts placeholder (Task 8 will add actual charts) --}}
-    <div id="charts-placeholder" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {{-- Task 8 will add flux:chart components here --}}
+    @php
+        $serviceData = collect($this->byService)
+            ->map(fn ($count, $name) => ['name' => $name, 'count' => $count])
+            ->values()
+            ->toArray();
+
+        $counterData = collect($this->byCounter)
+            ->map(fn ($count, $name) => ['name' => $name, 'count' => $count])
+            ->values()
+            ->toArray();
+
+        $channelData = collect($this->byChannel)
+            ->map(fn ($total, $channel) => [
+                'channel' => \Illuminate\Support\Str::of($channel)->replace('_', ' ')->headline()->value(),
+                'total' => $total,
+            ])
+            ->values()
+            ->toArray();
+    @endphp
+
+    <div id="charts-placeholder" class="space-y-4">
+        <flux:card class="p-4">
+            <flux:heading size="sm">Tren 7 Hari Terakhir</flux:heading>
+
+            @if (count($this->trendData) > 0 && collect($this->trendData)->sum('total') > 0)
+                <flux:chart :value="$this->trendData" class="w-full">
+                    <flux:chart.viewport class="h-48">
+                        <flux:chart.svg>
+                            <flux:chart.line field="total" class="text-sky-500 dark:text-sky-400" />
+                            <flux:chart.point field="total" class="text-sky-500 dark:text-sky-400" />
+
+                            <flux:chart.axis axis="x" field="date" :format="['day' => 'numeric', 'month' => 'short']">
+                                <flux:chart.axis.tick />
+                                <flux:chart.axis.line />
+                            </flux:chart.axis>
+
+                            <flux:chart.axis axis="y" :format="['useGrouping' => true]">
+                                <flux:chart.axis.grid />
+                                <flux:chart.axis.tick />
+                            </flux:chart.axis>
+
+                            <flux:chart.cursor />
+                        </flux:chart.svg>
+                    </flux:chart.viewport>
+
+                    <flux:chart.tooltip>
+                        <flux:chart.tooltip.heading field="date" :format="['year' => 'numeric', 'month' => 'short', 'day' => 'numeric']" />
+                        <flux:chart.tooltip.value field="total" label="Total" :format="['useGrouping' => true]" />
+                    </flux:chart.tooltip>
+                </flux:chart>
+            @else
+                <div class="flex h-48 items-center justify-center text-sm text-zinc-400 dark:text-zinc-500">
+                    <p>Belum ada data untuk ditampilkan</p>
+                </div>
+            @endif
+        </flux:card>
+
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <flux:card class="p-4">
+                <flux:heading size="sm">Per Layanan</flux:heading>
+
+                @if (count($serviceData) > 0 && collect($serviceData)->sum('count') > 0)
+                    <flux:chart :value="$serviceData" class="w-full">
+                        <flux:chart.viewport class="h-48">
+                            <flux:chart.svg>
+                                <flux:chart.bar field="count" class="text-emerald-500 dark:text-emerald-400" width="70%" />
+
+                                <flux:chart.axis axis="x" field="name">
+                                    <flux:chart.axis.tick class="text-xs" />
+                                </flux:chart.axis>
+
+                                <flux:chart.axis axis="y" :format="['useGrouping' => true]">
+                                    <flux:chart.axis.grid />
+                                    <flux:chart.axis.tick />
+                                </flux:chart.axis>
+
+                                <flux:chart.cursor />
+                            </flux:chart.svg>
+                        </flux:chart.viewport>
+
+                        <flux:chart.tooltip>
+                            <flux:chart.tooltip.heading field="name" />
+                            <flux:chart.tooltip.value field="count" label="Total" :format="['useGrouping' => true]" />
+                        </flux:chart.tooltip>
+                    </flux:chart>
+                @else
+                    <div class="flex h-48 items-center justify-center text-sm text-zinc-400 dark:text-zinc-500">
+                        <p>Belum ada data untuk ditampilkan</p>
+                    </div>
+                @endif
+            </flux:card>
+
+            <flux:card class="p-4">
+                <flux:heading size="sm">Per Loket</flux:heading>
+
+                @if (count($counterData) > 0 && collect($counterData)->sum('count') > 0)
+                    <flux:chart :value="$counterData" class="w-full">
+                        <flux:chart.viewport class="h-48">
+                            <flux:chart.svg>
+                                <flux:chart.bar field="count" class="text-amber-500 dark:text-amber-400" width="70%" />
+
+                                <flux:chart.axis axis="x" field="name">
+                                    <flux:chart.axis.tick class="text-xs" />
+                                </flux:chart.axis>
+
+                                <flux:chart.axis axis="y" :format="['useGrouping' => true]">
+                                    <flux:chart.axis.grid />
+                                    <flux:chart.axis.tick />
+                                </flux:chart.axis>
+
+                                <flux:chart.cursor />
+                            </flux:chart.svg>
+                        </flux:chart.viewport>
+
+                        <flux:chart.tooltip>
+                            <flux:chart.tooltip.heading field="name" />
+                            <flux:chart.tooltip.value field="count" label="Total" :format="['useGrouping' => true]" />
+                        </flux:chart.tooltip>
+                    </flux:chart>
+                @else
+                    <div class="flex h-48 items-center justify-center text-sm text-zinc-400 dark:text-zinc-500">
+                        <p>Belum ada data untuk ditampilkan</p>
+                    </div>
+                @endif
+            </flux:card>
+        </div>
+
+        <flux:card class="p-4">
+            <flux:heading size="sm">Distribusi Kanal</flux:heading>
+
+            @if (count($channelData) > 0 && collect($channelData)->sum('total') > 0)
+                <flux:chart :value="$channelData" class="w-full">
+                    <flux:chart.viewport class="h-48">
+                        <flux:chart.svg>
+                            <flux:chart.bar field="total" class="text-fuchsia-500 dark:text-fuchsia-400" width="55%" />
+
+                            <flux:chart.axis axis="x" field="channel">
+                                <flux:chart.axis.tick class="text-xs" />
+                                <flux:chart.axis.line />
+                            </flux:chart.axis>
+
+                            <flux:chart.axis axis="y" :format="['useGrouping' => true]">
+                                <flux:chart.axis.grid />
+                                <flux:chart.axis.tick />
+                            </flux:chart.axis>
+
+                            <flux:chart.cursor />
+                        </flux:chart.svg>
+                    </flux:chart.viewport>
+
+                    <flux:chart.tooltip>
+                        <flux:chart.tooltip.heading field="channel" />
+                        <flux:chart.tooltip.value field="total" label="Total" :format="['useGrouping' => true]" />
+                    </flux:chart.tooltip>
+                </flux:chart>
+            @else
+                <div class="flex h-48 items-center justify-center text-sm text-zinc-400 dark:text-zinc-500">
+                    <p>Belum ada data untuk ditampilkan</p>
+                </div>
+            @endif
+        </flux:card>
     </div>
 
     {{-- Activity log placeholder (Task 9 will add this) --}}
