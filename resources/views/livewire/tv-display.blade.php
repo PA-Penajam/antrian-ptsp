@@ -17,11 +17,6 @@
               x-text="time"
               class="text-zinc-400 text-lg font-mono"></span>
     </div>
-    {{-- Header --}}
-    <div class="flex items-center justify-between">
-        <h1 class="text-4xl font-bold">Monitor Antrian PTSP</h1>
-        <span class="text-zinc-400 text-lg">{{ now()->format('H:i:s') }}</span>
-    </div>
 
     {{-- Currently Called --}}
     <div class="space-y-4">
@@ -74,31 +69,6 @@
                 </table>
             </div>
         @endif
-    </div>
-    <div class="space-y-3">
-        <h2 class="text-xl font-semibold text-zinc-400">Riwayat Panggilan</h2>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-zinc-500 border-b border-zinc-800">
-                        <th class="text-left py-2">No. Antrian</th>
-                        <th class="text-left py-2">Loket</th>
-                        <th class="text-left py-2">Layanan</th>
-                        <th class="text-left py-2">Waktu</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($recentCalls as $ticket)
-                        <tr wire:key="recent-call-{{ $ticket->id }}" class="border-b border-zinc-900 {{ $ticket->status === \App\Enums\QueueStatus::Called ? 'text-amber-400' : 'text-zinc-400' }}">
-                            <td class="py-2 font-mono text-lg">{{ $ticket->ticket_number }}</td>
-                            <td class="py-2">{{ $ticket->counter?->name ?? '-' }}</td>
-                            <td class="py-2">{{ $ticket->service?->name ?? '-' }}</td>
-                            <td class="py-2">{{ $ticket->called_at?->format('H:i') ?? '-' }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
     </div>
 
     {{-- Hidden logout --}}
