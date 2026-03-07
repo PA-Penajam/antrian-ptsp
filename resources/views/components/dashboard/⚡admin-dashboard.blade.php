@@ -50,7 +50,7 @@ new class extends Component
 ?>
 
 <div class="space-y-6">
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+    <div wire:loading.remove wire:target="refreshStats" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <x-dashboard.stat-card
             :value="$stats['booking_success_today']"
             label="Booking Berhasil"
@@ -81,6 +81,11 @@ new class extends Component
             icon="check-badge"
             color="green"
         />
+    </div>
+    <div wire:loading wire:target="refreshStats" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        @for ($i = 0; $i < 5; $i++)
+            <flux:skeleton class="h-24 rounded-xl" />
+        @endfor
     </div>
 
     <flux:card class="space-y-4">
