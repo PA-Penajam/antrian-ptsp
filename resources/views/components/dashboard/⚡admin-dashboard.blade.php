@@ -83,6 +83,55 @@ new class extends Component
         />
     </div>
 
+    <flux:card class="space-y-4">
+        <div>
+            <flux:heading size="lg">Tren 7 Hari Terakhir</flux:heading>
+            <flux:subheading>Perbandingan total tiket dan tiket selesai per hari.</flux:subheading>
+        </div>
+
+        @if (collect($trendData)->isEmpty() || (collect($trendData)->sum('total') === 0 && collect($trendData)->sum('completed') === 0))
+            <flux:callout icon="information-circle">
+                <flux:callout.heading>Belum ada data</flux:callout.heading>
+                <flux:callout.text>Belum ada data tren untuk 7 hari terakhir.</flux:callout.text>
+            </flux:callout>
+        @else
+            <flux:chart wire:model="trendData" class="w-full">
+                <flux:chart.viewport class="aspect-[3/1] min-h-72">
+                    <flux:chart.svg>
+                        <flux:chart.group>
+                            <flux:chart.bar field="total" class="text-blue-500 dark:text-blue-400" />
+                            <flux:chart.bar field="completed" class="text-green-500 dark:text-green-400" />
+                        </flux:chart.group>
+                        <flux:chart.axis axis="x" field="date">
+                            <flux:chart.axis.tick />
+                            <flux:chart.axis.line />
+                        </flux:chart.axis>
+                        <flux:chart.axis axis="y">
+                            <flux:chart.axis.grid />
+                            <flux:chart.axis.tick />
+                        </flux:chart.axis>
+                        <flux:chart.cursor type="area" />
+                    </flux:chart.svg>
+                </flux:chart.viewport>
+
+                <flux:chart.tooltip>
+                    <flux:chart.tooltip.heading field="date" />
+                    <flux:chart.tooltip.value field="total" label="Total Tiket" />
+                    <flux:chart.tooltip.value field="completed" label="Selesai" />
+                </flux:chart.tooltip>
+
+                <div class="flex flex-wrap justify-center gap-4 pt-2">
+                    <flux:chart.legend label="Total Tiket">
+                        <flux:chart.legend.indicator class="bg-blue-500 dark:bg-blue-400" />
+                    </flux:chart.legend>
+                    <flux:chart.legend label="Selesai">
+                        <flux:chart.legend.indicator class="bg-green-500 dark:bg-green-400" />
+                    </flux:chart.legend>
+                </div>
+            </flux:chart>
+        @endif
+    </flux:card>
+
     <flux:card class="space-y-3">
         <flux:heading size="lg">Shortcut Manajemen</flux:heading>
         <div class="flex flex-wrap gap-2">
