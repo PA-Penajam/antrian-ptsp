@@ -1,5 +1,20 @@
 <?php
 
+$testConnection = $_ENV['DB_CONNECTION'] ?? $_SERVER['DB_CONNECTION'] ?? null;
+$testDatabase = $_ENV['DB_DATABASE'] ?? $_SERVER['DB_DATABASE'] ?? null;
+
+if (in_array($testConnection, ['mysql', 'mariadb', 'pgsql', 'sqlsrv'], true)
+    && ! str_ends_with((string) $testDatabase, '_test')
+    && ! str_ends_with((string) $testDatabase, '_testing')) {
+    throw new \RuntimeException(
+        sprintf(
+            'Unsafe testing database "%s" for connection "%s". Use SQLite or a dedicated *_test database.',
+            (string) $testDatabase,
+            (string) $testConnection,
+        )
+    );
+}
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
