@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\QueueStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -70,6 +72,32 @@ class UserManagementController extends Controller
 
         return redirect('/admin/users')
             ->with('status', 'User Berhasil Diperbarui');
+    }
+
+    public function destroy(User $user): RedirectResponse
+    {
+        // Block deleting yourself
+        if ($user->id === auth()->id()) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Anda tidak dapat menghapus akun sendiri.');
+        }
+
+        // Block if user has active tickets they created
+        $hasActiveTickets = QueueTicket::query()
+            ->where('created_by', $user->id)
+            ->whereIn('status', [QueueStatus::Waiting, QueueStatus::Called, QueueStatus::Booked])
+            ->exists();
+
+        if ($hasActiveTickets) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'User tidak dapat dihapus karena memiliki antrian aktif.');
+        }
+
+        $user->services()->detach();
+        $user->delete();
+
+        return redirect()->route('admin.users.index')
+            ->with('status', 'User berhasil dihapus.');
     }
 
     public function roles(): View

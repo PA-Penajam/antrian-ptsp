@@ -237,4 +237,31 @@
             </flux:table>
         @endif
     </flux:card>
+
+    {{-- Ringkasan Failure Operasional --}}
+    <flux:card class="p-4">
+        <flux:heading size="lg">Ringkasan Failure Operasional</flux:heading>
+        <div class="grid grid-cols-2 gap-4 mt-3">
+            <div>
+                <flux:heading size="sm">Booking Berhasil Hari Ini</flux:heading>
+                <p class="text-2xl font-bold mt-1 text-green-600">{{ $this->bookingSuccess }}</p>
+            </div>
+            <div>
+                <flux:heading size="sm">Booking Gagal Hari Ini</flux:heading>
+                <p class="text-2xl font-bold mt-1 text-red-600">{{ $this->bookingFailed }}</p>
+            </div>
+        </div>
+    </flux:card>
+
+    {{-- Shortcut Manajemen --}}
+    <flux:card class="p-4">
+        <flux:heading size="lg">Shortcut Manajemen</flux:heading>
+        <div class="flex flex-wrap gap-2 mt-3">
+            <flux:button :href="route('admin.layanan.index')" variant="primary">Layanan</flux:button>
+            <flux:button :href="route('admin.loket.index')" variant="filled">Loket</flux:button>
+            <flux:button :href="route('admin.users.index')" variant="ghost">Users</flux:button>
+            <flux:button :href="url('/admin/roles')" variant="ghost">Roles</flux:button>
+            <flux:button :href="url('/admin/izin-layanan')" variant="ghost">Izin Layanan</flux:button>
+        </div>
+    </flux:card>
 </div>

@@ -71,6 +71,26 @@ class AdminDashboard extends Component
     }
 
     #[Computed]
+    public function bookingSuccess(): int
+    {
+        return QueueTicket::query()
+            ->whereBetween('service_date', [$this->startDate, $this->endDate])
+            ->where('channel', 'online_booking')
+            ->where('status', '!=', QueueStatus::Cancelled)
+            ->count();
+    }
+
+    #[Computed]
+    public function bookingFailed(): int
+    {
+        return QueueTicket::query()
+            ->whereBetween('service_date', [$this->startDate, $this->endDate])
+            ->where('channel', 'online_booking')
+            ->where('status', QueueStatus::Cancelled)
+            ->count();
+    }
+
+    #[Computed]
     public function byService(): array
     {
         return QueueTicket::query()
