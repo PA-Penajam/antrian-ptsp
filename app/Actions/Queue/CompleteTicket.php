@@ -2,6 +2,7 @@
 
 namespace App\Actions\Queue;
 
+use App\Enums\QueueStatus;
 use App\Models\Counter;
 use App\Models\QueueTicket;
 use Carbon\CarbonImmutable;
@@ -11,17 +12,16 @@ class CompleteTicket
 {
     public function __construct(
         private readonly LogQueueActivity $logQueueActivity
-    ) {
-    }
+    ) {}
 
     public function handle(QueueTicket $queueTicket, Counter $counter, ?int $userId = null): QueueTicket
     {
-        if ($queueTicket->status !== 'called') {
+        if ($queueTicket->status !== QueueStatus::Called) {
             throw new InvalidArgumentException('Only called tickets can be completed.');
         }
 
         $queueTicket->update([
-            'status' => 'completed',
+            'status' => QueueStatus::Completed,
             'counter_id' => $counter->id,
             'started_at' => $queueTicket->started_at ?? CarbonImmutable::now(),
             'completed_at' => CarbonImmutable::now(),

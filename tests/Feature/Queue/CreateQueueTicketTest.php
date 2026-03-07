@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Queue\CreateQueueTicket;
+use App\Enums\QueueStatus;
 use App\Models\QueuePool;
 use App\Models\Service;
 use App\Models\User;
@@ -22,7 +23,7 @@ test('online booking creates a booked ticket and logs activity', function () {
         'created_by' => $creator->id,
     ]);
 
-    expect($ticket->status)->toBe('booked')
+    expect($ticket->status)->toBe(QueueStatus::Booked)
         ->and($ticket->queue_pool_id)->toBe($pool->id)
         ->and($ticket->channel)->toBe('online_booking');
 
@@ -48,7 +49,7 @@ test('assisted same day creates waiting ticket and logs activity', function () {
         'created_by' => $creator->id,
     ]);
 
-    expect($ticket->status)->toBe('waiting')
+    expect($ticket->status)->toBe(QueueStatus::Waiting)
         ->and($ticket->queue_pool_id)->toBe($pool->id)
         ->and($ticket->channel)->toBe('assisted_same_day');
 
@@ -74,7 +75,7 @@ test('walk in kiosk creates waiting ticket and logs activity', function () {
         'created_by' => $creator->id,
     ]);
 
-    expect($ticket->status)->toBe('waiting')
+    expect($ticket->status)->toBe(QueueStatus::Waiting)
         ->and($ticket->queue_pool_id)->toBe($pool->id)
         ->and($ticket->channel)->toBe('walk_in_kiosk');
 

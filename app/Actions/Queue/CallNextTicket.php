@@ -2,6 +2,7 @@
 
 namespace App\Actions\Queue;
 
+use App\Enums\QueueStatus;
 use App\Models\Counter;
 use App\Models\QueueTicket;
 use Carbon\CarbonImmutable;
@@ -11,15 +12,14 @@ class CallNextTicket
 {
     public function __construct(
         private readonly LogQueueActivity $logQueueActivity
-    ) {
-    }
+    ) {}
 
     public function handle(Counter $counter, ?int $userId = null): ?QueueTicket
     {
         return DB::transaction(function () use ($counter, $userId): ?QueueTicket {
             $queueTicket = QueueTicket::query()
                 ->where('queue_pool_id', $counter->queue_pool_id)
-                ->where('status', 'waiting')
+                ->where('status', QueueStatus::Waiting)
                 ->orderBy('service_date')
                 ->orderBy('sequence_number')
                 ->first();
@@ -29,7 +29,7 @@ class CallNextTicket
             }
 
             $queueTicket->update([
-                'status' => 'called',
+                'status' => QueueStatus::Called,
                 'counter_id' => $counter->id,
                 'called_at' => CarbonImmutable::now(),
             ]);
