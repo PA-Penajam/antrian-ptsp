@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Counter;
+use App\Models\QueueActivity;
 use App\Models\QueuePool;
 use App\Models\QueueTicket;
 use App\Models\Service;
@@ -16,21 +17,31 @@ test('report builder aggregates by service counter officer and status', function
     $officer1 = User::factory()->create(['name' => 'Officer Satu']);
     $officer2 = User::factory()->create(['name' => 'Officer Dua']);
 
-    QueueTicket::factory()->for($serviceA)->for($pool)->for($counter1)->for($officer1, 'creator')->create([
+    $ticket1 = QueueTicket::factory()->for($serviceA)->for($pool)->for($counter1)->for($officer1, 'creator')->create([
         'service_date' => '2026-03-10',
         'status' => 'completed',
     ]);
-    QueueTicket::factory()->for($serviceA)->for($pool)->for($counter1)->for($officer1, 'creator')->create([
+    $ticket2 = QueueTicket::factory()->for($serviceA)->for($pool)->for($counter1)->for($officer1, 'creator')->create([
         'service_date' => '2026-03-10',
         'status' => 'waiting',
     ]);
-    QueueTicket::factory()->for($serviceB)->for($pool)->for($counter2)->for($officer2, 'creator')->create([
+    $ticket3 = QueueTicket::factory()->for($serviceB)->for($pool)->for($counter2)->for($officer2, 'creator')->create([
         'service_date' => '2026-03-10',
         'status' => 'cancelled',
     ]);
     QueueTicket::factory()->for($serviceB)->for($pool)->for($counter2)->for($officer2, 'creator')->create([
         'service_date' => '2026-03-11',
         'status' => 'completed',
+    ]);
+
+    QueueActivity::factory()->for($ticket1)->for($officer1)->for($counter1)->create([
+        'action' => 'ticket_completed',
+    ]);
+    QueueActivity::factory()->for($ticket3)->for($officer2)->for($counter2)->create([
+        'action' => 'ticket_completed',
+    ]);
+    QueueActivity::factory()->for($ticket2)->for($officer1)->for($counter1)->create([
+        'action' => 'ticket_recalled',
     ]);
 
     $report = app(QueueReportBuilder::class)->build('2026-03-10', '2026-03-10');
@@ -43,5 +54,7 @@ test('report builder aggregates by service counter officer and status', function
         ->and($report['by_officer']['Officer Dua'])->toBe(1)
         ->and($report['by_status']['completed'])->toBe(1)
         ->and($report['by_status']['waiting'])->toBe(1)
-        ->and($report['by_status']['cancelled'])->toBe(1);
+        ->and($report['by_status']['cancelled'])->toBe(1)
+        ->and($report['officer_service_distribution']['Officer Satu']['Pendaftaran'])->toBe(1)
+        ->and($report['officer_service_distribution']['Officer Dua']['Informasi/Pengaduan'])->toBe(1);
 });

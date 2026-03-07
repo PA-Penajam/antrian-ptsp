@@ -5,37 +5,45 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
+use App\Models\QueuePool;
 use App\Models\Service;
-use Illuminate\Http\Response;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class ServiceManagementController extends Controller
 {
-    public function index(): Response
+    public function index(): View
     {
         $services = Service::query()
+            ->with('queuePool')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 
-        $lines = ['Manajemen Layanan'];
-        foreach ($services as $service) {
-            $lines[] = $service->name;
-        }
+        $queuePools = QueuePool::query()
+            ->orderBy('is_active', 'desc')
+            ->orderBy('name')
+            ->get();
 
-        return response(implode("\n", $lines), 200);
+        return view('pages.admin.layanan.index', [
+            'services' => $services,
+            'queuePools' => $queuePools,
+        ]);
     }
 
-    public function store(StoreServiceRequest $request): Response
+    public function store(StoreServiceRequest $request): RedirectResponse
     {
         Service::query()->create($request->validated());
 
-        return response('Layanan Berhasil Dibuat', 200);
+        return redirect('/admin/layanan')
+            ->with('status', 'Layanan Berhasil Dibuat');
     }
 
-    public function update(UpdateServiceRequest $request, Service $service): Response
+    public function update(UpdateServiceRequest $request, Service $service): RedirectResponse
     {
         $service->update($request->validated());
 
-        return response('Layanan Berhasil Diperbarui', 200);
+        return redirect('/admin/layanan')
+            ->with('status', 'Layanan Berhasil Diperbarui');
     }
 }

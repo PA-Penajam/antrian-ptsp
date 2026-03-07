@@ -20,6 +20,8 @@ class CancelTicket
             throw new InvalidArgumentException('Ticket cannot be cancelled from its current status.');
         }
 
+        $fromStatus = $queueTicket->status;
+
         $queueTicket->update([
             'status' => QueueStatus::Cancelled,
             'counter_id' => $counter->id,
@@ -30,7 +32,13 @@ class CancelTicket
             queueTicket: $queueTicket,
             action: 'ticket_cancelled',
             userId: $userId,
-            counterId: $counter->id
+            counterId: $counter->id,
+            meta: [
+                'from_status' => $fromStatus->value,
+                'to_status' => QueueStatus::Cancelled->value,
+                'service_id' => $queueTicket->service_id,
+                'queue_pool_id' => $queueTicket->queue_pool_id,
+            ]
         );
 
         return $queueTicket->refresh();

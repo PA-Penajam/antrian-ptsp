@@ -20,6 +20,8 @@ class SkipTicket
             throw new InvalidArgumentException('Only waiting or called tickets can be skipped.');
         }
 
+        $fromStatus = $queueTicket->status;
+
         $queueTicket->update([
             'status' => QueueStatus::Skipped,
             'counter_id' => $counter->id,
@@ -30,7 +32,13 @@ class SkipTicket
             queueTicket: $queueTicket,
             action: 'ticket_skipped',
             userId: $userId,
-            counterId: $counter->id
+            counterId: $counter->id,
+            meta: [
+                'from_status' => $fromStatus->value,
+                'to_status' => QueueStatus::Skipped->value,
+                'service_id' => $queueTicket->service_id,
+                'queue_pool_id' => $queueTicket->queue_pool_id,
+            ]
         );
 
         return $queueTicket->refresh();

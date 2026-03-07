@@ -17,7 +17,12 @@ test('admin can list services', function () {
 
     $response->assertOk()
         ->assertSee('Manajemen Layanan')
-        ->assertSee($service->name);
+        ->assertSee($service->name)
+        ->assertSee('min-h-screen')
+        ->assertSee('Tambah Layanan')
+        ->assertSee('name="name"', false)
+        ->assertSee('name="code"', false)
+        ->assertSee('name="queue_pool_id"', false);
 });
 
 test('admin can create and update service', function () {
@@ -41,7 +46,7 @@ test('admin can create and update service', function () {
         'sort_order' => 10,
     ]);
 
-    $createResponse->assertOk()->assertSee('Layanan Berhasil Dibuat');
+    $createResponse->assertRedirect('/admin/layanan');
 
     $service = Service::query()->where('code', 'TST')->firstOrFail();
 
@@ -51,7 +56,7 @@ test('admin can create and update service', function () {
         'is_active' => false,
     ]);
 
-    $updateResponse->assertOk()->assertSee('Layanan Berhasil Diperbarui');
+    $updateResponse->assertRedirect('/admin/layanan');
 
     $this->assertDatabaseHas('services', [
         'id' => $service->id,

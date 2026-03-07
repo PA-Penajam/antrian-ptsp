@@ -135,6 +135,36 @@
                         <flux:text class="mt-4 text-zinc-500">Tidak ada data.</flux:text>
                     @endif
                 </flux:card>
+
+                <flux:card class="sm:col-span-2">
+                    <flux:heading size="lg">Distribusi Petugas x Layanan</flux:heading>
+                    @if (count($report['officer_service_distribution'] ?? []) > 0)
+                        <div class="mt-4">
+                            <flux:table>
+                                <flux:table.columns>
+                                    <flux:table.column>Petugas</flux:table.column>
+                                    <flux:table.column>Distribusi Layanan</flux:table.column>
+                                </flux:table.columns>
+                                <flux:table.rows>
+                                    @foreach (($report['officer_service_distribution'] ?? []) as $officer => $services)
+                                        <flux:table.row>
+                                            <flux:table.cell>{{ $officer }}</flux:table.cell>
+                                            <flux:table.cell>
+                                                <div class="flex flex-wrap gap-1">
+                                                    @foreach ($services as $service => $count)
+                                                        <flux:badge size="sm">{{ $service }}: {{ $count }}</flux:badge>
+                                                    @endforeach
+                                                </div>
+                                            </flux:table.cell>
+                                        </flux:table.row>
+                                    @endforeach
+                                </flux:table.rows>
+                            </flux:table>
+                        </div>
+                    @else
+                        <flux:text class="mt-4 text-zinc-500">Tidak ada data.</flux:text>
+                    @endif
+                </flux:card>
             </div>
         </div>
     </flux:main>
