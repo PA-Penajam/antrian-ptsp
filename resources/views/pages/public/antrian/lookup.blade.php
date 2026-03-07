@@ -1,4 +1,4 @@
-<x-layouts::public :title="__('Cek Status Antrian')">
+<x-layouts::public :title="'Cek Status Antrian'">
     <flux:main container>
         <div class="max-w-2xl mx-auto space-y-6">
             <div>
@@ -28,8 +28,8 @@
 
             @if (request()->filled('ticket_number') && request()->filled('service_date'))
                 @if ($ticket)
-                    <flux:card class="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                        <flux:heading size="lg" class="text-blue-700 dark:text-blue-300 mb-4">Detail Tiket: {{ $ticket->ticket_number }}</flux:heading>
+                    <flux:card>
+                        <flux:heading size="lg" class="mb-4">Detail Tiket: {{ $ticket->ticket_number }}</flux:heading>
                         
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -46,26 +46,45 @@
                             </div>
                             <div>
                                 <flux:subheading>Status</flux:subheading>
-                                <flux:badge color="{{ match($ticket->status) {
-                                    'waiting' => 'zinc',
-                                    'called' => 'amber',
-                                    'completed' => 'green',
-                                    'cancelled' => 'red',
-                                    default => 'zinc',
-                                } }}">{{ ucfirst($ticket->status) }}</flux:badge>
+                                <flux:badge :color="$ticket->status->color()">{{ $ticket->status->label() }}</flux:badge>
                             </div>
-                            @if ($ticket->counter)
-                            <div>
-                                <flux:subheading>Loket</flux:subheading>
-                                <flux:text class="font-medium">{{ $ticket->counter->name }}</flux:text>
-                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-3">
+                            @if ($ticket->status === \App\Enums\QueueStatus::Waiting)
+                                <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                                    <flux:text class="font-medium text-amber-800">Posisi antrian Anda: {{ $queuePosition ?? 0 }}</flux:text>
+                                </div>
+                            @elseif ($ticket->status === \App\Enums\QueueStatus::Called)
+                                <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                    <flux:text class="font-medium text-green-800">Silakan segera menuju {{ $ticket->counter->name ?? 'loket yang ditunjuk' }}</flux:text>
+                                </div>
+                            @elseif ($ticket->status === \App\Enums\QueueStatus::Completed)
+                                <div class="p-4 bg-zinc-50 border border-zinc-200 rounded-lg">
+                                    <flux:text class="font-medium text-zinc-800">Layanan telah selesai</flux:text>
+                                </div>
+                            @elseif ($ticket->status === \App\Enums\QueueStatus::Booked)
+                                <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <flux:text class="font-medium text-blue-800">Tiket terdaftar. Silakan datang dan lakukan check-in di loket</flux:text>
+                                </div>
+                            @elseif ($ticket->status === \App\Enums\QueueStatus::Cancelled)
+                                <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <flux:text class="font-medium text-red-800">Tiket ini telah dibatalkan</flux:text>
+                                </div>
+                            @elseif ($ticket->status === \App\Enums\QueueStatus::Skipped)
+                                <div class="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                                    <flux:text class="font-medium text-orange-800">Tiket ini telah dilewati</flux:text>
+                                </div>
                             @endif
                         </div>
                     </flux:card>
                 @else
-                    <flux:card class="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-center py-8">
-                        <flux:heading size="lg" class="text-red-700 dark:text-red-300">Tiket Tidak Ditemukan</flux:heading>
-                        <flux:text class="mt-2 text-red-600 dark:text-red-400">Pastikan nomor antrian dan tanggal layanan sudah benar.</flux:text>
+                    <flux:card class="bg-red-50 border-red-200 text-center py-8">
+                        <flux:heading size="lg" class="text-red-700">Tiket Tidak Ditemukan</flux:heading>
+                        <flux:text class="mt-2 text-red-600">Pastikan nomor antrian dan tanggal layanan sudah benar.</flux:text>
+                        <div class="mt-6">
+                            <flux:button type="button" variant="secondary" onclick="window.location.href='{{ url('/antrian/cek') }}'">Periksa Ulang</flux:button>
+                        </div>
                     </flux:card>
                 @endif
             @endif

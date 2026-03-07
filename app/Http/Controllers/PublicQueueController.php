@@ -61,15 +61,27 @@ class PublicQueueController extends Controller
         $validated = $request->validated();
 
         $ticket = null;
+        $queuePosition = 0;
         if (! empty($validated['ticket_number']) && ! empty($validated['service_date'])) {
             $ticket = QueueTicket::query()
+                ->with(['service', 'counter', 'queuePool'])
                 ->where('ticket_number', $validated['ticket_number'])
                 ->whereDate('service_date', $validated['service_date'])
                 ->first();
+
+            if ($ticket && $ticket->status === QueueStatus::Waiting && $ticket->queuePool) {
+                $queuePosition = QueueTicket::query()
+                    ->where('queue_pool_id', $ticket->queue_pool_id)
+                    ->whereDate('service_date', $ticket->service_date)
+                    ->where('status', QueueStatus::Waiting)
+                    ->where('sequence_number', '<', $ticket->sequence_number)
+                    ->count() + 1;
+            }
         }
 
         return view('pages.public.antrian.lookup', [
             'ticket' => $ticket,
+            'queuePosition' => $queuePosition,
         ]);
     }
 
