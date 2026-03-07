@@ -5,6 +5,11 @@
             <flux:subheading>Kelola role dan izin layanan setiap user internal.</flux:subheading>
         </div>
 
+        <flux:breadcrumbs>
+            <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
+            <flux:breadcrumbs.item>Users</flux:breadcrumbs.item>
+        </flux:breadcrumbs>
+
         @if (session('status'))
             <flux:callout icon="check-circle" color="green">
                 {{ session('status') }}

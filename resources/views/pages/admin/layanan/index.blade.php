@@ -5,6 +5,11 @@
             <flux:subheading>Kelola layanan aktif dan konfigurasi kanal layanan.</flux:subheading>
         </div>
 
+        <flux:breadcrumbs>
+            <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
+            <flux:breadcrumbs.item>Layanan</flux:breadcrumbs.item>
+        </flux:breadcrumbs>
+
         @if (session('status'))
             <flux:callout icon="check-circle" color="green">
                 {{ session('status') }}

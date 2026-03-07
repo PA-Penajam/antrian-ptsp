@@ -5,6 +5,11 @@
             <flux:subheading>Kelola loket antrian, mapping pool, dan status aktif.</flux:subheading>
         </div>
 
+        <flux:breadcrumbs>
+            <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
+            <flux:breadcrumbs.item>Loket</flux:breadcrumbs.item>
+        </flux:breadcrumbs>
+
         @if (session('status'))
             <flux:callout icon="check-circle" color="green">
                 {{ session('status') }}
