@@ -54,6 +54,13 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(f
 
     // Admin - Loket (Counters)
     Route::get('/admin/loket', [CounterManagementController::class, 'index'])->name('admin.loket.index');
+    Route::post('/admin/loket', [CounterManagementController::class, 'store'])->name('admin.loket.store');
+    Route::put('/admin/loket/{counter}', [CounterManagementController::class, 'update'])->name('admin.loket.update');
+    Route::delete('/admin/loket/{counter}', [CounterManagementController::class, 'destroy'])->name('admin.loket.destroy');
+    Route::get('/admin/loket', [CounterManagementController::class, 'index'])->name('admin.loket.index');
+    Route::put('/admin/loket/{counter}', [CounterManagementController::class, 'update'])->name('admin.loket.update');
+    Route::delete('/admin/loket/{counter}', [CounterManagementController::class, 'destroy'])->name('admin.loket.destroy');
+    Route::get('/admin/loket', [CounterManagementController::class, 'index'])->name('admin.loket.index');
     Route::put('/admin/loket/{counter}', [CounterManagementController::class, 'update'])->name('admin.loket.update');
     Route::delete('/admin/loket/{counter}', [CounterManagementController::class, 'destroy'])->name('admin.loket.destroy');
 
