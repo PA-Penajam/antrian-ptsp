@@ -37,19 +37,7 @@ Route::get('/display', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        $today = now()->toDateString();
-
-        $summary = [
-            'waiting' => QueueTicket::query()->whereDate('service_date', $today)->where('status', 'waiting')->count(),
-            'called' => QueueTicket::query()->whereDate('service_date', $today)->where('status', 'called')->count(),
-            'completed' => QueueTicket::query()->whereDate('service_date', $today)->where('status', 'completed')->count(),
-            'cancelled' => QueueTicket::query()->whereDate('service_date', $today)->where('status', 'cancelled')->count(),
-        ];
-        $summary['total'] = array_sum($summary);
-
-        return view('dashboard', [
-            'summary' => $summary,
-        ]);
+        return view('dashboard');
     })->name('dashboard');
 });
 
