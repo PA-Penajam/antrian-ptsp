@@ -225,14 +225,53 @@ new class extends Component
         @endif
     </flux:card>
 
-    <flux:card class="space-y-3">
-        <flux:heading size="lg">Shortcut Manajemen</flux:heading>
-        <div class="flex flex-wrap gap-2">
-            <flux:button :href="url('/admin/layanan')" variant="primary">Layanan</flux:button>
-            <flux:button :href="url('/admin/loket')" variant="filled">Loket</flux:button>
-            <flux:button :href="url('/admin/users')" variant="ghost">Users</flux:button>
-            <flux:button :href="url('/admin/roles')" variant="ghost">Roles</flux:button>
-            <flux:button :href="url('/admin/izin-layanan')" variant="ghost">Izin Layanan</flux:button>
+    <div class="space-y-3">
+        <flux:heading size="lg">Akses Cepat</flux:heading>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <a
+                href="/admin/layanan"
+                wire:navigate
+                class="group rounded-xl border border-blue-200 bg-blue-50 p-5 transition-all duration-200 hover:scale-[1.02] hover:shadow-md dark:border-blue-800 dark:bg-blue-900/20"
+            >
+                <flux:icon name="cog-6-tooth" class="mb-3 size-8 text-blue-600 dark:text-blue-400" />
+                <p class="text-sm font-medium text-blue-700 dark:text-blue-300">Layanan</p>
+            </a>
+
+            <a
+                href="/admin/loket"
+                wire:navigate
+                class="group rounded-xl border border-green-200 bg-green-50 p-5 transition-all duration-200 hover:scale-[1.02] hover:shadow-md dark:border-green-800 dark:bg-green-900/20"
+            >
+                <flux:icon name="computer-desktop" class="mb-3 size-8 text-green-600 dark:text-green-400" />
+                <p class="text-sm font-medium text-green-700 dark:text-green-300">Loket</p>
+            </a>
+
+            <a
+                href="/admin/users"
+                wire:navigate
+                class="group rounded-xl border border-amber-200 bg-amber-50 p-5 transition-all duration-200 hover:scale-[1.02] hover:shadow-md dark:border-amber-800 dark:bg-amber-900/20"
+            >
+                <flux:icon name="users" class="mb-3 size-8 text-amber-600 dark:text-amber-400" />
+                <p class="text-sm font-medium text-amber-700 dark:text-amber-300">Users</p>
+            </a>
+
+            <a
+                href="/admin/roles"
+                wire:navigate
+                class="group rounded-xl border border-purple-200 bg-purple-50 p-5 transition-all duration-200 hover:scale-[1.02] hover:shadow-md dark:border-purple-800 dark:bg-purple-900/20"
+            >
+                <flux:icon name="shield-check" class="mb-3 size-8 text-purple-600 dark:text-purple-400" />
+                <p class="text-sm font-medium text-purple-700 dark:text-purple-300">Roles</p>
+            </a>
+
+            <a
+                href="/admin/izin-layanan"
+                wire:navigate
+                class="group rounded-xl border border-red-200 bg-red-50 p-5 transition-all duration-200 hover:scale-[1.02] hover:shadow-md dark:border-red-800 dark:bg-red-900/20"
+            >
+                <flux:icon name="key" class="mb-3 size-8 text-red-600 dark:text-red-400" />
+                <p class="text-sm font-medium text-red-700 dark:text-red-300">Izin Layanan</p>
+            </a>
         </div>
-    </flux:card>
+    </div>
 </div>

@@ -3,16 +3,19 @@
 use App\Enums\UserRole;
 use App\Models\User;
 
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
+
 test('guests are redirected to the login page', function () {
-    $response = $this->get(route('dashboard'));
+    $response = get(route('dashboard'));
     $response->assertRedirect(route('login'));
 });
 
 test('authenticated users can visit the dashboard', function () {
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
-    $response = $this->get(route('dashboard'));
+    $response = get(route('dashboard'));
     $response->assertOk();
 });
 
@@ -27,24 +30,27 @@ test('dashboard shell is rendered based on user role', function () {
         'role' => UserRole::Admin->value,
     ]);
 
-    $this->actingAs($officer)
-        ->get(route('dashboard'))
+    actingAs($officer);
+
+    get(route('dashboard'))
         ->assertOk()
         ->assertSee('Modul Panggilan Petugas')
         ->assertDontSee('Ringkasan Monitoring')
         ->assertDontSee('Health Aplikasi');
 
-    $this->actingAs($monitor)
-        ->get(route('dashboard'))
+    actingAs($monitor);
+
+    get(route('dashboard'))
         ->assertOk()
         ->assertSee('Ringkasan Monitoring')
         ->assertDontSee('Modul Panggilan Petugas')
         ->assertDontSee('Health Aplikasi');
 
-    $this->actingAs($admin)
-        ->get(route('dashboard'))
+    actingAs($admin);
+
+    get(route('dashboard'))
         ->assertOk()
         ->assertSee('Health Aplikasi')
-        ->assertSee('Shortcut Manajemen')
+        ->assertSee('Akses Cepat')
         ->assertDontSee('Modul Panggilan Petugas');
 });
