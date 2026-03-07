@@ -24,23 +24,31 @@ class TvDisplay extends Component
 
     protected function currentCalls(): Collection
     {
-        return QueueTicket::query()
-            ->with(['counter', 'service'])
-            ->where('status', QueueStatus::Called)
-            ->whereDate('service_date', today())
-            ->orderByDesc('called_at')
-            ->limit(6)
-            ->get();
+        try {
+            return QueueTicket::query()
+                ->with(['counter', 'service'])
+                ->where('status', QueueStatus::Called)
+                ->whereDate('service_date', today())
+                ->orderByDesc('called_at')
+                ->limit(6)
+                ->get();
+        } catch (\Throwable $e) {
+            return new Collection;
+        }
     }
 
     protected function recentCalls(): Collection
     {
-        return QueueTicket::query()
-            ->with(['counter', 'service'])
-            ->whereDate('service_date', today())
-            ->whereNotNull('called_at')
-            ->orderByDesc('called_at')
-            ->limit(20)
-            ->get();
+        try {
+            return QueueTicket::query()
+                ->with(['counter', 'service'])
+                ->whereDate('service_date', today())
+                ->whereNotNull('called_at')
+                ->orderByDesc('called_at')
+                ->limit(20)
+                ->get();
+        } catch (\Throwable $e) {
+            return new Collection;
+        }
     }
 }

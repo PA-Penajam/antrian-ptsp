@@ -83,3 +83,54 @@ it('tv display shows recent calls in history', function () {
         ->assertSee('B002')
         ->assertSee('Loket 2');
 });
+
+it('tv display shows recent calls empty state when no history', function () {
+    $this->withSession([
+        'tv_display_authenticated' => true,
+        'tv_display_authenticated_at' => now()->timestamp,
+    ]);
+
+    $response = get(route('tv-display.index'));
+
+    $response->assertOk()
+        ->assertSee('Belum ada riwayat hari ini');
+});
+
+it('tv display renders with current date', function () {
+    $this->withSession([
+        'tv_display_authenticated' => true,
+        'tv_display_authenticated_at' => now()->timestamp,
+    ]);
+
+    $response = get(route('tv-display.index'));
+
+    $response->assertOk()
+        ->assertSee('Monitor Antrian PTSP');
+});
+
+it('tv display includes connection status indicator', function () {
+    $this->withSession([
+        'tv_display_authenticated' => true,
+        'tv_display_authenticated_at' => now()->timestamp,
+    ]);
+
+    $response = get(route('tv-display.index'));
+
+    $response->assertOk()
+        ->assertSee('livewire:connecting', false)
+        ->assertSee('livewire:connected', false);
+});
+
+it('tv display uses alpine js for live clock', function () {
+    $this->withSession([
+        'tv_display_authenticated' => true,
+        'tv_display_authenticated_at' => now()->timestamp,
+    ]);
+
+    $response = get(route('tv-display.index'));
+
+    $response->assertOk()
+        ->assertSee('x-data="{ time: \'\' }"', false)
+        ->assertSee('setInterval', false)
+        ->assertSee("toLocaleTimeString('id-ID'", false);
+});
