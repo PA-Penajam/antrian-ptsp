@@ -36,8 +36,19 @@ new class extends Component
 };
 ?>
 
-<div class="space-y-6">
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+<div class="space-y-6" wire:poll.30s.visible="refreshStats">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="relative flex size-2">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+                <span class="relative inline-flex size-2 rounded-full bg-green-500"></span>
+            </span>
+            <span class="text-xs font-medium text-green-600 dark:text-green-400">Live</span>
+        </div>
+        <flux:text class="text-xs text-zinc-500">Diperbarui setiap 30 detik</flux:text>
+    </div>
+
+    <div wire:loading.remove wire:target="refreshStats" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <flux:card>
             <flux:subheading>Booking Berhasil Hari Ini</flux:subheading>
             <flux:heading size="lg">{{ $stats['booking_success_today'] }}</flux:heading>
@@ -58,6 +69,11 @@ new class extends Component
             <flux:subheading>Tiket Selesai</flux:subheading>
             <flux:heading size="lg">{{ $stats['tickets_completed_today'] }}</flux:heading>
         </flux:card>
+</div>
+    <div wire:loading wire:target="refreshStats" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        @for ($i = 0; $i < 5; $i++)
+            <flux:skeleton class="h-24 rounded-xl" />
+        @endfor
     </div>
 
     <div class="grid gap-6 lg:grid-cols-2">

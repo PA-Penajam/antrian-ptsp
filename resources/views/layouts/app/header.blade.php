@@ -39,7 +39,7 @@
                         </flux:navbar.item>
                     @endif
                     @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
-                        <flux:navbar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
+                        <flux:navbar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/*')" wire:navigate>
                             {{ __('Admin') }}
                         </flux:navbar.item>
                     @endif
@@ -99,7 +99,7 @@
                         </flux:sidebar.item>
                     @endif
                     @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
-                        <flux:sidebar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
+                        <flux:sidebar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/*')" wire:navigate>
                             {{ __('Admin') }}
                         </flux:sidebar.item>
                     @endif
