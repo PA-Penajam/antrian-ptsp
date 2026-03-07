@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html
+    lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    x-data="{ theme: localStorage.getItem('theme') || 'light' }"
+    x-init="$watch('theme', value => localStorage.setItem('theme', value))"
+    :class="theme"
+>
     <head>
         @include('partials.head')
     </head>
@@ -55,6 +60,20 @@
 
             <flux:spacer />
 
+            <div class="px-3 pb-3">
+                <flux:button
+                    x-on:click="theme = theme === 'dark' ? 'light' : 'dark'"
+                    ::icon="theme === 'dark' ? 'sun' : 'moon'"
+                    variant="subtle"
+                    size="sm"
+                    class="w-full justify-start"
+                    aria-label="{{ __('Toggle tema') }}"
+                    title="{{ __('Toggle tema') }}"
+                >
+                    <span x-text="theme === 'dark' ? @js(__('Tema terang')) : @js(__('Tema gelap'))"></span>
+                </flux:button>
+            </div>
+
             @auth
                 <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
             @else
@@ -71,6 +90,16 @@
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <flux:spacer />
+
+            <flux:button
+                x-on:click="theme = theme === 'dark' ? 'light' : 'dark'"
+                ::icon="theme === 'dark' ? 'sun' : 'moon'"
+                variant="subtle"
+                size="sm"
+                class="me-2"
+                aria-label="{{ __('Toggle tema') }}"
+                title="{{ __('Toggle tema') }}"
+            />
 
             @auth
             <flux:dropdown position="top" align="end">
