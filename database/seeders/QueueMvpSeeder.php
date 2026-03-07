@@ -54,6 +54,7 @@ class QueueMvpSeeder extends Seeder
                 'walk_in_enabled' => true,
                 'daily_quota' => 100,
                 'sort_order' => 1,
+                'letter_code' => 'A',
             ]
         );
 
@@ -70,6 +71,7 @@ class QueueMvpSeeder extends Seeder
                 'walk_in_enabled' => true,
                 'daily_quota' => 100,
                 'sort_order' => 2,
+                'letter_code' => 'B',
             ]
         );
 
@@ -86,6 +88,7 @@ class QueueMvpSeeder extends Seeder
                 'walk_in_enabled' => true,
                 'daily_quota' => 100,
                 'sort_order' => 3,
+                'letter_code' => 'C',
             ]
         );
 
@@ -102,6 +105,7 @@ class QueueMvpSeeder extends Seeder
                 'walk_in_enabled' => true,
                 'daily_quota' => 80,
                 'sort_order' => 4,
+                'letter_code' => 'D',
             ]
         );
 
@@ -118,6 +122,7 @@ class QueueMvpSeeder extends Seeder
                 'walk_in_enabled' => true,
                 'daily_quota' => 60,
                 'sort_order' => 5,
+                'letter_code' => 'E',
             ]
         );
 

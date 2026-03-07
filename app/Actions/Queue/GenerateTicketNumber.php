@@ -4,6 +4,7 @@ namespace App\Actions\Queue;
 
 use App\Models\QueuePool;
 use App\Models\QueueTicket;
+use App\Models\Service;
 use Carbon\CarbonInterface;
 
 class GenerateTicketNumber
@@ -11,7 +12,7 @@ class GenerateTicketNumber
     /**
      * @return array{sequence_number:int,ticket_number:string}
      */
-    public function handle(QueuePool $queuePool, CarbonInterface $serviceDate): array
+    public function handle(Service $service, QueuePool $queuePool, CarbonInterface $serviceDate): array
     {
         $maxSequence = QueueTicket::query()
             ->where('queue_pool_id', $queuePool->id)
@@ -19,7 +20,7 @@ class GenerateTicketNumber
             ->max('sequence_number');
 
         $nextSequence = ((int) $maxSequence) + 1;
-        $ticketNumber = sprintf('%s-%04d', strtoupper($queuePool->code), $nextSequence);
+        $ticketNumber = sprintf('%s%04d', $service->letter_code, $nextSequence);
 
         return [
             'sequence_number' => $nextSequence,

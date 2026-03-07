@@ -14,8 +14,7 @@ class CreateQueueTicket
     public function __construct(
         private readonly GenerateTicketNumber $generateTicketNumber,
         private readonly LogQueueActivity $logQueueActivity
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array{
@@ -44,7 +43,7 @@ class CreateQueueTicket
         };
 
         return DB::transaction(function () use ($payload, $service, $serviceDate, $channel, $status): QueueTicket {
-            $numbering = $this->generateTicketNumber->handle($service->queuePool, $serviceDate);
+            $numbering = $this->generateTicketNumber->handle($service, $service->queuePool, $serviceDate);
 
             $ticket = QueueTicket::query()->create([
                 'service_id' => $service->id,

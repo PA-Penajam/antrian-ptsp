@@ -26,7 +26,7 @@ class QueueTicketFactory extends Factory
             'counter_id' => Counter::factory(),
             'created_by' => User::factory(),
             'channel' => 'assisted_same_day',
-            'ticket_number' => 'T'.fake()->unique()->numberBetween(1000, 9999),
+            'ticket_number' => fake()->randomElement(['A', 'B', 'C', 'D', 'E']).str_pad(fake()->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
             'sequence_number' => fake()->numberBetween(1, 200),
             'service_date' => fake()->date(),
             'visitor_name' => fake()->name(),
