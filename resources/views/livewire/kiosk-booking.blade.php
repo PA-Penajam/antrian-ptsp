@@ -4,7 +4,7 @@
 
             {{-- Step 1: Select Service --}}
             @if ($step === 1)
-                <div class="space-y-8">
+                <div wire:key="kiosk-step-1" class="animate-in fade-in space-y-8 duration-300">
                     <div class="space-y-3">
                         <flux:heading level="1" size="2xl" class="text-white">Pilih Layanan</flux:heading>
                         <flux:text class="mx-auto max-w-2xl text-lg text-zinc-400">
@@ -15,7 +15,7 @@
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         @forelse($this->services as $service)
                             <button wire:click="selectService({{ $service->id }})"
-                                class="rounded-2xl border-2 border-zinc-700 bg-zinc-800 p-6 text-left transition-all duration-200 hover:border-cyan-500 hover:bg-zinc-700 active:scale-95 cursor-pointer">
+                                class="cursor-pointer rounded-2xl border-2 border-zinc-700 bg-zinc-800 p-6 text-left transition-all duration-200 hover:scale-105 hover:border-cyan-400 hover:bg-zinc-700 active:scale-95">
                                 <div class="flex items-start justify-between">
                                     <div class="rounded-lg bg-cyan-500/10 px-3 py-1">
                                         <span class="text-2xl font-black text-cyan-400">{{ $service->letter_code ?? $service->code }}</span>
@@ -27,9 +27,9 @@
                                 @endif
                             </button>
                         @empty
-                            <div class="col-span-full rounded-2xl border border-zinc-700 bg-zinc-800/50 p-12">
+                            <div class="col-span-full rounded-2xl border border-zinc-700 bg-zinc-800/50 p-12 text-center">
                                 <flux:icon.x-circle class="mx-auto size-16 text-zinc-500" />
-                                <flux:text class="mt-4 text-zinc-400">Tidak ada layanan yang tersedia saat ini</flux:text>
+                                <flux:text class="mt-4 text-xl text-zinc-400">Tidak ada layanan tersedia saat ini</flux:text>
                             </div>
                         @endforelse
                     </div>
@@ -38,7 +38,7 @@
 
             {{-- Step 2: Fill Visitor Data --}}
             @if ($step === 2)
-                <div class="mx-auto max-w-lg space-y-8">
+                <div wire:key="kiosk-step-2" class="animate-in fade-in mx-auto max-w-lg space-y-8 duration-300">
                     <div class="space-y-3">
                         <flux:heading level="1" size="2xl" class="text-white">Isi Data Pengunjung</flux:heading>
                         <flux:text class="text-zinc-400">
@@ -67,11 +67,18 @@
                     </div>
 
                     <div class="flex gap-4 pt-4">
-                        <flux:button wire:click="goBack" variant="ghost" class="flex-1 py-6 text-xl">
+                        <flux:button wire:click="goBack" variant="ghost" class="flex-1 py-6 text-xl transition-all duration-200 active:scale-95">
                             ← Kembali
                         </flux:button>
-                        <flux:button wire:click="submitData" variant="primary" class="flex-1 py-6 text-xl">
-                            Lanjut →
+                        <flux:button wire:click="submitData" variant="primary" class="flex-1 py-6 text-xl transition-all duration-200 active:scale-95" wire:loading.attr="disabled" wire:target="submitData">
+                            <span wire:loading.remove wire:target="submitData">Lanjut →</span>
+                            <span wire:loading wire:target="submitData" class="inline-flex items-center gap-2">
+                                <svg class="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                                Memproses...
+                            </span>
                         </flux:button>
                     </div>
                 </div>
@@ -79,7 +86,7 @@
 
             {{-- Step 3: Confirmation --}}
             @if ($step === 3)
-                <div class="mx-auto max-w-lg space-y-8">
+                <div wire:key="kiosk-step-3" class="animate-in fade-in mx-auto max-w-lg space-y-8 duration-300">
                     <div class="space-y-3">
                         <flux:heading level="1" size="2xl" class="text-white">Konfirmasi</flux:heading>
                         <flux:text class="text-zinc-400">Pastikan data Anda sudah benar</flux:text>
@@ -115,11 +122,18 @@
                     </div>
 
                     <div class="flex gap-4 pt-4">
-                        <flux:button wire:click="goBack" variant="ghost" class="flex-1 py-6 text-xl">
+                        <flux:button wire:click="goBack" variant="ghost" class="flex-1 py-6 text-xl transition-all duration-200 active:scale-95">
                             ← Kembali
                         </flux:button>
-                        <flux:button wire:click="confirmBooking" variant="primary" class="flex-1 py-6 text-xl">
-                            Cetak Tiket
+                        <flux:button wire:click="confirmBooking" variant="primary" class="flex-1 py-6 text-xl transition-all duration-200 active:scale-95" wire:loading.attr="disabled" wire:target="confirmBooking">
+                            <span wire:loading.remove wire:target="confirmBooking">Cetak Tiket</span>
+                            <span wire:loading wire:target="confirmBooking" class="inline-flex items-center gap-2">
+                                <svg class="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                                Memproses...
+                            </span>
                         </flux:button>
                     </div>
                 </div>
@@ -127,7 +141,7 @@
 
             {{-- Step 4: Ticket Printed --}}
             @if ($step === 4 && $ticket)
-                <div class="mx-auto max-w-md space-y-8"
+                <div wire:key="kiosk-step-4" class="animate-in fade-in mx-auto max-w-md space-y-8 duration-300"
                     x-data="{ countdown: 30 }"
                     x-init="setInterval(() => { countdown--; if(countdown <= 0) $wire.resetWizard(); }, 1000)">
 
@@ -164,7 +178,7 @@
                             Kembali ke halaman utama dalam <span x-text="countdown" class="font-mono text-lg text-cyan-400"></span> detik
                         </flux:text>
 
-                        <flux:button wire:click="resetWizard" variant="primary" class="w-full py-6 text-xl">
+                        <flux:button wire:click="resetWizard" variant="primary" class="w-full py-6 text-xl transition-all duration-200 active:scale-95">
                             Ambil Tiket Baru
                         </flux:button>
                     </div>
