@@ -6,6 +6,7 @@ use App\Models\Counter;
 use App\Models\QueuePool;
 use App\Models\Service;
 use App\Models\User;
+use App\Enums\QueueStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -33,7 +34,7 @@ class QueueTicketFactory extends Factory
             'visitor_identifier' => (string) fake()->numerify('################'),
             'visitor_phone' => fake()->phoneNumber(),
             'notes' => fake()->sentence(),
-            'status' => 'waiting',
+            'status' => QueueStatus::Waiting,
             'checked_in_at' => null,
             'called_at' => null,
             'started_at' => null,
