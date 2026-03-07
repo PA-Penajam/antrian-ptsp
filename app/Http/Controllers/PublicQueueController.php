@@ -106,4 +106,5 @@ class PublicQueueController extends Controller
             'ticket' => $loadedTicket,
             'queuePosition' => $queuePosition,
         ]);
+    }
 }
