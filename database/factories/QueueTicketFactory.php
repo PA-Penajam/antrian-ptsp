@@ -1,0 +1,45 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Counter;
+use App\Models\QueuePool;
+use App\Models\Service;
+use App\Models\User;
+use App\Enums\QueueStatus;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\QueueTicket>
+ */
+class QueueTicketFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'service_id' => Service::factory(),
+            'queue_pool_id' => QueuePool::factory(),
+            'counter_id' => Counter::factory(),
+            'created_by' => User::factory(),
+            'channel' => 'assisted_same_day',
+            'ticket_number' => fake()->randomElement(['A', 'B', 'C', 'D', 'E']).str_pad(fake()->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
+            'sequence_number' => fake()->numberBetween(1, 200),
+            'service_date' => fake()->date(),
+            'visitor_name' => fake()->name(),
+            'visitor_identifier' => (string) fake()->numerify('################'),
+            'visitor_phone' => fake()->phoneNumber(),
+            'notes' => fake()->sentence(),
+            'status' => QueueStatus::Waiting,
+            'checked_in_at' => null,
+            'called_at' => null,
+            'started_at' => null,
+            'completed_at' => null,
+            'cancelled_at' => null,
+        ];
+    }
+}
