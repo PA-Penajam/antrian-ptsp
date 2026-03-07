@@ -83,4 +83,95 @@ class AdminStats
                 ->toArray(),
         ];
     }
+
+    /**
+     * Get trend data for the last 7 days.
+     *
+     * @return array<int, array{date: string, total: int, completed: int}>
+     */
+    public function getTrendData(?string $date = null): array
+    {
+        $endDate = $date ? \Carbon\Carbon::parse($date) : now();
+        $startDate = $endDate->copy()->subDays(6)->startOfDay();
+        $endDate = $endDate->endOfDay();
+
+        /** @var Collection<int, object{date: string, total: int, completed: int}> $rows */
+        $rows = DB::table('queue_tickets')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date')
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as completed', [QueueStatus::Completed->value])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->orderBy(DB::raw('DATE(created_at)'))
+            ->get();
+
+        // Build date range for 7 days
+        $dateRange = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $day = $endDate->copy()->subDays($i)->startOfDay();
+            $dateKey = $day->format('Y-m-d');
+            $dateRange[$dateKey] = ['date' => $day->format('d M'), 'total' => 0, 'completed' => 0];
+        }
+
+        // Fill with actual data
+        foreach ($rows as $row) {
+            if (isset($dateRange[$row->date])) {
+                $dateRange[$row->date]['total'] = (int) $row->total;
+                $dateRange[$row->date]['completed'] = (int) $row->completed;
+            }
+        }
+
+        return array_values($dateRange);
+    }
+
+    /**
+     * Get service distribution for completed tickets.
+     *
+     * @return array<int, array{name: string, count: int, percentage: float}>
+     */
+    public function getServiceDistribution(?string $date = null): array
+    {
+        $targetDate = $date ?? now()->toDateString();
+
+        /** @var Collection<int, object{name: string, count: int}> $rows */
+        $rows = DB::table('queue_tickets')
+            ->join('services', 'queue_tickets.service_id', '=', 'services.id')
+            ->whereDate('queue_tickets.service_date', $targetDate)
+            ->where('queue_tickets.status', QueueStatus::Completed->value)
+            ->select('services.name')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('services.id', 'services.name')
+            ->orderByDesc('count')
+            ->limit(6)
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        $total = $rows->sum('count');
+        $result = [];
+
+        // Take top 5, bucket rest as "Lainnya" if more than 6
+        $topRows = $rows->take(5);
+        $otherCount = $rows->skip(5)->sum('count');
+
+        foreach ($topRows as $row) {
+            $result[] = [
+                'name' => $row->name,
+                'count' => (int) $row->count,
+                'percentage' => round(($row->count / $total) * 100, 1),
+            ];
+        }
+
+        if ($otherCount > 0) {
+            $result[] = [
+                'name' => 'Lainnya',
+                'count' => (int) $otherCount,
+                'percentage' => round(($otherCount / $total) * 100, 1),
+            ];
+        }
+
+        return $result;
+    }
 }
