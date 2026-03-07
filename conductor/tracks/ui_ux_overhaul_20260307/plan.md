@@ -1,9 +1,9 @@
 # Implementation Plan: UI/UX Overhaul
 
 ## Phase 1: Layout & Core Dashboard Overhaul
-- [ ] Task: Update `resources/views/dashboard.blade.php` to utilize Flux UI statistic cards.
-- [ ] Task: Ensure Dashboard tests pass and visual layout is correct.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Layout & Core Dashboard Overhaul' (Protocol in workflow.md)
+- [x] Task: Update `resources/views/dashboard.blade.php` to utilize Flux UI statistic cards. 4d8f498
+- [x] Task: Ensure Dashboard tests pass and visual layout is correct. 2a99ab5
+- [~] Task: Conductor - User Manual Verification 'Phase 1: Layout & Core Dashboard Overhaul' (Protocol in workflow.md)
 
 ## Phase 2: Public Booking & Lookup Views
 - [ ] Task: Refactor `booking.blade.php` to use `<flux:form>`, `<flux:input>`, and `<flux:button>`.

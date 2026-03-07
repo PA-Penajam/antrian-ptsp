@@ -4,7 +4,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: UI/UX Overhaul: Integrate Flux UI Pro on all core domain pages**
+- [~] **Track: UI/UX Overhaul: Integrate Flux UI Pro on all core domain pages**
   *Link: [./tracks/ui_ux_overhaul_20260307/](./tracks/ui_ux_overhaul_20260307/)*
 
 - [ ] **Track: Integrasi WhatsApp/SMS untuk Notifikasi Antrian**
