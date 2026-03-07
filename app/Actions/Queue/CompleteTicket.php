@@ -20,6 +20,8 @@ class CompleteTicket
             throw new InvalidArgumentException('Only called tickets can be completed.');
         }
 
+        $fromStatus = $queueTicket->status;
+
         $queueTicket->update([
             'status' => QueueStatus::Completed,
             'counter_id' => $counter->id,
@@ -31,7 +33,13 @@ class CompleteTicket
             queueTicket: $queueTicket,
             action: 'ticket_completed',
             userId: $userId,
-            counterId: $counter->id
+            counterId: $counter->id,
+            meta: [
+                'from_status' => $fromStatus->value,
+                'to_status' => QueueStatus::Completed->value,
+                'service_id' => $queueTicket->service_id,
+                'queue_pool_id' => $queueTicket->queue_pool_id,
+            ]
         );
 
         return $queueTicket->refresh();

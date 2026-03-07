@@ -22,7 +22,11 @@
 
                 @auth
                     <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
+                        @if (auth()->user()?->hasRole(\App\Enums\UserRole::Officer))
+                            {{ __('Workstation') }}
+                        @else
+                            {{ __('Dashboard') }}
+                        @endif
                     </flux:navbar.item>
                     @if (auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk))
                         <flux:navbar.item icon="users" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate>
@@ -78,7 +82,11 @@
                 @auth
                 <flux:sidebar.group :heading="__('Manajemen Internal')" class="mt-4">
                     <flux:sidebar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard')  }}
+                        @if (auth()->user()?->hasRole(\App\Enums\UserRole::Officer))
+                            {{ __('Workstation') }}
+                        @else
+                            {{ __('Dashboard') }}
+                        @endif
                     </flux:sidebar.item>
                     @if (auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk))
                         <flux:sidebar.item icon="users" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate>

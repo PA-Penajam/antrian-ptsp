@@ -30,16 +30,20 @@ test('dashboard shows role-aware navigation links', function () {
         ->get('/dashboard')
         ->assertOk()
         ->assertSee('/frontdesk/antrian')
+        ->assertSee('Modul Panggilan Petugas')
         ->assertDontSee('/admin/layanan');
 
     $this->actingAs($monitor)
         ->get('/dashboard')
         ->assertOk()
         ->assertSee('/laporan/antrian')
+        ->assertSee('Ringkasan Monitoring')
         ->assertDontSee('/admin/layanan');
 
     $this->actingAs($admin)
         ->get('/dashboard')
         ->assertOk()
-        ->assertSee('/admin/layanan');
+        ->assertSee('/admin/layanan')
+        ->assertSee('Health Aplikasi')
+        ->assertSee('Shortcut Manajemen');
 });

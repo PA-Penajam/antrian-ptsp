@@ -39,5 +39,6 @@ test('monitor can open report page and filter by date', function () {
         ->assertSee('Pendaftaran')
         ->assertSee('Pengambilan Produk Hukum')
         ->assertSee('Loket Umum 1')
-        ->assertSee('Petugas PTSP');
+        ->assertSee('Petugas PTSP')
+        ->assertSee('Distribusi Petugas x Layanan');
 });

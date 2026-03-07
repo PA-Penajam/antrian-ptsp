@@ -20,6 +20,8 @@ class RecallTicket
             throw new InvalidArgumentException('Only called tickets can be recalled.');
         }
 
+        $fromStatus = $queueTicket->status;
+
         $queueTicket->update([
             'counter_id' => $counter->id,
             'called_at' => CarbonImmutable::now(),
@@ -29,7 +31,13 @@ class RecallTicket
             queueTicket: $queueTicket,
             action: 'ticket_recalled',
             userId: $userId,
-            counterId: $counter->id
+            counterId: $counter->id,
+            meta: [
+                'from_status' => $fromStatus->value,
+                'to_status' => $fromStatus->value,
+                'service_id' => $queueTicket->service_id,
+                'queue_pool_id' => $queueTicket->queue_pool_id,
+            ]
         );
 
         return $queueTicket->refresh();

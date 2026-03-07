@@ -21,7 +21,11 @@ test('admin can list counters and update pool assignment with active status', fu
     $listResponse = $this->actingAs($admin)->get('/admin/loket');
     $listResponse->assertOk()
         ->assertSee('Manajemen Loket')
-        ->assertSee($counter->name);
+        ->assertSee($counter->name)
+        ->assertSee('min-h-screen')
+        ->assertSee('Perbarui Loket')
+        ->assertSee('name="queue_pool_id"', false)
+        ->assertSee('name="is_active"', false);
 
     $updateResponse = $this->actingAs($admin)->put("/admin/loket/{$counter->id}", [
         'queue_pool_id' => $newPool->id,
@@ -31,7 +35,7 @@ test('admin can list counters and update pool assignment with active status', fu
         'sort_order' => 1,
     ]);
 
-    $updateResponse->assertOk()->assertSee('Loket Berhasil Diperbarui');
+    $updateResponse->assertRedirect('/admin/loket');
 
     $this->assertDatabaseHas('counters', [
         'id' => $counter->id,

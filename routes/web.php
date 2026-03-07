@@ -3,6 +3,7 @@
 use App\Enums\UserRole;
 use App\Http\Controllers\Admin\CounterManagementController;
 use App\Http\Controllers\Admin\ServiceManagementController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\FrontdeskQueueController;
 use App\Http\Controllers\OfficerQueueController;
 use App\Http\Controllers\PublicQueueController;
@@ -19,7 +20,9 @@ Route::get('/display', QueueDisplay::class)->name('queue.display');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return view('dashboard');
+        return view('dashboard', [
+            'activeRole' => auth()->user()?->role,
+        ]);
     })->name('dashboard');
 });
 
@@ -49,6 +52,12 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(f
 
     Route::get('/admin/loket', [CounterManagementController::class, 'index']);
     Route::put('/admin/loket/{counter}', [CounterManagementController::class, 'update']);
+
+    Route::get('/admin/users', [UserManagementController::class, 'index']);
+    Route::post('/admin/users', [UserManagementController::class, 'store']);
+    Route::put('/admin/users/{user}', [UserManagementController::class, 'update']);
+    Route::get('/admin/roles', [UserManagementController::class, 'roles']);
+    Route::get('/admin/izin-layanan', [UserManagementController::class, 'servicePermissions']);
 });
 
 require __DIR__.'/settings.php';

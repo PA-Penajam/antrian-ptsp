@@ -5,29 +5,35 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateCounterRequest;
 use App\Models\Counter;
-use Illuminate\Http\Response;
+use App\Models\QueuePool;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class CounterManagementController extends Controller
 {
-    public function index(): Response
+    public function index(): View
     {
         $counters = Counter::query()
+            ->with('queuePool')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 
-        $lines = ['Manajemen Loket'];
-        foreach ($counters as $counter) {
-            $lines[] = $counter->name;
-        }
+        $queuePools = QueuePool::query()
+            ->orderBy('name')
+            ->get();
 
-        return response(implode("\n", $lines), 200);
+        return view('pages.admin.loket.index', [
+            'counters' => $counters,
+            'queuePools' => $queuePools,
+        ]);
     }
 
-    public function update(UpdateCounterRequest $request, Counter $counter): Response
+    public function update(UpdateCounterRequest $request, Counter $counter): RedirectResponse
     {
         $counter->update($request->validated());
 
-        return response('Loket Berhasil Diperbarui', 200);
+        return redirect('/admin/loket')
+            ->with('status', 'Loket Berhasil Diperbarui');
     }
 }
