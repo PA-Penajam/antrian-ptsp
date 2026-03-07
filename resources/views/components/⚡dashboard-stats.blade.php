@@ -63,23 +63,25 @@ new class extends \Livewire\Component {
         </flux:card>
     </div>
 
-    <div class="grid gap-6 md:grid-cols-2">
+    <div class="grid gap-6 md:grid-cols-1">
         <flux:card>
             <flux:heading size="lg" class="mb-4">Tren Antrian 7 Hari Terakhir</flux:heading>
-            <flux:chart wire:model="trendData" class="aspect-[3/1]">
-                <flux:chart.svg>
-                    <flux:chart.group>
-                        <flux:chart.bar field="total" class="text-blue-200 dark:text-blue-900" />
-                        <flux:chart.bar field="completed" class="text-green-500" />
-                    </flux:chart.group>
-                    <flux:chart.axis axis="x" field="date">
-                        <flux:chart.axis.tick />
-                    </flux:chart.axis>
-                    <flux:chart.axis axis="y">
-                        <flux:chart.axis.grid />
-                        <flux:chart.axis.tick />
-                    </flux:chart.axis>
-                </flux:chart.svg>
+            <flux:chart wire:model="trendData" class="w-full">
+                <flux:chart.viewport class="aspect-[3/1]">
+                    <flux:chart.svg>
+                        <flux:chart.group>
+                            <flux:chart.bar field="total" class="text-blue-200 dark:text-blue-900" />
+                            <flux:chart.bar field="completed" class="text-green-500" />
+                        </flux:chart.group>
+                        <flux:chart.axis axis="x" field="date">
+                            <flux:chart.axis.tick />
+                        </flux:chart.axis>
+                        <flux:chart.axis axis="y">
+                            <flux:chart.axis.grid />
+                            <flux:chart.axis.tick />
+                        </flux:chart.axis>
+                    </flux:chart.svg>
+                </flux:chart.viewport>
                 <flux:chart.tooltip>
                     <flux:chart.tooltip.heading field="date" />
                     <flux:chart.tooltip.value field="total" label="Total" />
