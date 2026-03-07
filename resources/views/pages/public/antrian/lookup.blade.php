@@ -1,4 +1,4 @@
-<x-layouts::app :title="__('Cek Status Antrian')">
+<x-layouts::public :title="__('Cek Status Antrian')">
     <flux:main container>
         <div class="max-w-2xl mx-auto space-y-6">
             <div>
@@ -71,4 +71,4 @@
             @endif
         </div>
     </flux:main>
-</x-layouts::app>
+</x-layouts::public>

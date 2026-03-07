@@ -7,6 +7,7 @@ use App\Actions\Queue\CreateQueueTicket;
 use App\Http\Requests\CheckInQueueTicketRequest;
 use App\Http\Requests\StoreFrontdeskQueueTicketRequest;
 use App\Models\QueueTicket;
+use App\Models\Service;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 
@@ -17,6 +18,7 @@ class FrontdeskQueueController extends Controller
         return view('pages.frontdesk.antrian', [
             'ticket' => null,
             'checkedInTicket' => null,
+            'services' => Service::query()->where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 
@@ -38,6 +40,7 @@ class FrontdeskQueueController extends Controller
         return view('pages.frontdesk.antrian', [
             'ticket' => $ticket,
             'checkedInTicket' => null,
+            'services' => Service::query()->where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 
@@ -50,6 +53,7 @@ class FrontdeskQueueController extends Controller
         return view('pages.frontdesk.antrian', [
             'ticket' => null,
             'checkedInTicket' => $checkedInTicket,
+            'services' => Service::query()->where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 }

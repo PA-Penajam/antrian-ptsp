@@ -4,13 +4,14 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:sidebar collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('home') }}" wire:navigate />
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
+                @guest
                 <flux:sidebar.group :heading="__('Layanan Publik')" class="grid">
                     <flux:sidebar.item icon="ticket" href="/antrian" :current="request()->is('antrian')" wire:navigate>
                         {{ __('Ambil Antrian') }}
@@ -22,6 +23,7 @@
                         {{ __('Layar Display') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+                @endguest
 
                 @auth
                 <flux:sidebar.group :heading="__('Manajemen Internal')" class="grid mt-4">

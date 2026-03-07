@@ -1,4 +1,4 @@
-<x-layouts::app :title="__('Ambil Antrian PTSP')">
+<x-layouts::public :title="__('Ambil Antrian PTSP')">
     <flux:main container>
         <div class="max-w-2xl mx-auto space-y-6">
             <div>
@@ -72,4 +72,4 @@
             </flux:card>
         </div>
     </flux:main>
-</x-layouts::app>
+</x-layouts::public>
