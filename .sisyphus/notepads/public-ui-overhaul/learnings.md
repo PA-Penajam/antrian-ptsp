@@ -49,3 +49,10 @@
 - Livewire 4 polling syntax works as `wire:poll.5000ms` on the component root for 5-second refreshes
 - `QueueDisplay` should query current calls with `QueueStatus::Called` and keep history limited to `called_at` rows only
 - `resources/views/pages/display/index.blade.php` can stay as a thin `<livewire:queue-display />` wrapper for compatibility, even when the route points to the full-page component
+
+## [2026-03-07] Task 10 — Queue display TTS
+
+### Browser Announcements
+- Queue display TTS can stay fully client-side in `resources/views/livewire/queue-display.blade.php` by embedding current call JSON in a hidden/template node and parsing it after each Livewire poll update
+- A JS `Map` keyed by ticket ID with `called_at` as the value is enough to suppress repeat announcements while still re-announcing officer recalls when the timestamp changes
+- Because browser speech needs a gesture, keep TTS disabled by default and expose an explicit "Aktifkan Suara" toggle that silently no-ops when `window.speechSynthesis` is unavailable

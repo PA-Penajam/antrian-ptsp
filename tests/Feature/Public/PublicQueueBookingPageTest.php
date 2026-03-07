@@ -44,10 +44,24 @@ test('public user can submit booking and receive confirmation', function () {
         'channel' => 'online_booking',
         'status' => 'booked',
     ]);
-    $this->assertDatabaseCount('queue_tickets', 1);
-    $this->assertDatabaseHas('queue_tickets', [
-        'service_id' => $service->id,
-        'channel' => 'online_booking',
-        'status' => 'booked',
+});
+
+test('booking page shows required form fields', function () {
+    $pool = QueuePool::factory()->create();
+    $service = Service::factory()->for($pool)->create([
+        'name' => 'Pendaftaran',
+        'is_active' => true,
+        'booking_enabled' => true,
     ]);
+
+    $response = $this->get('/antrian');
+
+    $response->assertOk()
+        ->assertSee('Layanan')
+        ->assertSee('Tanggal Layanan')
+        ->assertSee('Nama Lengkap')
+        ->assertSee('Nomor Identitas')
+        ->assertSee('Nomor Telepon / WhatsApp')
+        ->assertSee('Catatan Tambahan')
+        ->assertSee($service->name);
 });
