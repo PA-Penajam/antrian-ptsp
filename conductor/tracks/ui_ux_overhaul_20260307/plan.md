@@ -6,10 +6,10 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Layout & Core Dashboard Overhaul' (Protocol in workflow.md) fc3f5cd
 
 ## Phase 2: Public Booking & Lookup Views
-- [~] Task: Refactor `booking.blade.php` to use `<flux:form>`, `<flux:input>`, and `<flux:button>`.
-- [ ] Task: Refactor `lookup.blade.php` to use Flux UI form elements and result cards.
-- [ ] Task: Ensure existing Pest tests for Public endpoints pass with the new layout structure.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Public Booking & Lookup Views' (Protocol in workflow.md)
+- [x] Task: Refactor `booking.blade.php` to use `<flux:form>`, `<flux:input>`, and `<flux:button>`. be3267e
+- [x] Task: Refactor `lookup.blade.php` to use Flux UI form elements and result cards. be3267e
+- [x] Task: Ensure existing Pest tests for Public endpoints pass with the new layout structure. be3267e
+- [~] Task: Conductor - User Manual Verification 'Phase 2: Public Booking & Lookup Views' (Protocol in workflow.md)
 
 ## Phase 3: Frontdesk & Display Views
 - [ ] Task: Refactor `frontdesk/antrian.blade.php` to use Flux headings, tables, and buttons for queue management.

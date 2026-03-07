@@ -7,20 +7,30 @@
         <flux:header container class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.toggle class="lg:hidden mr-2" icon="bars-2" inset="left" />
 
-            <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
+            <x-app-logo href="{{ route('home') }}" wire:navigate />
 
             <flux:navbar class="-mb-px max-lg:hidden">
-                <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('Dashboard') }}
+                <flux:navbar.item icon="ticket" href="/antrian" :current="request()->is('antrian')" wire:navigate>
+                    {{ __('Ambil Antrian') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="magnifying-glass" href="/antrian/cek" :current="request()->is('antrian/cek')" wire:navigate>
+                    {{ __('Cek Status') }}
+                </flux:navbar.item>
+                <flux:navbar.item icon="tv" href="/display" :current="request()->is('display')" wire:navigate>
+                    {{ __('Display') }}
+                </flux:navbar.item>
+
                 @auth
+                    <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                        {{ __('Dashboard') }}
+                    </flux:navbar.item>
                     @if (auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk))
-                        <flux:navbar.item icon="ticket" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate>
+                        <flux:navbar.item icon="users" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate>
                             {{ __('Frontdesk') }}
                         </flux:navbar.item>
                     @endif
                     @if (auth()->user()?->hasRole(\App\Enums\UserRole::Monitor))
-                        <flux:navbar.item icon="book-open-text" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate>
+                        <flux:navbar.item icon="chart-bar" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate>
                             {{ __('Laporan') }}
                         </flux:navbar.item>
                     @endif
@@ -34,34 +44,10 @@
 
             <flux:spacer />
 
-            <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
-                <flux:tooltip :content="__('Search')" position="bottom">
-                    <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('Search')" />
-                </flux:tooltip>
-                <flux:tooltip :content="__('Repository')" position="bottom">
-                    <flux:navbar.item
-                        class="h-10 max-lg:hidden [&>div>svg]:size-5"
-                        icon="folder-git-2"
-                        href="https://github.com/laravel/livewire-starter-kit"
-                        target="_blank"
-                        :label="__('Repository')"
-                    />
-                </flux:tooltip>
-                <flux:tooltip :content="__('Documentation')" position="bottom">
-                    <flux:navbar.item
-                        class="h-10 max-lg:hidden [&>div>svg]:size-5"
-                        icon="book-open-text"
-                        href="https://laravel.com/docs/starter-kits#livewire"
-                        target="_blank"
-                        :label="__('Documentation')"
-                    />
-                </flux:tooltip>
-            </flux:navbar>
-
             @auth
                 <x-desktop-user-menu />
             @else
-                <flux:navbar class="ms-2">
+                <flux:navbar class="ms-2 max-lg:hidden">
                     <flux:navbar.item icon="arrow-right-end-on-rectangle" href="/login" wire:navigate>
                         {{ __('Log in') }}
                     </flux:navbar.item>
@@ -72,45 +58,48 @@
         <!-- Mobile Menu -->
         <flux:sidebar collapsible="mobile" sticky class="lg:hidden border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.header>
-                <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
+                <x-app-logo :sidebar="true" href="{{ route('home') }}" wire:navigate />
                 <flux:sidebar.collapse class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2" />
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')">
+                <flux:sidebar.group :heading="__('Layanan Publik')">
+                    <flux:sidebar.item icon="ticket" href="/antrian" :current="request()->is('antrian')" wire:navigate>
+                        {{ __('Ambil Antrian') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="magnifying-glass" href="/antrian/cek" :current="request()->is('antrian/cek')" wire:navigate>
+                        {{ __('Cek Status') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="tv" href="/display" :current="request()->is('display')" wire:navigate>
+                        {{ __('Display') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+
+                @auth
+                <flux:sidebar.group :heading="__('Manajemen Internal')" class="mt-4">
                     <flux:sidebar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard')  }}
                     </flux:sidebar.item>
-                    @auth
-                        @if (auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk))
-                            <flux:sidebar.item icon="ticket" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate>
-                                {{ __('Frontdesk') }}
-                            </flux:sidebar.item>
-                        @endif
-                        @if (auth()->user()?->hasRole(\App\Enums\UserRole::Monitor))
-                            <flux:sidebar.item icon="book-open-text" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate>
-                                {{ __('Laporan') }}
-                            </flux:sidebar.item>
-                        @endif
-                        @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
-                            <flux:sidebar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
-                                {{ __('Admin') }}
-                            </flux:sidebar.item>
-                        @endif
-                    @endauth
+                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk))
+                        <flux:sidebar.item icon="users" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate>
+                            {{ __('Frontdesk') }}
+                        </flux:sidebar.item>
+                    @endif
+                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Monitor))
+                        <flux:sidebar.item icon="chart-bar" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate>
+                            {{ __('Laporan') }}
+                        </flux:sidebar.item>
+                    @endif
+                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
+                        <flux:sidebar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
+                            {{ __('Admin') }}
+                        </flux:sidebar.item>
+                    @endif
                 </flux:sidebar.group>
+                @endauth
             </flux:sidebar.nav>
 
             <flux:spacer />
-
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
         </flux:sidebar>
 
         {{ $slot }}
