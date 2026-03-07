@@ -32,13 +32,15 @@
 
                 @auth
                 <flux:sidebar.group :heading="__('Manajemen Internal')" class="grid mt-4">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        @if (auth()->user()?->hasRole(\App\Enums\UserRole::Officer))
-                            {{ __('Workstation') }}
-                        @else
-                            {{ __('Dashboard') }}
-                        @endif
-                    </flux:sidebar.item>
+                    @unless (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
+                        <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                            @if (auth()->user()?->hasRole(\App\Enums\UserRole::Officer))
+                                {{ __('Workstation') }}
+                            @else
+                                {{ __('Dashboard') }}
+                            @endif
+                        </flux:sidebar.item>
+                    @endunless
                     @if (auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk))
                         <flux:sidebar.item icon="users" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate>
                             {{ __('Frontdesk') }}
@@ -49,12 +51,30 @@
                             {{ __('Laporan') }}
                         </flux:sidebar.item>
                     @endif
-                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
-                        <flux:sidebar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/*')" wire:navigate>
-                            {{ __('Admin') }}
-                        </flux:sidebar.item>
-                    @endif
                 </flux:sidebar.group>
+                @php($isAdminSectionRoute = request()->is('admin/*'))
+                @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
+                    <flux:sidebar.group :heading="__('Admin')" class="grid mt-4">
+                        <flux:sidebar.item icon="chart-pie" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                            {{ __('Dashboard') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="clipboard-document-list" :href="route('admin.layanan.index')" :current="request()->routeIs('admin.layanan.*')" wire:navigate>
+                            {{ __('Layanan') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="building-office" :href="route('admin.loket.index')" :current="request()->routeIs('admin.loket.*')" wire:navigate>
+                            {{ __('Loket') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="users" :href="route('admin.users.index')" :current="request()->routeIs('admin.users.*')" wire:navigate>
+                            {{ __('Users') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="device-tablet" :href="route('kiosk.index')" :current="request()->routeIs('kiosk.*')" wire:navigate>
+                            {{ __('Kiosk') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="tv" :href="route('tv-display.index')" :current="request()->routeIs('tv-display.*')" wire:navigate>
+                            {{ __('TV Display') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
                 @endauth
             </flux:sidebar.nav>
 
@@ -124,6 +144,31 @@
                             </div>
                         </div>
                     </flux:menu.radio.group>
+
+                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
+                        <flux:menu.separator />
+
+                        <flux:menu.radio.group>
+                            <flux:menu.item :href="route('dashboard')" icon="chart-pie" wire:navigate>
+                                {{ __('Dashboard') }}
+                            </flux:menu.item>
+                            <flux:menu.item :href="route('admin.layanan.index')" icon="clipboard-document-list" wire:navigate>
+                                {{ __('Layanan') }}
+                            </flux:menu.item>
+                            <flux:menu.item :href="route('admin.loket.index')" icon="building-office" wire:navigate>
+                                {{ __('Loket') }}
+                            </flux:menu.item>
+                            <flux:menu.item :href="route('admin.users.index')" icon="users" wire:navigate>
+                                {{ __('Users') }}
+                            </flux:menu.item>
+                            <flux:menu.item :href="route('kiosk.index')" icon="device-tablet" wire:navigate>
+                                {{ __('Kiosk') }}
+                            </flux:menu.item>
+                            <flux:menu.item :href="route('tv-display.index')" icon="tv" wire:navigate>
+                                {{ __('TV Display') }}
+                            </flux:menu.item>
+                        </flux:menu.radio.group>
+                    @endif
 
                     <flux:menu.separator />
 
