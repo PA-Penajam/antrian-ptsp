@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Queue\CreateQueueTicket;
+use App\Enums\QueueStatus;
 use App\Http\Requests\LookupQueueTicketRequest;
 use App\Http\Requests\StorePublicQueueBookingRequest;
 use App\Models\QueueTicket;
@@ -69,6 +70,26 @@ class PublicQueueController extends Controller
 
         return view('pages.public.antrian.lookup', [
             'ticket' => $ticket,
+        ]);
+    }
+
+    public function confirmation(QueueTicket $ticket): View
+    {
+        $ticket->load(['service', 'queuePool', 'counter']);
+
+        $queuePosition = 0;
+        if ($ticket->status === QueueStatus::Waiting && $ticket->queuePool) {
+            $queuePosition = QueueTicket::query()
+                ->where('queue_pool_id', $ticket->queue_pool_id)
+                ->whereDate('service_date', $ticket->service_date)
+                ->where('status', QueueStatus::Waiting)
+                ->where('sequence_number', '<', $ticket->sequence_number)
+                ->count() + 1;
+        }
+
+        return view('pages.public.antrian.confirmation', [
+            'ticket' => $ticket,
+            'queuePosition' => $queuePosition,
         ]);
     }
 }
