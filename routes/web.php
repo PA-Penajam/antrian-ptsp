@@ -9,6 +9,7 @@ use App\Http\Controllers\KioskController;
 use App\Http\Controllers\OfficerQueueController;
 use App\Http\Controllers\PublicQueueController;
 use App\Http\Controllers\Report\QueueReportController;
+use App\Http\Controllers\TvDisplayController;
 use App\Livewire\QueueDisplay;
 use Illuminate\Support\Facades\Route;
 
@@ -85,9 +86,11 @@ Route::middleware('module.password:kiosk')->group(function () {
 });
 
 // TV Display routes (no auth - uses own password system)
-Route::get('/tv-display', fn () => view('pages.tv-display.index'))->name('tv-display.index');
-Route::get('/tv-display/login', fn () => view('pages.tv-display.login'))->name('tv-display.login');
-Route::post('/tv-display/login', fn () => redirect('/tv-display'))->name('tv-display.authenticate');
-Route::post('/tv-display/logout', fn () => redirect('/tv-display/login'))->name('tv-display.logout');
+Route::get('/tv-display/login', [TvDisplayController::class, 'showLogin'])->name('tv-display.login');
+Route::post('/tv-display/login', [TvDisplayController::class, 'login'])->name('tv-display.authenticate');
+Route::post('/tv-display/logout', [TvDisplayController::class, 'logout'])->name('tv-display.logout');
+Route::middleware('module.password:tv-display')->group(function () {
+    Route::get('/tv-display', [TvDisplayController::class, 'index'])->name('tv-display.index');
+});
 
 require __DIR__.'/settings.php';
