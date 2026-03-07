@@ -35,11 +35,15 @@ test('public user can submit booking and receive confirmation', function () {
         'notes' => 'Booking dari test',
     ]);
 
-    $response->assertOk()
-        ->assertSee('Booking Berhasil')
-        ->assertSee('Status')
-        ->assertSee('booked');
+    $response->assertRedirect()
+        ->assertSessionHasNoErrors();
 
+    $this->assertDatabaseCount('queue_tickets', 1);
+    $this->assertDatabaseHas('queue_tickets', [
+        'service_id' => $service->id,
+        'channel' => 'online_booking',
+        'status' => 'booked',
+    ]);
     $this->assertDatabaseCount('queue_tickets', 1);
     $this->assertDatabaseHas('queue_tickets', [
         'service_id' => $service->id,

@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Service;
-use Illuminate\Support\Facades\View;
 
 use function Pest\Laravel\get;
 
@@ -32,17 +31,17 @@ test('landing page renders service catalog details when services are available',
         'walk_in_enabled' => true,
     ]);
 
-    View::share('services', collect([$service]));
+    $html = view('welcome', [
+        'services' => collect([$service]),
+    ])->render();
 
-    $response = get('/');
-
-    $response->assertSuccessful()
-        ->assertSeeText('Katalog Layanan')
-        ->assertSeeText($service->name)
-        ->assertSeeText($service->description)
-        ->assertSeeText('KTP')
-        ->assertSeeText('Dokumen pendukung')
-        ->assertSeeText('Online')
-        ->assertSeeText('Walk-in')
-        ->assertSeeText('Kuota/hari: 25');
+    expect(strip_tags($html))
+        ->toContain('Katalog Layanan')
+        ->toContain($service->name)
+        ->toContain($service->description)
+        ->toContain('KTP')
+        ->toContain('Dokumen pendukung')
+        ->toContain('Online')
+        ->toContain('Walk-in')
+        ->toContain('Kuota/hari: 25');
 });

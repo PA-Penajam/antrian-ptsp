@@ -2,6 +2,7 @@
 
 namespace App\Actions\Queue;
 
+use App\Enums\QueueStatus;
 use App\Models\QueueTicket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -11,18 +12,17 @@ class CheckInQueueTicket
 {
     public function __construct(
         private readonly LogQueueActivity $logQueueActivity
-    ) {
-    }
+    ) {}
 
     public function handle(QueueTicket $queueTicket, ?int $userId = null): QueueTicket
     {
-        if ($queueTicket->status !== 'booked') {
+        if ($queueTicket->status !== QueueStatus::Booked) {
             throw new InvalidArgumentException('Only booked tickets can be checked in.');
         }
 
         return DB::transaction(function () use ($queueTicket, $userId): QueueTicket {
             $queueTicket->update([
-                'status' => 'waiting',
+                'status' => QueueStatus::Waiting,
                 'checked_in_at' => CarbonImmutable::now(),
             ]);
 
@@ -32,8 +32,8 @@ class CheckInQueueTicket
                 userId: $userId,
                 counterId: null,
                 meta: [
-                    'from_status' => 'booked',
-                    'to_status' => 'waiting',
+                    'from_status' => QueueStatus::Booked->value,
+                    'to_status' => QueueStatus::Waiting->value,
                 ]
             );
 

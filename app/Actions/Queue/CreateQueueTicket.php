@@ -2,6 +2,7 @@
 
 namespace App\Actions\Queue;
 
+use App\Enums\QueueStatus;
 use App\Models\QueueTicket;
 use App\Models\Service;
 use Carbon\CarbonImmutable;
@@ -37,8 +38,8 @@ class CreateQueueTicket
             : CarbonImmutable::parse((string) $payload['service_date']);
 
         $status = match ($channel) {
-            'online_booking' => 'booked',
-            'assisted_same_day', 'walk_in_kiosk' => 'waiting',
+            'online_booking' => QueueStatus::Booked,
+            'assisted_same_day', 'walk_in_kiosk' => QueueStatus::Waiting,
             default => throw new InvalidArgumentException('Unsupported ticket channel.'),
         };
 
@@ -75,7 +76,7 @@ class CreateQueueTicket
                     'channel' => $channel,
                     'service_id' => $service->id,
                     'queue_pool_id' => $service->queue_pool_id,
-                    'status' => $status,
+                    'status' => $status->value,
                 ]
             );
 

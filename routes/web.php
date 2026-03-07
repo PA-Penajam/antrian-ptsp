@@ -10,11 +10,11 @@ use App\Http\Controllers\Report\QueueReportController;
 use App\Models\QueueTicket;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', [PublicQueueController::class, 'index'])->name('home');
 Route::get('/antrian', [PublicQueueController::class, 'booking']);
 Route::post('/antrian', [PublicQueueController::class, 'storeBooking']);
 Route::get('/antrian/cek', [PublicQueueController::class, 'lookup'])->name('queue.cek');
-Route::get('/antrian/konfirmasi/{queueTicket}', [PublicQueueController::class, 'confirmation'])->name('queue.confirmation');
+Route::get('/antrian/konfirmasi/{ticket}', [PublicQueueController::class, 'confirmation'])->name('queue.confirmation');
 Route::get('/display', function () {
     $currentCalls = QueueTicket::query()
         ->with('counter')
