@@ -71,8 +71,8 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(f
     Route::delete('/admin/users/{user}', [UserManagementController::class, 'destroy'])->name('admin.users.destroy');
 
     // Admin - Roles & Permissions
-    Route::get('/admin/roles', [UserManagementController::class, 'roles']);
-    Route::get('/admin/izin-layanan', [UserManagementController::class, 'servicePermissions']);
+    Route::get('/admin/roles', fn () => redirect()->route('admin.users.index', [], 301));
+    Route::get('/admin/izin-layanan', fn () => redirect()->route('admin.users.index', [], 301));
 });
 
 // Kiosk routes (no auth - uses own password system)
