@@ -10,9 +10,23 @@ use App\Models\QueueTicket;
 use App\Models\Service;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class PublicQueueController extends Controller
 {
+    public function index(): View
+    {
+        $services = Service::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        return view('welcome', [
+            'services' => $services,
+        ]);
+    }
+
     public function booking(): View
     {
         $bookableServices = Service::query()
@@ -28,7 +42,7 @@ class PublicQueueController extends Controller
         ]);
     }
 
-    public function storeBooking(StorePublicQueueBookingRequest $request, CreateQueueTicket $createQueueTicket): View
+    public function storeBooking(StorePublicQueueBookingRequest $request, CreateQueueTicket $createQueueTicket): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -43,17 +57,7 @@ class PublicQueueController extends Controller
             'created_by' => null,
         ]);
 
-        $bookableServices = Service::query()
-            ->where('is_active', true)
-            ->where('booking_enabled', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
-
-        return view('pages.public.antrian.booking', [
-            'bookableServices' => $bookableServices,
-            'ticket' => $ticket,
-        ]);
+        return redirect()->route('queue.confirmation', $ticket);
     }
 
     public function lookup(LookupQueueTicketRequest $request): View
@@ -91,7 +95,7 @@ class PublicQueueController extends Controller
         $loadedTicket = QueueTicket::query()
             ->with(['service', 'queuePool', 'counter'])
             ->findOrFail($ticket->id);
-        
+
         $queuePosition = 0;
         if ($loadedTicket->status === QueueStatus::Waiting && $loadedTicket->queuePool) {
             $queuePosition = QueueTicket::query()

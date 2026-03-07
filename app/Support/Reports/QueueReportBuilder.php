@@ -27,7 +27,7 @@ class QueueReportBuilder
             'by_service' => $this->groupAndCount($tickets, fn (QueueTicket $ticket): string => $ticket->service?->name ?? '-'),
             'by_counter' => $this->groupAndCount($tickets, fn (QueueTicket $ticket): string => $ticket->counter?->name ?? '-'),
             'by_officer' => $this->groupAndCount($tickets, fn (QueueTicket $ticket): string => $ticket->creator?->name ?? '-'),
-            'by_status' => $this->groupAndCount($tickets, fn (QueueTicket $ticket): string => $ticket->status),
+            'by_status' => $this->groupAndCount($tickets, fn (QueueTicket $ticket): string => $ticket->status->value),
         ];
     }
 

@@ -25,5 +25,5 @@ test('public user can lookup ticket by ticket number and service date', function
     $response->assertOk()
         ->assertSee('Detail Tiket:')
         ->assertSee($ticket->ticket_number)
-        ->assertSee('Waiting');
+        ->assertSee('Menunggu');
 });

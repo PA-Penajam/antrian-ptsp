@@ -72,4 +72,12 @@ class QueueTicket extends Model
     {
         return $this->hasMany(QueueActivity::class);
     }
+
+    /**
+     * Get the route key name for Laravel's route model binding.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'id';
+    }
 }
