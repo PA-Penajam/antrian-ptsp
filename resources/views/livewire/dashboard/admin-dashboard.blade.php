@@ -200,8 +200,41 @@
         </flux:card>
     </div>
 
-    {{-- Activity log placeholder (Task 9 will add this) --}}
-    <div id="activity-log-placeholder">
-        {{-- Task 9 will add activity log here --}}
-    </div>
+    {{-- Activity log (auto-updates every 30s) --}}
+    <flux:card class="p-4" wire:poll.30s>
+        <flux:heading size="sm">Aktivitas Terkini</flux:heading>
+
+        @if($this->recentActivities->isEmpty())
+            <div class="py-8 text-center text-zinc-400">
+                <p>Belum ada aktivitas</p>
+            </div>
+        @else
+            <flux:table>
+                <flux:table.columns>
+                    <flux:table.column>Waktu</flux:table.column>
+                    <flux:table.column>Aksi</flux:table.column>
+                    <flux:table.column>No. Antrian</flux:table.column>
+                    <flux:table.column>Layanan</flux:table.column>
+                    <flux:table.column>Petugas</flux:table.column>
+                    <flux:table.column>Loket</flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
+                    @foreach($this->recentActivities as $activity)
+                    <flux:table.row>
+                        <flux:table.cell>{{ $activity->created_at->diffForHumans() }}</flux:table.cell>
+                        <flux:table.cell>
+                            <flux:badge size="sm" color="{{ $this->actionColor($activity->action) }}">
+                                {{ $this->actionLabel($activity->action) }}
+                            </flux:badge>
+                        </flux:table.cell>
+                        <flux:table.cell>{{ $activity->queueTicket?->ticket_number ?? '-' }}</flux:table.cell>
+                        <flux:table.cell>{{ $activity->queueTicket?->service?->name ?? '-' }}</flux:table.cell>
+                        <flux:table.cell>{{ $activity->user?->name ?? '-' }}</flux:table.cell>
+                        <flux:table.cell>{{ $activity->counter?->name ?? '-' }}</flux:table.cell>
+                    </flux:table.row>
+                    @endforeach
+                </flux:table.rows>
+            </flux:table>
+        @endif
+    </flux:card>
 </div>

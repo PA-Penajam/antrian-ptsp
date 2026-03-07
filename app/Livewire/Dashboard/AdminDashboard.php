@@ -135,6 +135,38 @@ class AdminDashboard extends Component
         return $data;
     }
 
+    #[Computed]
+    public function recentActivities(): \Illuminate\Database\Eloquent\Collection
+    {
+        return \App\Models\QueueActivity::query()
+            ->with(['queueTicket.service', 'user', 'counter'])
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get();
+    }
+
+    public function actionLabel(string $action): string
+    {
+        return match ($action) {
+            'ticket_called' => 'Dipanggil',
+            'ticket_completed' => 'Selesai',
+            'ticket_skipped' => 'Dilewati',
+            'ticket_cancelled' => 'Dibatalkan',
+            'ticket_recalled' => 'Dipanggil Ulang',
+            default => ucwords(str_replace('_', ' ', $action)),
+        };
+    }
+
+    public function actionColor(string $action): string
+    {
+        return match ($action) {
+            'ticket_called', 'ticket_recalled' => 'blue',
+            'ticket_completed' => 'green',
+            'ticket_skipped', 'ticket_cancelled' => 'red',
+            default => 'zinc',
+        };
+    }
+
     public function render(): View
     {
         return view('livewire.dashboard.admin-dashboard');
