@@ -14,9 +14,9 @@ enum QueueStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Booked => 'Terbooking',
-            self::Waiting => 'Menunggu',
-            self::Called => 'Dipanggil',
+            self::Booked => 'Terdaftar (Online)',
+            self::Waiting => 'Menunggu Dipanggil',
+            self::Called => 'Sedang Dipanggil',
             self::Completed => 'Selesai',
             self::Cancelled => 'Dibatalkan',
             self::Skipped => 'Dilewati',

@@ -17,17 +17,8 @@ test('confirmation page displays ticket details', function () {
         'sequence_number' => 5,
     ]);
 
-    dump('Ticket ID:', $ticket->id);
     $url = route('queue.confirmation', $ticket);
-    dump('Generated URL:', $url);
-    
     $response = $this->get($url);
-    
-    // Debug response
-    dump('Response status:', $response->status());
-    if ($response->status() === 404) {
-        dump('Response content:', $response->content());
-    }
 
     $response->assertOk();
     $response->assertSee('Konfirmasi Antrian');
