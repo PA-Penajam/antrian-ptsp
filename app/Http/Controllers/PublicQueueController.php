@@ -15,7 +15,7 @@ class PublicQueueController extends Controller
 {
     public function booking(): View
     {
-        $services = Service::query()
+        $bookableServices = Service::query()
             ->where('is_active', true)
             ->where('booking_enabled', true)
             ->orderBy('sort_order')
@@ -23,7 +23,7 @@ class PublicQueueController extends Controller
             ->get();
 
         return view('pages.public.antrian.booking', [
-            'services' => $services,
+            'bookableServices' => $bookableServices,
             'ticket' => null,
         ]);
     }
@@ -43,7 +43,7 @@ class PublicQueueController extends Controller
             'created_by' => null,
         ]);
 
-        $services = Service::query()
+        $bookableServices = Service::query()
             ->where('is_active', true)
             ->where('booking_enabled', true)
             ->orderBy('sort_order')
@@ -51,7 +51,7 @@ class PublicQueueController extends Controller
             ->get();
 
         return view('pages.public.antrian.booking', [
-            'services' => $services,
+            'bookableServices' => $bookableServices,
             'ticket' => $ticket,
         ]);
     }
