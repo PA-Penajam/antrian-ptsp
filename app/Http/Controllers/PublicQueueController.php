@@ -87,21 +87,23 @@ class PublicQueueController extends Controller
 
     public function confirmation(QueueTicket $ticket): View
     {
-        $ticket->load(['service', 'queuePool', 'counter']);
-
+        // Explicitly reload with relationships to ensure all attributes are loaded
+        $loadedTicket = QueueTicket::query()
+            ->with(['service', 'queuePool', 'counter'])
+            ->findOrFail($ticket->id);
+        
         $queuePosition = 0;
-        if ($ticket->status === QueueStatus::Waiting && $ticket->queuePool) {
+        if ($loadedTicket->status === QueueStatus::Waiting && $loadedTicket->queuePool) {
             $queuePosition = QueueTicket::query()
-                ->where('queue_pool_id', $ticket->queue_pool_id)
-                ->whereDate('service_date', $ticket->service_date)
+                ->where('queue_pool_id', $loadedTicket->queue_pool_id)
+                ->whereDate('service_date', $loadedTicket->service_date)
                 ->where('status', QueueStatus::Waiting)
-                ->where('sequence_number', '<', $ticket->sequence_number)
+                ->where('sequence_number', '<', $loadedTicket->sequence_number)
                 ->count() + 1;
         }
 
         return view('pages.public.antrian.confirmation', [
-            'ticket' => $ticket,
+            'ticket' => $loadedTicket,
             'queuePosition' => $queuePosition,
         ]);
-    }
 }

@@ -28,7 +28,7 @@
                         <flux:label>Layanan</flux:label>
                         <flux:select name="service_id" required>
                             <flux:select.option value="" disabled selected>Pilih Layanan</flux:select.option>
-                            @foreach ($services as $service)
+                            @foreach ($bookableServices as $service)
                                 <flux:select.option value="{{ $service->id }}">{{ $service->name }}</flux:select.option>
                             @endforeach
                         </flux:select>
