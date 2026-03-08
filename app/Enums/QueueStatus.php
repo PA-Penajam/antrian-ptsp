@@ -31,7 +31,7 @@ enum QueueStatus: string
             self::Called => 'purple',
             self::Completed => 'green',
             self::Cancelled => 'red',
-            self::Skipped => 'gray',
+            self::Skipped => 'zinc',
         };
     }
 }

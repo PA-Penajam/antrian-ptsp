@@ -12,6 +12,8 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Picqer\Barcode\Renderers\SvgRenderer;
+use Picqer\Barcode\Types\TypeCode128;
 
 #[Layout('layouts.kiosk')]
 #[Title('Ambil Antrian Mandiri')]
@@ -28,6 +30,10 @@ class KioskBooking extends Component
     public string $visitorPhone = '';
 
     public ?QueueTicket $ticket = null;
+
+    public string $fontSize = 'normal';
+
+    public string $barcodeSvg = '';
 
     #[Computed]
     public function services(): Collection
@@ -64,6 +70,11 @@ class KioskBooking extends Component
         $this->step = max(1, $this->step - 1);
     }
 
+    public function toggleFontSize(): void
+    {
+        $this->fontSize = $this->fontSize === 'normal' ? 'large' : 'normal';
+    }
+
     public function submitData(): void
     {
         $this->validate([
@@ -94,6 +105,8 @@ class KioskBooking extends Component
         ]);
 
         $this->step = 4; // Step 4 = ticket printed
+
+        $this->barcodeSvg = $this->generateBarcodeSvg($this->ticket->ticket_number);
     }
 
     public function resetWizard(): void
@@ -104,6 +117,22 @@ class KioskBooking extends Component
         $this->visitorIdentifier = '';
         $this->visitorPhone = '';
         $this->ticket = null;
+        $this->fontSize = 'normal';
+        $this->barcodeSvg = '';
+    }
+
+    /**
+     * Generate inline SVG barcode for the given ticket number.
+     */
+    private function generateBarcodeSvg(string $ticketNumber): string
+    {
+        $barcode = (new TypeCode128)->getBarcode($ticketNumber);
+
+        $renderer = new SvgRenderer;
+        $renderer->setSvgType(SvgRenderer::TYPE_SVG_INLINE);
+        $renderer->setForegroundColor([255, 255, 255]);
+
+        return $renderer->render($barcode, 250, 60);
     }
 
     public function render(): View

@@ -31,4 +31,23 @@ class StoreFrontdeskQueueTicketRequest extends FormRequest
             'notes' => ['nullable', 'string'],
         ];
     }
+
+    /**
+     * Get custom validation messages in Bahasa Indonesia.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'service_id.required' => 'Layanan wajib dipilih.',
+            'service_id.exists' => 'Layanan yang dipilih tidak valid.',
+            'channel.required' => 'Kanal wajib dipilih.',
+            'channel.in' => 'Kanal yang dipilih tidak valid.',
+            'service_date.required' => 'Tanggal layanan wajib diisi.',
+            'service_date.date' => 'Format tanggal layanan tidak valid.',
+            'visitor_name.required' => 'Nama pengunjung wajib diisi.',
+            'visitor_name.max' => 'Nama pengunjung maksimal 255 karakter.',
+        ];
+    }
 }

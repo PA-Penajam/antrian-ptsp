@@ -21,7 +21,7 @@ class KioskController extends Controller
 
         if ($request->input('password') !== config('kiosk.password')) {
             return back()->withErrors([
-                'password' => 'Password salah.',
+                'password' => 'Error: Password yang dimasukkan salah.',
             ]);
         }
 
