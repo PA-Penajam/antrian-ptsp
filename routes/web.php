@@ -28,7 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-Route::middleware(['auth', 'verified', 'role:'.UserRole::Frontdesk->value])->group(function () {
+Route::middleware(['auth', 'verified', 'role:'.UserRole::Frontdesk->value.','.UserRole::Admin->value])->group(function () {
     Route::get('/frontdesk/antrian', [FrontdeskQueueController::class, 'index']);
     Route::post('/frontdesk/antrian', [FrontdeskQueueController::class, 'store']);
     Route::post('/frontdesk/antrian/check-in', [FrontdeskQueueController::class, 'checkIn']);
