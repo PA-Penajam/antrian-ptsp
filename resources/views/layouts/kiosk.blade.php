@@ -1,12 +1,10 @@
-@props(['title' => null])
-
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full overflow-hidden">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-        <title>{{ filled($title) ? $title . ' - ' . config('institution.name') : config('institution.name') }}</title>
+        <title>{{ filled($title ?? null) ? $title . ' - ' . config('institution.name') : config('institution.name') }}</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -18,10 +16,19 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @fluxAppearance
     </head>
-    <body class="min-h-screen overflow-hidden bg-zinc-900 text-white antialiased">
-        <div class="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_30%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.14),_transparent_34%),linear-gradient(180deg,#09090b_0%,#111827_52%,#09090b_100%)]">
-            <div aria-hidden="true" class="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.03)_0%,transparent_28%,transparent_72%,rgba(255,255,255,0.03)_100%)]"></div>
+    <body class="min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-white to-cyan-100 text-slate-800 antialiased">
+        {{-- Animated Background --}}
+        <div class="fixed inset-0 overflow-hidden">
+            {{-- Gradient Orbs --}}
+            <div class="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl animate-pulse" style="animation-duration: 8s;"></div>
+            <div class="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-blue-400/20 blur-3xl animate-pulse" style="animation-duration: 10s; animation-delay: 2s;"></div>
+            <div class="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/10 blur-3xl animate-pulse" style="animation-duration: 12s; animation-delay: 4s;"></div>
+            
+            {{-- Subtle Grid Pattern --}}
+            <div class="absolute inset-0 opacity-[0.02]" style="background-image: linear-gradient(to right, #0f172a 1px, transparent 1px), linear-gradient(to bottom, #0f172a 1px, transparent 1px); background-size: 60px 60px;"></div>
+        </div>
 
+        <div class="relative min-h-screen overflow-hidden">
             <main class="relative min-h-screen overflow-hidden">
                 {{ $slot }}
             </main>
