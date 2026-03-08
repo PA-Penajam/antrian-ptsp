@@ -3,7 +3,7 @@
         <div class="grid w-full max-w-7xl gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(28rem,34rem)] xl:gap-10">
             <section class="hidden rounded-[2rem] border border-white/10 bg-white/6 p-10 shadow-[0_32px_90px_-48px_rgba(15,23,42,0.95)] xl:flex xl:flex-col xl:justify-between">
                 <div class="space-y-6">
-                    <flux:badge color="zinc" size="sm" icon="computer-desktop" class="w-fit rounded-full border border-white/10 bg-white/10 text-zinc-100">
+                    <flux:badge color="amber" size="sm" icon="computer-desktop" class="w-fit rounded-full">
                         Mode TV Display PTSP
                     </flux:badge>
 
@@ -64,10 +64,10 @@
                                 name="password"
                                 type="password"
                                 inputmode="text"
+                                viewable
                                 autofocus
                                 autocomplete="current-password"
                                 placeholder="Masukkan password"
-                                class="mt-3 h-18 rounded-2xl border border-white/10 bg-zinc-900/80 px-6 text-2xl text-white placeholder:text-zinc-500"
                             />
                             <flux:error name="password" class="mt-3 text-sm text-rose-300" />
                         </flux:field>
