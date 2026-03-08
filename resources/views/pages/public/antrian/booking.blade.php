@@ -41,6 +41,152 @@
 
 <x-layouts::public :title="__('Ambil Antrian PTSP')">
     <flux:main container>
+        <script>
+            window.bookingWizard = function (config) {
+                return {
+                    step: config.initial.step,
+                    services: config.services,
+                    serviceId: config.initial.serviceId,
+                    serviceDate: config.initial.serviceDate,
+                    visitorName: config.initial.visitorName,
+                    visitorIdentifier: config.initial.visitorIdentifier,
+                    visitorPhone: config.initial.visitorPhone,
+                    notes: config.initial.notes,
+
+                    get selectedService() {
+                        return this.services.find((service) => String(service.id) === String(this.serviceId)) ?? null;
+                    },
+
+                    isStepActive(stepNumber) {
+                        return this.step === stepNumber;
+                    },
+
+                    isStepComplete(stepNumber) {
+                        return this.step > stepNumber;
+                    },
+
+                    canAdvanceToReview() {
+                        return Boolean(this.serviceId && this.serviceDate && this.visitorName.trim());
+                    },
+
+                    goToStep(stepNumber) {
+                        if (stepNumber === 1) {
+                            this.step = 1;
+
+                            return;
+                        }
+
+                        if (stepNumber === 2 && this.serviceId) {
+                            this.step = 2;
+
+                            return;
+                        }
+
+                        if (stepNumber === 3 && this.canAdvanceToReview()) {
+                            this.step = 3;
+                        }
+                    },
+
+                    selectService(serviceId) {
+                        const service = this.services.find((item) => String(item.id) === String(serviceId));
+
+                        if (!service || service.is_unavailable) {
+                            return;
+                        }
+
+                        this.serviceId = String(serviceId);
+                        this.step = 2;
+                    },
+
+                    advanceToReview() {
+                        if (this.canAdvanceToReview()) {
+                            this.step = 3;
+                        }
+                    },
+
+                    formatServiceDate() {
+                        if (!this.serviceDate) {
+                            return '-';
+                        }
+
+                        const [year, month, day] = this.serviceDate.split('-');
+
+                        if (!year || !month || !day) {
+                            return this.serviceDate;
+                        }
+
+                        return `${day}/${month}/${year}`;
+                    },
+
+                    stepButtonClasses(stepNumber) {
+                        if (this.isStepActive(stepNumber)) {
+                            return 'border-cyan-300 bg-cyan-50 shadow-[0_20px_48px_-38px_rgba(8,145,178,0.7)]';
+                        }
+
+                        if (this.isStepComplete(stepNumber)) {
+                            return 'border-emerald-200 bg-emerald-50';
+                        }
+
+                        return 'border-slate-200 bg-slate-50/80';
+                    },
+
+                    stepCircleClasses(stepNumber) {
+                        if (this.isStepActive(stepNumber)) {
+                            return 'bg-cyan-600 text-white';
+                        }
+
+                        if (this.isStepComplete(stepNumber)) {
+                            return 'bg-emerald-600 text-white';
+                        }
+
+                        return 'bg-white text-slate-500 ring-1 ring-slate-200';
+                    },
+
+                    stepCaptionClasses(stepNumber) {
+                        if (this.isStepActive(stepNumber)) {
+                            return 'text-cyan-700';
+                        }
+
+                        if (this.isStepComplete(stepNumber)) {
+                            return 'text-emerald-700';
+                        }
+
+                        return 'text-slate-400';
+                    },
+
+                    stepLabelClasses(stepNumber) {
+                        if (this.isStepActive(stepNumber)) {
+                            return 'text-slate-900';
+                        }
+
+                        if (this.isStepComplete(stepNumber)) {
+                            return 'text-emerald-900';
+                        }
+
+                        return 'text-slate-500';
+                    },
+
+                    serviceCardClasses(serviceId) {
+                        const service = this.services.find((item) => String(item.id) === String(serviceId));
+
+                        if (!service) {
+                            return 'border-slate-200 bg-white';
+                        }
+
+                        if (service.is_unavailable) {
+                            return 'cursor-not-allowed border-red-200 bg-red-50/80 opacity-70';
+                        }
+
+                        if (String(this.serviceId) === String(serviceId)) {
+                            return 'border-cyan-400 bg-cyan-50/70 ring-2 ring-cyan-200';
+                        }
+
+                        return 'cursor-pointer border-slate-200 bg-white hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_30px_80px_-58px_rgba(8,145,178,0.78)]';
+                    },
+                };
+            };
+        </script>
+
         <div
             class="mx-auto flex w-full max-w-6xl flex-col gap-8 py-6 sm:gap-10 sm:py-8"
             x-data="bookingWizard({
@@ -498,150 +644,5 @@
             </form>
         </div>
 
-        <script>
-            window.bookingWizard = function (config) {
-                return {
-                    step: config.initial.step,
-                    services: config.services,
-                    serviceId: config.initial.serviceId,
-                    serviceDate: config.initial.serviceDate,
-                    visitorName: config.initial.visitorName,
-                    visitorIdentifier: config.initial.visitorIdentifier,
-                    visitorPhone: config.initial.visitorPhone,
-                    notes: config.initial.notes,
-
-                    get selectedService() {
-                        return this.services.find((service) => String(service.id) === String(this.serviceId)) ?? null;
-                    },
-
-                    isStepActive(stepNumber) {
-                        return this.step === stepNumber;
-                    },
-
-                    isStepComplete(stepNumber) {
-                        return this.step > stepNumber;
-                    },
-
-                    canAdvanceToReview() {
-                        return Boolean(this.serviceId && this.serviceDate && this.visitorName.trim());
-                    },
-
-                    goToStep(stepNumber) {
-                        if (stepNumber === 1) {
-                            this.step = 1;
-
-                            return;
-                        }
-
-                        if (stepNumber === 2 && this.serviceId) {
-                            this.step = 2;
-
-                            return;
-                        }
-
-                        if (stepNumber === 3 && this.canAdvanceToReview()) {
-                            this.step = 3;
-                        }
-                    },
-
-                    selectService(serviceId) {
-                        const service = this.services.find((item) => String(item.id) === String(serviceId));
-
-                        if (!service || service.is_unavailable) {
-                            return;
-                        }
-
-                        this.serviceId = String(serviceId);
-                        this.step = 2;
-                    },
-
-                    advanceToReview() {
-                        if (this.canAdvanceToReview()) {
-                            this.step = 3;
-                        }
-                    },
-
-                    formatServiceDate() {
-                        if (!this.serviceDate) {
-                            return '-';
-                        }
-
-                        const [year, month, day] = this.serviceDate.split('-');
-
-                        if (!year || !month || !day) {
-                            return this.serviceDate;
-                        }
-
-                        return `${day}/${month}/${year}`;
-                    },
-
-                    stepButtonClasses(stepNumber) {
-                        if (this.isStepActive(stepNumber)) {
-                            return 'border-cyan-300 bg-cyan-50 shadow-[0_20px_48px_-38px_rgba(8,145,178,0.7)]';
-                        }
-
-                        if (this.isStepComplete(stepNumber)) {
-                            return 'border-emerald-200 bg-emerald-50';
-                        }
-
-                        return 'border-slate-200 bg-slate-50/80';
-                    },
-
-                    stepCircleClasses(stepNumber) {
-                        if (this.isStepActive(stepNumber)) {
-                            return 'bg-cyan-600 text-white';
-                        }
-
-                        if (this.isStepComplete(stepNumber)) {
-                            return 'bg-emerald-600 text-white';
-                        }
-
-                        return 'bg-white text-slate-500 ring-1 ring-slate-200';
-                    },
-
-                    stepCaptionClasses(stepNumber) {
-                        if (this.isStepActive(stepNumber)) {
-                            return 'text-cyan-700';
-                        }
-
-                        if (this.isStepComplete(stepNumber)) {
-                            return 'text-emerald-700';
-                        }
-
-                        return 'text-slate-400';
-                    },
-
-                    stepLabelClasses(stepNumber) {
-                        if (this.isStepActive(stepNumber)) {
-                            return 'text-slate-900';
-                        }
-
-                        if (this.isStepComplete(stepNumber)) {
-                            return 'text-emerald-900';
-                        }
-
-                        return 'text-slate-500';
-                    },
-
-                    serviceCardClasses(serviceId) {
-                        const service = this.services.find((item) => String(item.id) === String(serviceId));
-
-                        if (!service) {
-                            return 'border-slate-200 bg-white';
-                        }
-
-                        if (service.is_unavailable) {
-                            return 'cursor-not-allowed border-red-200 bg-red-50/80 opacity-70';
-                        }
-
-                        if (String(this.serviceId) === String(serviceId)) {
-                            return 'border-cyan-400 bg-cyan-50/70 ring-2 ring-cyan-200';
-                        }
-
-                        return 'cursor-pointer border-slate-200 bg-white hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_30px_80px_-58px_rgba(8,145,178,0.78)]';
-                    },
-                };
-            };
-        </script>
     </flux:main>
 </x-layouts::public>

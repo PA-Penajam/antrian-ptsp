@@ -83,7 +83,7 @@
                         <flux:heading size="lg" class="text-red-700">Tiket Tidak Ditemukan</flux:heading>
                         <flux:text class="mt-2 text-red-600">Pastikan nomor antrian dan tanggal layanan sudah benar.</flux:text>
                         <div class="mt-6">
-                            <flux:button type="button" variant="secondary" onclick="window.location.href='{{ url('/antrian/cek') }}'">Periksa Ulang</flux:button>
+                            <flux:button type="button" variant="outline" onclick="window.location.href='{{ url('/antrian/cek') }}'">Periksa Ulang</flux:button>
                         </div>
                     </flux:card>
                 @endif
