@@ -1,0 +1,2501 @@
+[
+  {
+    "id": "TC001",
+    "title": "Berhasil booking antrian publik dengan tanggal kunjungan valid (masa depan)",
+    "description": "Memverifikasi pengguna publik dapat mengisi form /antrian dengan data valid dan menerima nomor tiket beserta detailnya.",
+    "category": "Public Queue Booking",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Antrian\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid service from the layanan dropdown/list"
+      },
+      {
+        "type": "action",
+        "description": "Fill a visit date in the future into the tanggal kunjungan field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Budi Testing\" into the nama field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"3201010101010001\" into the NIK field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"081234567890\" into the nomor HP field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Submit\" / \"Booking\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Nomor Tiket\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Detail Tiket\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Validasi gagal saat tanggal kunjungan di masa lalu",
+    "description": "Memverifikasi sistem menolak booking bila tanggal kunjungan dipilih di masa lalu dan menampilkan pesan validasi yang sesuai.",
+    "category": "Public Queue Booking",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid service from the layanan dropdown/list"
+      },
+      {
+        "type": "action",
+        "description": "Fill a visit date in the past into the tanggal kunjungan field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Sari Negative\" into the nama field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"3201010101010002\" into the NIK field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"081234567891\" into the nomor HP field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Submit\" / \"Booking\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tanggal tidak boleh di masa lalu\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Validasi wajib isi: submit tanpa mengisi field wajib",
+    "description": "Memverifikasi sistem menampilkan error validasi ketika pengguna mencoba submit form tanpa melengkapi data wajib.",
+    "category": "Public Queue Booking",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Submit\" / \"Booking\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"wajib\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"layanan\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"tanggal kunjungan\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"nama\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"NIK\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"nomor HP\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Validasi format: NIK tidak valid (terlalu pendek / non-numerik)",
+    "description": "Memverifikasi sistem menolak input NIK yang tidak sesuai format dan menampilkan pesan validasi.",
+    "category": "Public Queue Booking",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid service from the layanan dropdown/list"
+      },
+      {
+        "type": "action",
+        "description": "Fill a visit date in the future into the tanggal kunjungan field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Nina NIK\" into the nama field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"12AB\" into the NIK field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"081234567893\" into the nomor HP field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Submit\" / \"Booking\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"NIK\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"tidak valid\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Validasi format: nomor HP tidak valid",
+    "description": "Memverifikasi sistem menolak nomor HP yang tidak sesuai format dan menampilkan pesan validasi.",
+    "category": "Public Queue Booking",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid service from the layanan dropdown/list"
+      },
+      {
+        "type": "action",
+        "description": "Fill a visit date in the future into the tanggal kunjungan field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Riko HP\" into the nama field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"3201010101010004\" into the NIK field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"abc\" into the nomor HP field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Submit\" / \"Booking\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"nomor HP\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"tidak valid\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Booking berhasil tetap menampilkan ringkasan layanan dan tanggal yang dipilih pada halaman konfirmasi",
+    "description": "Memverifikasi pada halaman konfirmasi tiket, informasi layanan dan tanggal kunjungan yang dipilih tampil sesuai.",
+    "category": "Public Queue Booking",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid service from the layanan dropdown/list"
+      },
+      {
+        "type": "action",
+        "description": "Fill a visit date in the future into the tanggal kunjungan field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Dewi Confirm\" into the nama field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"3201010101010005\" into the NIK field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"081234567894\" into the nomor HP field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Submit\" / \"Booking\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Detail Tiket\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Layanan\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tanggal Kunjungan\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Perubahan layanan setelah isi data: submit tetap memproses layanan yang terakhir dipilih",
+    "description": "Memverifikasi jika pengguna mengganti pilihan layanan setelah mengisi data, sistem menggunakan pilihan layanan terakhir saat submit.",
+    "category": "Public Queue Booking",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid service from the layanan dropdown/list"
+      },
+      {
+        "type": "action",
+        "description": "Fill a visit date in the future into the tanggal kunjungan field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Fajar Switch\" into the nama field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"3201010101010006\" into the NIK field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"081234567895\" into the nomor HP field"
+      },
+      {
+        "type": "action",
+        "description": "Select a different valid service from the layanan dropdown/list"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Submit\" / \"Booking\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Detail Tiket\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Layanan\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Lookup status antrian dengan nomor tiket yang valid",
+    "description": "Memastikan pengguna dapat memasukkan nomor tiket dan melihat status antrian serta estimasi.",
+    "category": "Queue Status Lookup",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian/cek"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Cek\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"A001\" into \"Nomor Tiket\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Cek\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Status\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Estimasi\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Lookup status antrian menampilkan error untuk tiket tidak ditemukan",
+    "description": "Memastikan sistem menampilkan pesan error saat nomor tiket tidak ada/invalid.",
+    "category": "Queue Status Lookup",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian/cek"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Nomor Tiket\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"TIKET-TIDAK-ADA-99999\" into \"Nomor Tiket\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Cek\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tiket tidak ditemukan\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Nomor Tiket\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Validasi field wajib saat submit tanpa nomor tiket",
+    "description": "Memastikan form tidak diproses dan menampilkan validasi ketika nomor tiket kosong.",
+    "category": "Queue Status Lookup",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian/cek"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Nomor Tiket\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Cek\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"wajib\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Nomor Tiket\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Nomor tiket dengan spasi depan/belakang tetap dapat diproses",
+    "description": "Memastikan input nomor tiket yang memiliki spasi di awal/akhir tetap ditangani dengan benar.",
+    "category": "Queue Status Lookup",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian/cek"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Nomor Tiket\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"  A001  \" into \"Nomor Tiket\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Cek\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Status\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Estimasi\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Nomor tiket dengan format tidak wajar ditolak dengan pesan yang jelas",
+    "description": "Memastikan sistem menampilkan pesan error yang tepat untuk input format nomor tiket yang tidak sesuai.",
+    "category": "Queue Status Lookup",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian/cek"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Nomor Tiket\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"@@@###\" into \"Nomor Tiket\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Cek\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tiket tidak ditemukan\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Hasil pencarian status menampilkan nomor tiket yang dicari",
+    "description": "Memastikan halaman hasil lookup menampilkan nomor tiket yang dimasukkan agar pengguna yakin data yang tampil sesuai.",
+    "category": "Queue Status Lookup",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian/cek"
+      },
+      {
+        "type": "action",
+        "description": "Type \"A001\" into \"Nomor Tiket\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Cek\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"A001\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Status\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Konsistensi perilaku tombol Enter untuk submit pencarian",
+    "description": "Memastikan menekan Enter pada field nomor tiket memicu pencarian dan menampilkan hasil.",
+    "category": "Queue Status Lookup",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /antrian/cek"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Nomor Tiket\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"A001\" into \"Nomor Tiket\" field"
+      },
+      {
+        "type": "action",
+        "description": "Press Enter"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Status\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Estimasi\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Login kiosk dengan password benar menampilkan halaman booking kiosk",
+    "description": "Memastikan user dapat login ke modul kiosk menggunakan password yang benar dan masuk ke halaman /kiosk.",
+    "category": "Kiosk Booking",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kiosk/login"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kiosk/login\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"{{KIOSK_PASSWORD_VALID}}\" into \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kiosk\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Kiosk\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Login kiosk dengan password salah menampilkan error dan tetap di halaman login",
+    "description": "Memastikan sistem menolak password kiosk yang salah dan menampilkan pesan error tanpa berpindah halaman.",
+    "category": "Kiosk Booking",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kiosk/login"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kiosk/login\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"password-salah-123\" into \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kiosk/login\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Password\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"error\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Booking tiket kiosk end-to-end (pilih layanan, isi data, submit, tampil nomor tiket)",
+    "description": "Memastikan alur booking di kiosk berhasil sampai sistem menampilkan nomor tiket setelah submit.",
+    "category": "Kiosk Booking",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kiosk/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"{{KIOSK_PASSWORD_VALID}}\" into \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kiosk\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a service option under \"Layanan\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Budi\" into \"Nama\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Submit\" or \"Ambil Nomor\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Nomor\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Booking kiosk menampilkan indikator cetak/konfirmasi tiket setelah berhasil submit",
+    "description": "Memastikan setelah booking berhasil, halaman menampilkan konfirmasi yang mengindikasikan tiket siap dicetak/diterima.",
+    "category": "Kiosk Booking",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kiosk/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"{{KIOSK_PASSWORD_VALID}}\" into \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on a service option under \"Layanan\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Submit\" or \"Ambil Nomor\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tiket\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Nomor\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Submit booking tanpa memilih layanan menampilkan validasi",
+    "description": "Memastikan sistem memvalidasi bahwa layanan wajib dipilih sebelum booking dapat dikirim.",
+    "category": "Kiosk Booking",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kiosk/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"{{KIOSK_PASSWORD_VALID}}\" into \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kiosk\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Submit\" or \"Ambil Nomor\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Layanan\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"wajib\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Submit booking dengan kuota harian penuh menampilkan pesan error kuota",
+    "description": "Memastikan ketika kuota layanan sudah penuh, sistem menolak booking dan menampilkan pesan \"Kuota harian penuh\".",
+    "category": "Kiosk Booking",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kiosk/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"{{KIOSK_PASSWORD_VALID}}\" into \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kiosk\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a service option that is at daily quota limit"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Submit\" or \"Ambil Nomor\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Kuota harian penuh\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kiosk\""
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Field password kiosk wajib diisi (login dengan password kosong ditolak)",
+    "description": "Memastikan login kiosk menampilkan validasi ketika password tidak diisi.",
+    "category": "Kiosk Booking",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kiosk/login"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kiosk/login\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kiosk/login\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Password\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"wajib\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Login TV Display dengan password valid dan melihat tampilan antrian",
+    "description": "Memverifikasi pengguna dapat login ke TV Display dan melihat nomor sedang dipanggil serta riwayat panggilan terakhir.",
+    "category": "TV Display",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /tv-display/login"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Login\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{TV_DISPLAY_PASSWORD}}\" into the TV Display password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/tv-display\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Sedang dipanggil\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Riwayat\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "Login TV Display dengan password salah menampilkan error dan tetap di halaman login",
+    "description": "Memverifikasi password salah menampilkan pesan error dan tidak mengarahkan ke halaman /tv-display.",
+    "category": "TV Display",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /tv-display/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"password-salah-123\" into the TV Display password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Password\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"salah\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/tv-display/login\""
+      }
+    ]
+  },
+  {
+    "id": "TC024",
+    "title": "Validasi form: submit login tanpa mengisi password menampilkan pesan error",
+    "description": "Memverifikasi halaman login TV Display memvalidasi input kosong dan menampilkan error yang terlihat.",
+    "category": "TV Display",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /tv-display/login"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Password\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"wajib\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/tv-display/login\""
+      }
+    ]
+  },
+  {
+    "id": "TC025",
+    "title": "Tampilan /tv-display menampilkan nomor sedang dipanggil dan minimal satu area daftar riwayat",
+    "description": "Memverifikasi komponen utama halaman TV Display tampil (tanpa memvalidasi data spesifik).",
+    "category": "TV Display",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /tv-display/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{TV_DISPLAY_PASSWORD}}\" into the TV Display password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/tv-display\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Current called number section\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Call history list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC026",
+    "title": "Refresh halaman TV Display setelah login tetap menampilkan layar TV Display",
+    "description": "Memverifikasi sesi autentikasi modul TV Display bertahan saat halaman di-refresh dan kembali ke tampilan TV.",
+    "category": "TV Display",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /tv-display/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{TV_DISPLAY_PASSWORD}}\" into the TV Display password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/tv-display\""
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\" key"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/tv-display\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Current called number section\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC027",
+    "title": "Kesalahan input: password dengan spasi di awal/akhir diproses dengan benar (trim atau dianggap salah)",
+    "description": "Memverifikasi perilaku sistem ketika pengguna memasukkan password yang sama namun dengan spasi ekstra.",
+    "category": "TV Display",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /tv-display/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"  {{TV_DISPLAY_PASSWORD}}  \" into the TV Display password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/tv-display\""
+      }
+    ]
+  },
+  {
+    "id": "TC028",
+    "title": "Frontdesk can view today's queue list from Frontdesk Queue page",
+    "description": "Verifies a frontdesk user can log in and view the frontdesk queue management page with today's queue list visible.",
+    "category": "Frontdesk Queue Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Frontdesk\" menu item"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Antrian\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Daftar Antrian\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC029",
+    "title": "Frontdesk quick registration creates a new ticket and shows it in the list",
+    "description": "Verifies a frontdesk user can submit the quick registration form and the newly created ticket appears in the queue list.",
+    "category": "Frontdesk Queue Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Frontdesk\" menu item"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Antrian\" menu item"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Walk-in Test\" into the \"Nama\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Daftarkan\" or \"Submit\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Walk-in Test\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC030",
+    "title": "Frontdesk quick registration shows validation errors when required data is missing",
+    "description": "Verifies the quick registration form blocks submission and shows visible validation messages for required fields.",
+    "category": "Frontdesk Queue Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Frontdesk\" menu item"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Antrian\" menu item"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Daftarkan\" or \"Submit\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"wajib\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC031",
+    "title": "Check-in action is blocked or shows message when ticket number is not found",
+    "description": "Verifies the UI handles check-in attempts for a non-existent ticket number with a visible error or empty state.",
+    "category": "Frontdesk Queue Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Frontdesk\" menu item"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Antrian\" menu item"
+      },
+      {
+        "type": "action",
+        "description": "Type \"TIDAK-ADA-9999\" into the \"Nomor Tiket\" or \"Cari\" field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tidak ditemukan\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC032",
+    "title": "Frontdesk can create multiple quick tickets and both appear in today's list",
+    "description": "Verifies multiple quick registrations can be submitted sequentially and each new entry is visible in the queue list.",
+    "category": "Frontdesk Queue Management",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Frontdesk\" menu item"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Antrian\" menu item"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Walk-in Multi 1\" into the \"Nama\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Daftarkan\" or \"Submit\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Walk-in Multi 1\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC033",
+    "title": "Officer counter page shows queue sections (Waiting, Active, History)",
+    "description": "Verifies the counter UI loads and key queue sections are visible so the officer can manage tickets end-to-end.",
+    "category": "Officer Counter Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Loket\" or \"Petugas Loket\" menu item (officer counter area)"
+      },
+      {
+        "type": "action",
+        "description": "Click the counter option labeled \"Loket 1\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Antrian\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC034",
+    "title": "Create a new service with booking enabled and daily quota",
+    "description": "Verifies an admin can add a new service and see it appear in the services list.",
+    "category": "Admin Service Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Layanan\" menu item in the admin navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/layanan"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Layanan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tambah Layanan\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Layanan Test Otomasi\" into the \"Nama\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"SVC-AUTO-001\" into the \"Code\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"A\" into the \"Letter Code\" field"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Enabled\" from the \"Booking Enabled\" dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Type \"25\" into the \"Kuota Harian\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Simpan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Layanan Test Otomasi\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC035",
+    "title": "Create service with booking disabled and zero quota",
+    "description": "Verifies an admin can create a service with booking disabled and a zero quota value (if allowed) and see it saved.",
+    "category": "Admin Service Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Layanan\" menu item in the admin navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/layanan"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Layanan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tambah Layanan\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Layanan Non Booking\" into the \"Nama\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"SVC-AUTO-NB-001\" into the \"Code\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"N\" into the \"Letter Code\" field"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Disabled\" from the \"Booking Enabled\" dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Type \"0\" into the \"Kuota Harian\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Simpan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Layanan Non Booking\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC036",
+    "title": "Show validation errors when required fields are empty",
+    "description": "Verifies the service creation form blocks submission and shows validation messages when required fields are missing.",
+    "category": "Admin Service Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Layanan\" menu item in the admin navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/layanan"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Layanan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tambah Layanan\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Simpan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"wajib\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC037",
+    "title": "Prevent non-numeric daily quota input",
+    "description": "Verifies the daily quota field rejects non-numeric input and displays a visible validation error.",
+    "category": "Admin Service Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Layanan\" menu item in the admin navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/layanan"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Layanan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tambah Layanan\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Layanan Kuota Invalid\" into the \"Nama\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"SVC-AUTO-INV-001\" into the \"Code\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"I\" into the \"Letter Code\" field"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Enabled\" from the \"Booking Enabled\" dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Type \"abc\" into the \"Kuota Harian\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Simpan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Kuota\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC038",
+    "title": "Cancel out of add-service form without saving",
+    "description": "Verifies an admin can exit the add service form and the new service is not created.",
+    "category": "Admin Service Management",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Layanan\" menu item in the admin navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/layanan"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Layanan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tambah Layanan\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Layanan Batal\" into the \"Nama\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Batal\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/layanan"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Layanan Batal\" into the services search field"
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Layanan Batal\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC039",
+    "title": "Create a new counter (loket) successfully and see it in the list",
+    "description": "Verifies admin can add a new counter with name, code, and queue pool, and the new counter appears in the counter list.",
+    "category": "Admin Counter Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Loket\" menu item in the admin navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/loket\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Loket\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tambah Loket\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Loket Otomasi 01\" into the \"Nama Loket\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"AUTO-01\" into the \"Code\" field"
+      },
+      {
+        "type": "action",
+        "description": "Select the first available option from the \"Queue Pool\" dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Simpan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Loket Otomasi 01\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"AUTO-01\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC040",
+    "title": "Validation: prevent creating a counter when required fields are empty",
+    "description": "Verifies the add counter form shows validation messages and does not create a counter when required fields are missing.",
+    "category": "Admin Counter Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Loket\" menu item in the admin navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/loket\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Loket\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Simpan\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"wajib\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Nama\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Code\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC041",
+    "title": "Admin menambah pengguna baru dan melihatnya muncul di daftar",
+    "description": "Memverifikasi admin dapat membuat akun pengguna baru dengan role dan password, lalu pengguna baru terlihat di daftar.",
+    "category": "Admin User Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/login\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Users\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/users\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Pengguna\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tambah Pengguna\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"QA User Baru\" into the \"Nama\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"qa.user.baru+e2e1@example.com\" into the \"Email\" field"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Petugas\" from the \"Role\" dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Password!234\" into the \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Simpan\" or \"Submit\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"qa.user.baru+e2e1@example.com\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Petugas\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC042",
+    "title": "Daftar pengguna dapat ditampilkan dan memuat elemen utama halaman",
+    "description": "Memverifikasi halaman /admin/users dapat diakses oleh admin dan menampilkan daftar pengguna.",
+    "category": "Admin User Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/login\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Users\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/users\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Manajemen Pengguna\" or \"Users\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Tambah Pengguna\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC043",
+    "title": "Validasi: field wajib saat menambah pengguna (submit kosong)",
+    "description": "Memverifikasi form tambah pengguna menampilkan error saat field wajib tidak diisi.",
+    "category": "Admin User Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/login\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Users\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/users\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Pengguna\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tambah Pengguna\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Simpan\" or \"Submit\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"wajib\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC044",
+    "title": "Validasi: format email tidak valid saat menambah pengguna",
+    "description": "Memverifikasi sistem menolak email dengan format tidak valid pada form tambah pengguna.",
+    "category": "Admin User Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/login\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Users\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/users\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Pengguna\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tambah Pengguna\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Email Invalid\" into the \"Nama\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"email-tanpa-at\" into the \"Email\" field"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Petugas\" from the \"Role\" dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Password!234\" into the \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Simpan\" or \"Submit\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"email\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC045",
+    "title": "Batal dari form tambah pengguna kembali ke daftar tanpa membuat data",
+    "description": "Memverifikasi tombol batal/kembali pada form tambah pengguna mengembalikan admin ke daftar pengguna.",
+    "category": "Admin User Management",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/login\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Users\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/users\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tambah Pengguna\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tambah Pengguna\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Batal\" or \"Kembali\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin/users\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Tambah Pengguna\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC046",
+    "title": "Generate laporan antrian dengan rentang tanggal valid dan filter layanan",
+    "description": "Memverifikasi monitor dapat membuat laporan berdasarkan rentang tanggal dan layanan lalu melihat tabel serta statistik.",
+    "category": "Queue Report",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Laporan Antrian\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/laporan/antrian\""
+      },
+      {
+        "type": "action",
+        "description": "Select a valid start date from the start date field"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid end date that is after the start date from the end date field"
+      },
+      {
+        "type": "action",
+        "description": "Select a specific layanan from the layanan filter dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Generate\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Tabel Laporan\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Statistik\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC047",
+    "title": "Generate laporan antrian hanya dengan rentang tanggal (tanpa filter layanan spesifik)",
+    "description": "Memverifikasi laporan tetap dapat digenerate ketika layanan tidak dipilih atau menggunakan opsi Semua.",
+    "category": "Queue Report",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Laporan Antrian\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/laporan/antrian\""
+      },
+      {
+        "type": "action",
+        "description": "Select a valid start date from the start date field"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid end date that is after the start date from the end date field"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Semua\" (or leave default) in the layanan filter dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Generate\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Tabel Laporan\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Statistik\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC048",
+    "title": "Validasi error saat end date lebih kecil dari start date",
+    "description": "Memverifikasi sistem menolak rentang tanggal tidak valid dan menampilkan pesan validasi yang sesuai.",
+    "category": "Queue Report",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Laporan Antrian\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/laporan/antrian\""
+      },
+      {
+        "type": "action",
+        "description": "Select a start date from the start date field"
+      },
+      {
+        "type": "action",
+        "description": "Select an end date that is before the start date from the end date field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Generate\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Rentang tanggal tidak valid\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Tabel Laporan\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC049",
+    "title": "Validasi error saat field tanggal wajib tidak diisi",
+    "description": "Memverifikasi sistem menampilkan validasi ketika pengguna mencoba generate tanpa mengisi tanggal yang diperlukan.",
+    "category": "Queue Report",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Laporan Antrian\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/laporan/antrian\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Generate\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"wajib\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Tabel Laporan\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC050",
+    "title": "Perubahan filter tanggal merefresh hasil laporan setelah Generate ulang",
+    "description": "Memverifikasi hasil laporan berubah/terupdate di layar ketika user mengganti rentang tanggal lalu menekan Generate lagi.",
+    "category": "Queue Report",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Laporan Antrian\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/laporan/antrian\""
+      },
+      {
+        "type": "action",
+        "description": "Select a valid start date from the start date field"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid end date that is after the start date from the end date field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Generate\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Tabel Laporan\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Select a different valid start date from the start date field"
+      },
+      {
+        "type": "action",
+        "description": "Select a different valid end date that is after the new start date from the end date field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Generate\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Tabel Laporan\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC051",
+    "title": "Tampilan statistik harian terlihat pada halaman laporan",
+    "description": "Memverifikasi komponen statistik antrian harian tampil setelah laporan digenerate.",
+    "category": "Queue Report",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Laporan Antrian\" menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/laporan/antrian\""
+      },
+      {
+        "type": "action",
+        "description": "Select a valid start date from the start date field"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid end date that is after the start date from the end date field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Generate\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Statistik antrian\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Grafik\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC052",
+    "title": "Display publik menampilkan nomor yang sedang dipanggil",
+    "description": "Memverifikasi halaman /display memuat dan menampilkan nomor antrian yang sedang dipanggil dengan tampilan menonjol.",
+    "category": "Public Queue Display (Live)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /display"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/display\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Sedang dipanggil\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Current queue number / nomor antrian yang sedang dipanggil (tampilan besar)\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Informasi loket untuk nomor yang sedang dipanggil\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC053",
+    "title": "Display publik menampilkan riwayat panggilan terakhir beserta loket",
+    "description": "Memverifikasi daftar riwayat panggilan terakhir terlihat dan berisi beberapa entri dengan informasi loket.",
+    "category": "Public Queue Display (Live)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /display"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Daftar riwayat panggilan terakhir\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Riwayat\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Minimal 1 baris item riwayat panggilan\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Kolom/label loket pada item riwayat\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC054",
+    "title": "Auto-refresh/polling memperbarui tampilan tanpa perlu interaksi pengguna",
+    "description": "Memverifikasi halaman melakukan pembaruan berkala (polling Livewire) dan tetap responsif tanpa refresh manual.",
+    "category": "Public Queue Display (Live)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /display"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Current queue number / nomor antrian yang sedang dipanggil (tampilan besar)\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Wait for 15 seconds"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Daftar riwayat panggilan terakhir\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tidak dapat memperbarui tampilan, silakan refresh\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC055",
+    "title": "Tampilan tetap dapat dibaca saat halaman digulir (mode TV/monitor)",
+    "description": "Memverifikasi elemen utama tetap ada dan terbaca setelah pengguna melakukan scroll pada halaman display.",
+    "category": "Public Queue Display (Live)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /display"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Current queue number / nomor antrian yang sedang dipanggil (tampilan besar)\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to \"Daftar riwayat panggilan terakhir\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Daftar riwayat panggilan terakhir\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to top of the page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Current queue number / nomor antrian yang sedang dipanggil (tampilan besar)\" is visible"
+      }
+    ]
+  }
+]

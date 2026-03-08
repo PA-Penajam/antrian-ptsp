@@ -1,0 +1,20 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:8000",
+  "loginUser": "workflow.user@local.test",
+  "loginPassword": "password123",
+  "executionArgs": {
+    "projectName": "",
+    "projectPath": "/media/moohard/windows/laragon/www/antrian-ptsp",
+    "testIds": [],
+    "additionalInstruction": "",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-YEzVpGlVEZr1BvxQdjQZHRgP_7IPtHWaA-EKH7khr7Nt13LGCqZw7dMGP0GH9d_NkY8B-nmEEeMdsWJMbTMpwxYyO8fYlWXrKHGx0XYT5Ejyt7nYVdZIamZW8hDrYj5r7S4"
+    }
+  },
+  "serverPort": 35511,
+  "proxy": "http://e228635f-9955-4f65-ba3f-32fd8cf33ec8:EX9u2uwEpVDbRvtiNZEAx8Zl0diYYPG0@tun.testsprite.com:8080"
+}

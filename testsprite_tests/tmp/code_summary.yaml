@@ -1,0 +1,284 @@
+version: "2"
+type: backend
+tech_stack:
+  - language: PHP 8.4
+  - framework: Laravel 12
+  - ui_library: Livewire 4 + Flux UI Pro
+  - other: Tailwind CSS v4, Alpine.js, Pest 4, MySQL
+routes:
+  - path: /
+    file: app/Http/Controllers/PublicQueueController.php
+    auth_required: false
+    description: Halaman utama antrian publik
+  - path: /antrian
+    file: app/Http/Controllers/PublicQueueController.php
+    auth_required: false
+    description: Form booking antrian publik (GET & POST)
+  - path: /antrian/cek
+    file: app/Http/Controllers/PublicQueueController.php
+    auth_required: false
+    description: Cek status antrian berdasarkan nomor tiket
+  - path: /antrian/konfirmasi/{ticket}
+    file: app/Http/Controllers/PublicQueueController.php
+    auth_required: false
+    description: Konfirmasi tiket antrian
+  - path: /display
+    file: app/Livewire/QueueDisplay.php
+    auth_required: false
+    description: Tampilan antrian publik (Livewire)
+  - path: /dashboard
+    file: routes/web.php
+    auth_required: true
+    description: Dashboard utama sesuai role pengguna
+  - path: /frontdesk/antrian
+    file: app/Http/Controllers/FrontdeskQueueController.php
+    auth_required: true
+    description: Manajemen antrian oleh frontdesk (GET & POST)
+  - path: /frontdesk/antrian/check-in
+    file: app/Http/Controllers/FrontdeskQueueController.php
+    auth_required: true
+    description: Check-in antrian oleh frontdesk
+  - path: /petugas/loket/{counter}
+    file: app/Http/Controllers/OfficerQueueController.php
+    auth_required: true
+    description: Tampilan loket petugas
+  - path: /petugas/loket/{counter}/call-next
+    file: app/Http/Controllers/OfficerQueueController.php
+    auth_required: true
+    description: Panggil antrian berikutnya
+  - path: /petugas/loket/{counter}/recall
+    file: app/Http/Controllers/OfficerQueueController.php
+    auth_required: true
+    description: Panggil ulang antrian
+  - path: /petugas/loket/{counter}/skip
+    file: app/Http/Controllers/OfficerQueueController.php
+    auth_required: true
+    description: Lewati antrian
+  - path: /petugas/loket/{counter}/complete
+    file: app/Http/Controllers/OfficerQueueController.php
+    auth_required: true
+    description: Selesaikan antrian
+  - path: /petugas/loket/{counter}/cancel
+    file: app/Http/Controllers/OfficerQueueController.php
+    auth_required: true
+    description: Batalkan antrian
+  - path: /laporan/antrian
+    file: app/Http/Controllers/Report/QueueReportController.php
+    auth_required: true
+    description: Laporan antrian (role Monitor)
+  - path: /admin/layanan
+    file: app/Http/Controllers/Admin/ServiceManagementController.php
+    auth_required: true
+    description: Manajemen layanan (CRUD)
+  - path: /admin/loket
+    file: app/Http/Controllers/Admin/CounterManagementController.php
+    auth_required: true
+    description: Manajemen loket (CRUD)
+  - path: /admin/users
+    file: app/Http/Controllers/Admin/UserManagementController.php
+    auth_required: true
+    description: Manajemen pengguna (CRUD)
+  - path: /kiosk/login
+    file: app/Http/Controllers/KioskController.php
+    auth_required: false
+    description: Login kiosk (sistem password sendiri)
+  - path: /kiosk
+    file: app/Http/Controllers/KioskController.php
+    auth_required: false
+    description: Halaman utama kiosk booking tiket
+  - path: /tv-display/login
+    file: app/Http/Controllers/TvDisplayController.php
+    auth_required: false
+    description: Login TV Display (sistem password sendiri)
+  - path: /tv-display
+    file: app/Http/Controllers/TvDisplayController.php
+    auth_required: false
+    description: Tampilan TV antrian real-time
+features:
+  - name: Public Queue Booking
+    description: Masyarakat dapat mengambil nomor antrian secara online
+    files:
+      - app/Http/Controllers/PublicQueueController.php
+      - app/Models/QueueTicket.php
+      - app/Models/Service.php
+    entry_route: /antrian
+    user_interactions:
+      - Memilih layanan yang tersedia
+      - Mengisi data diri (nama, NIK, dll)
+      - Submit form booking
+      - Menerima konfirmasi nomor tiket
+    api_calls:
+      - method: GET
+        endpoint: /antrian
+      - method: POST
+        endpoint: /antrian
+    auth_required: false
+  - name: Queue Status Lookup
+    description: Pengguna dapat mengecek status antrian berdasarkan nomor tiket
+    files:
+      - app/Http/Controllers/PublicQueueController.php
+    entry_route: /antrian/cek
+    user_interactions:
+      - Memasukkan nomor tiket
+      - Melihat status antrian saat ini
+    api_calls:
+      - method: GET
+        endpoint: /antrian/cek
+    auth_required: false
+  - name: Kiosk Booking
+    description: Pengambilan nomor antrian melalui kiosk fisik dengan autentikasi password modul
+    files:
+      - app/Http/Controllers/KioskController.php
+      - app/Livewire/KioskBooking.php
+    entry_route: /kiosk/login
+    user_interactions:
+      - Memasukkan password kiosk
+      - Memilih layanan
+      - Mencetak/menerima nomor antrian
+    api_calls:
+      - method: POST
+        endpoint: /kiosk/login
+      - method: GET
+        endpoint: /kiosk
+    auth_required: false
+  - name: TV Display
+    description: Tampilan TV antrian real-time dengan Livewire polling
+    files:
+      - app/Http/Controllers/TvDisplayController.php
+      - app/Livewire/TvDisplay.php
+    entry_route: /tv-display/login
+    user_interactions:
+      - Memasukkan password TV Display
+      - Melihat antrian yang sedang dipanggil
+      - Melihat riwayat antrian
+    api_calls:
+      - method: POST
+        endpoint: /tv-display/login
+      - method: GET
+        endpoint: /tv-display
+    auth_required: false
+  - name: Frontdesk Queue Management
+    description: Petugas frontdesk dapat mendaftarkan dan check-in antrian
+    files:
+      - app/Http/Controllers/FrontdeskQueueController.php
+    entry_route: /frontdesk/antrian
+    user_interactions:
+      - Melihat daftar antrian
+      - Mendaftarkan antrian baru
+      - Melakukan check-in antrian
+    api_calls:
+      - method: GET
+        endpoint: /frontdesk/antrian
+      - method: POST
+        endpoint: /frontdesk/antrian
+      - method: POST
+        endpoint: /frontdesk/antrian/check-in
+    auth_required: true
+  - name: Officer Counter Management
+    description: Petugas loket memanggil dan mengelola antrian di loket masing-masing
+    files:
+      - app/Http/Controllers/OfficerQueueController.php
+      - app/Models/Counter.php
+      - app/Models/CounterSession.php
+    entry_route: /petugas/loket/{counter}
+    user_interactions:
+      - Melihat antrian di loket
+      - Memanggil antrian berikutnya
+      - Memanggil ulang antrian
+      - Melewati antrian
+      - Menyelesaikan antrian
+      - Membatalkan antrian
+    api_calls:
+      - method: POST
+        endpoint: /petugas/loket/{counter}/call-next
+      - method: POST
+        endpoint: /petugas/loket/{counter}/recall
+      - method: POST
+        endpoint: /petugas/loket/{counter}/skip
+      - method: POST
+        endpoint: /petugas/loket/{counter}/complete
+      - method: POST
+        endpoint: /petugas/loket/{counter}/cancel
+    auth_required: true
+  - name: Admin Service Management
+    description: Admin mengelola layanan yang tersedia (CRUD)
+    files:
+      - app/Http/Controllers/Admin/ServiceManagementController.php
+      - app/Models/Service.php
+    entry_route: /admin/layanan
+    user_interactions:
+      - Melihat daftar layanan
+      - Menambah layanan baru
+      - Mengedit layanan
+      - Menghapus layanan
+    api_calls:
+      - method: GET
+        endpoint: /admin/layanan
+      - method: POST
+        endpoint: /admin/layanan
+      - method: PUT
+        endpoint: /admin/layanan/{service}
+      - method: DELETE
+        endpoint: /admin/layanan/{service}
+    auth_required: true
+  - name: Admin Counter Management
+    description: Admin mengelola loket pelayanan (CRUD)
+    files:
+      - app/Http/Controllers/Admin/CounterManagementController.php
+      - app/Models/Counter.php
+    entry_route: /admin/loket
+    user_interactions:
+      - Melihat daftar loket
+      - Menambah loket baru
+      - Mengedit loket
+      - Menghapus loket
+    api_calls:
+      - method: GET
+        endpoint: /admin/loket
+      - method: POST
+        endpoint: /admin/loket
+      - method: PUT
+        endpoint: /admin/loket/{counter}
+      - method: DELETE
+        endpoint: /admin/loket/{counter}
+    auth_required: true
+  - name: Admin User Management
+    description: Admin mengelola pengguna dan role (CRUD)
+    files:
+      - app/Http/Controllers/Admin/UserManagementController.php
+      - app/Models/User.php
+    entry_route: /admin/users
+    user_interactions:
+      - Melihat daftar pengguna
+      - Menambah pengguna baru
+      - Mengedit pengguna dan role
+      - Menghapus pengguna
+    api_calls:
+      - method: GET
+        endpoint: /admin/users
+      - method: POST
+        endpoint: /admin/users
+      - method: PUT
+        endpoint: /admin/users/{user}
+      - method: DELETE
+        endpoint: /admin/users/{user}
+    auth_required: true
+  - name: Queue Report
+    description: Monitor melihat laporan statistik antrian
+    files:
+      - app/Http/Controllers/Report/QueueReportController.php
+    entry_route: /laporan/antrian
+    user_interactions:
+      - Melihat statistik antrian harian
+      - Filter laporan berdasarkan tanggal
+    api_calls:
+      - method: GET
+        endpoint: /laporan/antrian
+    auth_required: true
+known_limitations:
+  - issue: Duplikasi route definition untuk /admin/loket (PUT & DELETE terdefinisi 3x)
+    location: routes/web.php
+    impact: Redundant routes, tidak ada efek fungsional namun perlu dibersihkan
+  - issue: Kiosk dan TV Display menggunakan sistem autentikasi password sendiri (bukan Laravel auth)
+    location: app/Http/Middleware/ModulePasswordMiddleware.php
+    impact: Sistem autentikasi terpisah, tidak terintegrasi dengan Laravel Fortify
