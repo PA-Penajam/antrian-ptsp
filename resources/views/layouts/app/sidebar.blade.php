@@ -41,7 +41,7 @@
                             @endif
                         </flux:sidebar.item>
                     @endunless
-                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk))
+                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk) || auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
                         <flux:sidebar.item icon="users" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate>
                             {{ __('Frontdesk') }}
                         </flux:sidebar.item>
