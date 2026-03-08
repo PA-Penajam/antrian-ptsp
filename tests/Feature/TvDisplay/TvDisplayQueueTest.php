@@ -17,10 +17,10 @@ it('tv display shows queue when authenticated', function () {
     $response = get(route('tv-display.index'));
 
     $response->assertOk()
-        ->assertSee('Monitor Antrian PTSP')
+        ->assertSee('Pengadilan Agama')
         ->assertSee('Sedang Dipanggil')
-        ->assertSee('Riwayat Panggilan')
-        ->assertSee('wire:poll.5s', false);
+        ->assertSee('Riwayat')
+        ->assertSee('wire:poll.5s.keep-alive', false);
 });
 
 it('tv display shows empty state when no calls', function () {
@@ -105,7 +105,7 @@ it('tv display renders with current date', function () {
     $response = get(route('tv-display.index'));
 
     $response->assertOk()
-        ->assertSee('Monitor Antrian PTSP');
+        ->assertSee('Pengadilan Agama');
 });
 
 it('tv display includes connection status indicator', function () {
@@ -117,8 +117,8 @@ it('tv display includes connection status indicator', function () {
     $response = get(route('tv-display.index'));
 
     $response->assertOk()
-        ->assertSee('livewire:connecting', false)
-        ->assertSee('livewire:connected', false);
+        ->assertSee('online.window', false)
+        ->assertSee('offline.window', false);
 });
 
 it('tv display uses alpine js for live clock', function () {

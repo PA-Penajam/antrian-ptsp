@@ -210,3 +210,23 @@ it('resets wizard to initial state', function () {
         ->assertSet('visitorIdentifier', '')
         ->assertSet('visitorPhone', '');
 });
+
+it('generates barcode SVG on ticket confirmation', function () {
+    $service = Service::factory()->create([
+        'is_active' => true,
+        'walk_in_enabled' => true,
+    ]);
+
+    session(kioskSession());
+
+    $component = Livewire::test(KioskBooking::class);
+
+    $component->call('selectService', $service->id)
+        ->set('visitorName', 'Barcode Test User')
+        ->call('submitData')
+        ->call('confirmBooking');
+
+    $component->assertSet('step', 4)
+        ->assertSeeHtml('<svg')
+        ->assertNotSet('barcodeSvg', '');
+});
