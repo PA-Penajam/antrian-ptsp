@@ -22,3 +22,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Frontend public (moved to separate repo: antrian-ptsp-public)
+frontend-public/
