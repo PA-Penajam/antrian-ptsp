@@ -14,7 +14,7 @@ test('can get ticket detail by ticket_number', function () {
         'status' => QueueStatus::Waiting,
     ]);
 
-    $response = $this->getJson('/api/queue/ticket/TKT001?service_date='.Carbon::today()->toDateString());
+    $response = $this->getJson('/api/queue/ticket/TKT001');
 
     $response->assertSuccessful()
         ->assertJsonPath('data.ticket_number', 'TKT001')
@@ -23,22 +23,23 @@ test('can get ticket detail by ticket_number', function () {
 });
 
 test('ticket detail returns 404 for non-existent ticket', function () {
-    $response = $this->getJson('/api/queue/ticket/NONEXISTENT?service_date='.Carbon::today()->toDateString());
+    $response = $this->getJson('/api/queue/ticket/NONEXISTENT');
 
     $response->assertNotFound()
         ->assertJson(['message' => 'Tiket tidak ditemukan']);
 });
 
-test('ticket detail returns 404 when service_date mismatch', function () {
+test('ticket detail returns ticket regardless of service_date parameter', function () {
     $ticket = QueueTicket::factory()->create([
         'ticket_number' => 'TKT001',
         'service_date' => Carbon::today(),
     ]);
 
-    $response = $this->getJson('/api/queue/ticket/TKT001?service_date='.Carbon::tomorrow()->toDateString());
+    $response = $this->getJson('/api/queue/ticket/TKT001');
 
-    $response->assertNotFound()
-        ->assertJson(['message' => 'Tiket tidak ditemukan']);
+    $response->assertSuccessful()
+        ->assertJsonPath('data.ticket_number', 'TKT001')
+        ->assertJsonPath('data.service_date', Carbon::today()->toDateString());
 });
 
 test('ticket detail includes service relationship', function () {
@@ -47,7 +48,7 @@ test('ticket detail includes service relationship', function () {
         'service_date' => Carbon::today(),
     ]);
 
-    $response = $this->getJson('/api/queue/ticket/TKT001?service_date='.Carbon::today()->toDateString());
+    $response = $this->getJson('/api/queue/ticket/TKT001');
 
     $response->assertSuccessful()
         ->assertJsonStructure([
@@ -79,7 +80,7 @@ test('ticket detail includes queue position for waiting tickets', function () {
         'queue_pool_id' => $ticket1->queue_pool_id,
     ]);
 
-    $response = $this->getJson('/api/queue/ticket/TKT002?service_date='.Carbon::today()->toDateString());
+    $response = $this->getJson('/api/queue/ticket/TKT002');
 
     $response->assertSuccessful()
         ->assertJsonPath('data.queue_position', 2);

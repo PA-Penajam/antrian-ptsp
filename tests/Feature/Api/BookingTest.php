@@ -5,8 +5,11 @@ use App\Models\QueueTicket;
 use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 
 uses(RefreshDatabase::class);
+
+beforeEach(fn () => $this->withoutMiddleware(ThrottleRequests::class));
 
 test('can create booking and returns 201', function () {
     $service = Service::factory()->create(['is_active' => true, 'booking_enabled' => true]);

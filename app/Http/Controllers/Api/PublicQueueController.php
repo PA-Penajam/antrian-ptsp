@@ -9,7 +9,6 @@ use App\Http\Requests\Api\StoreBookingRequest;
 use App\Http\Resources\QueueTicketResource;
 use App\Models\QueueTicket;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class PublicQueueController extends Controller
 {
@@ -44,13 +43,12 @@ class PublicQueueController extends Controller
         return QueueTicketResource::make($ticket)->response();
     }
 
-    public function show(Request $request, string $ticketNumber): JsonResponse
+    public function show(string $ticketNumber): JsonResponse
     {
-        $request->validate([
-            'service_date' => ['required', 'date'],
-        ]);
-
-        $ticket = $this->findTicket($ticketNumber, $request->service_date);
+        $ticket = QueueTicket::query()
+            ->with(['service', 'counter', 'queuePool'])
+            ->where('ticket_number', $ticketNumber)
+            ->first();
 
         if (! $ticket) {
             return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
