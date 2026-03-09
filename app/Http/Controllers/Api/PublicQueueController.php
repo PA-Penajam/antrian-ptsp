@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\Queue\CreateQueueTicket;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\LookupTicketRequest;
 use App\Http\Requests\Api\StoreBookingRequest;
 use App\Http\Resources\QueueTicketResource;
+use App\Models\QueueTicket;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PublicQueueController extends Controller
 {
@@ -28,5 +31,40 @@ class PublicQueueController extends Controller
         $ticket->load(['service', 'queuePool']);
 
         return QueueTicketResource::make($ticket)->response()->setStatusCode(201);
+    }
+
+    public function lookup(LookupTicketRequest $request): JsonResponse
+    {
+        $ticket = $this->findTicket($request->ticket_number, $request->service_date);
+
+        if (! $ticket) {
+            return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
+        }
+
+        return QueueTicketResource::make($ticket)->response();
+    }
+
+    public function show(Request $request, string $ticketNumber): JsonResponse
+    {
+        $request->validate([
+            'service_date' => ['required', 'date'],
+        ]);
+
+        $ticket = $this->findTicket($ticketNumber, $request->service_date);
+
+        if (! $ticket) {
+            return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
+        }
+
+        return QueueTicketResource::make($ticket)->response();
+    }
+
+    private function findTicket(string $ticketNumber, string $serviceDate): ?QueueTicket
+    {
+        return QueueTicket::query()
+            ->with(['service', 'counter', 'queuePool'])
+            ->where('ticket_number', $ticketNumber)
+            ->whereDate('service_date', $serviceDate)
+            ->first();
     }
 }
