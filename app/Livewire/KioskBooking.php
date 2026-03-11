@@ -3,10 +3,14 @@
 namespace App\Livewire;
 
 use App\Actions\Queue\CreateQueueTicket;
+use App\Models\AppSetting;
 use App\Models\QueueTicket;
 use App\Models\Service;
+use App\Models\Wilayah;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -29,13 +33,17 @@ class KioskBooking extends Component
 
     public string $visitorPhone = '';
 
+    public ?string $visitorWilayahKode = null;
+
+    public string $visitorWilayahNama = '';
+
     public ?QueueTicket $ticket = null;
 
     public string $fontSize = 'normal';
 
     public string $barcodeSvg = '';
 
-    #[Computed]
+    #[Computed(persist: true, seconds: 600)]
     public function services(): Collection
     {
         return Service::query()
@@ -53,7 +61,25 @@ class KioskBooking extends Component
             return null;
         }
 
-        return Service::query()->find($this->selectedServiceId);
+        /** @var ?Service $service */
+        $service = $this->services->firstWhere('id', $this->selectedServiceId);
+
+        return $service;
+    }
+
+    #[Computed]
+    public function wilayahOptions(): Collection
+    {
+        $selectedKabupatenKode = $this->selectedKabupatenKode();
+        if ($selectedKabupatenKode === null) {
+            return new Collection;
+        }
+
+        return Wilayah::query()
+            ->whereRaw('LENGTH(kode) = 13')
+            ->where('kode', 'like', "{$selectedKabupatenKode}.%")
+            ->orderBy('nama')
+            ->get();
     }
 
     public function selectService(int $serviceId): void
@@ -75,13 +101,38 @@ class KioskBooking extends Component
         $this->fontSize = $this->fontSize === 'normal' ? 'large' : 'normal';
     }
 
+    public function selectWilayah(string $kode, string $nama): void
+    {
+        $this->visitorWilayahKode = $kode;
+        $this->visitorWilayahNama = $nama;
+    }
+
+    public function updatedVisitorWilayahKode(?string $kode): void
+    {
+        if ($kode === null || $kode === '') {
+            $this->visitorWilayahNama = '';
+
+            return;
+        }
+
+        $this->visitorWilayahNama = (string) $this->wilayahOptions
+            ->firstWhere('kode', $kode)?->nama;
+    }
+
     public function submitData(): void
     {
         $this->validate([
             'visitorName' => ['required', 'string', 'min:3', 'max:255'],
             'visitorIdentifier' => ['nullable', 'string', 'max:50'],
             'visitorPhone' => ['nullable', 'string', 'max:20'],
+            'visitorWilayahKode' => ['required', 'string', $this->wilayahExistsRule()],
         ]);
+
+        if ($this->visitorWilayahNama === '' && $this->visitorWilayahKode !== null) {
+            $this->visitorWilayahNama = (string) Wilayah::query()
+                ->where('kode', $this->visitorWilayahKode)
+                ->value('nama');
+        }
 
         $this->step = 3;
     }
@@ -91,6 +142,7 @@ class KioskBooking extends Component
         $this->validate([
             'selectedServiceId' => ['required', 'integer', 'exists:services,id'],
             'visitorName' => ['required', 'string', 'min:3', 'max:255'],
+            'visitorWilayahKode' => ['required', 'string', $this->wilayahExistsRule()],
         ]);
 
         $this->ticket = $createQueueTicket->handle([
@@ -100,11 +152,21 @@ class KioskBooking extends Component
             'visitor_name' => $this->visitorName,
             'visitor_identifier' => $this->visitorIdentifier ?: null,
             'visitor_phone' => $this->visitorPhone ?: null,
+            'visitor_wilayah_kode' => $this->visitorWilayahKode,
             'notes' => null,
             'created_by' => null,
         ]);
 
         $this->step = 4; // Step 4 = ticket printed
+
+        $this->barcodeSvg = '';
+    }
+
+    public function loadBarcode(): void
+    {
+        if ($this->ticket === null || $this->barcodeSvg !== '') {
+            return;
+        }
 
         $this->barcodeSvg = $this->generateBarcodeSvg($this->ticket->ticket_number);
     }
@@ -116,6 +178,8 @@ class KioskBooking extends Component
         $this->visitorName = '';
         $this->visitorIdentifier = '';
         $this->visitorPhone = '';
+        $this->visitorWilayahKode = null;
+        $this->visitorWilayahNama = '';
         $this->ticket = null;
         $this->fontSize = 'normal';
         $this->barcodeSvg = '';
@@ -138,5 +202,24 @@ class KioskBooking extends Component
     public function render(): View
     {
         return view('livewire.kiosk-booking');
+    }
+
+    private function selectedKabupatenKode(): ?string
+    {
+        return AppSetting::getValue('wilayah.scope.kabupaten_kode');
+    }
+
+    private function wilayahExistsRule(): Exists
+    {
+        $selectedKabupatenKode = $this->selectedKabupatenKode();
+
+        return Rule::exists('wilayah', 'kode')
+            ->where(function ($query) use ($selectedKabupatenKode): void {
+                $query->whereRaw('LENGTH(kode) = 13');
+
+                if ($selectedKabupatenKode !== null) {
+                    $query->where('kode', 'like', "{$selectedKabupatenKode}.%");
+                }
+            });
     }
 }

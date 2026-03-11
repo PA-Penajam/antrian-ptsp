@@ -4,7 +4,7 @@
 
             {{-- Step 1: Select Service --}}
             @if ($step === 1)
-                <div wire:key="kiosk-step-1" class="animate-in fade-in space-y-10 duration-500">
+                <div wire:key="kiosk-step-1" class="space-y-10">
                     {{-- Header dengan Visual Hierarchy yang Kuat --}}
                     <div class="space-y-4">
                         <div class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2 shadow-lg">
@@ -35,7 +35,7 @@
                             @endphp
                             
                             <button wire:click="selectService({{ $service->id }})"
-                                class="group relative cursor-pointer overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-0 text-left shadow-md transition-all duration-300 hover:scale-[1.02] hover:border-slate-300 hover:shadow-2xl active:scale-[0.98]">
+                                class="group relative cursor-pointer overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-0 text-left shadow-md transition-[transform,border-color,box-shadow] duration-100 ease-out hover:border-slate-300 hover:shadow-xl active:translate-y-px active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2">
                                 
                                 {{-- Header Card dengan Gradient --}}
                                 <div class="relative h-28 bg-gradient-to-br {{ $color[0] }} p-6">
@@ -48,7 +48,7 @@
                                             <span class="text-4xl font-black {{ $color[2] }}">{{ $service->letter_code ?? $service->code }}</span>
                                         </div>
                                         {{-- Arrow Icon --}}
-                                        <div class="rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-transform duration-300 group-hover:translate-x-1 group-hover:bg-white/30">
+                                        <div class="rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors group-hover:bg-white/30">
                                             <flux:icon.arrow-right class="size-6" />
                                         </div>
                                     </div>
@@ -56,7 +56,7 @@
                                 
                                 {{-- Content Area --}}
                                 <div class="p-6">
-                                    <div class="text-2xl font-bold text-slate-800 transition-colors duration-200 group-hover:text-slate-900">
+                                    <div class="text-2xl font-bold text-slate-800 transition-colors group-hover:text-slate-900">
                                         {{ $service->name }}
                                     </div>
                                     @if($service->description)
@@ -71,14 +71,14 @@
                                             <flux:icon.ticket class="size-4 {{ $color[2] }}" />
                                             <span class="text-sm font-semibold {{ $color[2] }}">Ambil Antrian</span>
                                         </div>
-                                        <div class="rounded-full bg-slate-100 p-2 text-slate-400 transition-all duration-200 group-hover:bg-slate-800 group-hover:text-white">
+                                        <div class="rounded-full bg-slate-100 p-2 text-slate-400 transition-colors group-hover:bg-slate-800 group-hover:text-white">
                                             <flux:icon.chevron-right class="size-5" />
                                         </div>
                                     </div>
                                 </div>
                                 
                                 {{-- Bottom Accent Line --}}
-                                <div class="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r {{ $color[0] }} transition-all duration-300 group-hover:w-full"></div>
+                                <div class="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r {{ $color[0] }} transition-all group-hover:w-full"></div>
                             </button>
                         @empty
                             <div class="col-span-full rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50/50 p-16 text-center">
@@ -101,7 +101,7 @@
 
             {{-- Step 2: Fill Visitor Data --}}
             @if ($step === 2)
-                <div wire:key="kiosk-step-2" class="animate-in fade-in mx-auto max-w-xl space-y-8 duration-300">
+                <div wire:key="kiosk-step-2" class="mx-auto max-w-xl space-y-8">
                     {{-- Header dengan Progress --}}
                     <div class="space-y-4">
                         <div class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-2 shadow-lg">
@@ -172,14 +172,42 @@
                                 <flux:error name="visitorPhone" />
                             </flux:field>
                         </div>
+
+                        <flux:field>
+                            <flux:label class="flex items-center gap-2 text-left text-lg font-medium text-slate-700">
+                                <flux:icon.map class="size-5 text-slate-400" />
+                                Kelurahan / Desa
+                                <span class="rounded-full bg-rose-100 px-2 py-0.5 text-sm font-bold text-rose-600">Wajib</span>
+                            </flux:label>
+                            @if ($this->wilayahOptions->isEmpty())
+                                <div class="mt-2 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                                    Kelurahan/desa belum tersedia. Pastikan admin sudah memilih kabupaten aktif di menu Setting Wilayah.
+                                </div>
+                            @else
+                                <flux:select
+                                    wire:model="visitorWilayahKode"
+                                    size="lg"
+                                    placeholder="Pilih kelurahan/desa"
+                                    class="mt-2 [&_[data-flux-control]]:h-14 [&_[data-flux-control]]:rounded-xl [&_[data-flux-control]]:border-2 [&_[data-flux-control]]:border-slate-200 [&_[data-flux-control]]:text-lg"
+                                >
+                                    @foreach ($this->wilayahOptions as $wilayah)
+                                        <flux:select.option value="{{ $wilayah->kode }}">
+                                            {{ $wilayah->nama }}
+                                        </flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                            @endif
+
+                            <flux:error name="visitorWilayahKode" />
+                        </flux:field>
                     </div>
 
                     {{-- Action Buttons --}}
                     <div class="flex gap-4 pt-4">
-                        <flux:button wire:click="goBack" variant="outline" icon="arrow-left" class="h-16 flex-1 rounded-2xl border-2 border-slate-300 text-xl font-semibold text-slate-700 transition-all duration-200 hover:scale-[1.02] hover:border-slate-400 hover:bg-slate-50 active:scale-95">
+                        <flux:button wire:click="goBack" variant="outline" icon="arrow-left" class="h-16 flex-1 rounded-2xl border-2 border-slate-300 text-xl font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50">
                             Kembali
                         </flux:button>
-                        <flux:button wire:click="submitData" variant="primary" icon="arrow-right" iconTrailing class="h-16 flex-1 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 text-xl font-bold shadow-lg shadow-cyan-500/25 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl hover:shadow-cyan-500/30 active:scale-95" wire:loading.attr="disabled" wire:target="submitData">
+                        <flux:button wire:click="submitData" variant="primary" icon="arrow-right" iconTrailing class="h-16 flex-1 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 text-xl font-bold shadow-lg shadow-cyan-500/25 transition-shadow hover:shadow-xl hover:shadow-cyan-500/30" wire:loading.attr="disabled" wire:target="submitData">
                             <span wire:loading.remove wire:target="submitData">Lanjutkan</span>
                             <span wire:loading wire:target="submitData" class="inline-flex items-center gap-2">
                                 <svg class="h-6 w-6 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -195,7 +223,7 @@
 
             {{-- Step 3: Confirmation --}}
             @if ($step === 3)
-                <div wire:key="kiosk-step-3" class="animate-in fade-in mx-auto max-w-xl space-y-8 duration-300">
+                <div wire:key="kiosk-step-3" class="mx-auto max-w-xl space-y-8">
                     {{-- Header --}}
                     <div class="space-y-4">
                         <div class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-2 shadow-lg">
@@ -273,6 +301,16 @@
                                         </div>
                                         <div class="mt-2 text-xl font-semibold text-slate-800">{{ now()->translatedFormat('d F Y') }}</div>
                                     </div>
+
+                                    <div class="rounded-2xl bg-slate-50 p-5 sm:col-span-2">
+                                        <div class="flex items-center gap-2 text-sm font-medium text-slate-500">
+                                            <flux:icon.map class="size-4" />
+                                            Kelurahan / Desa
+                                        </div>
+                                        <div class="mt-2 text-lg font-semibold text-slate-800">
+                                            {{ $visitorWilayahNama ?: $visitorWilayahKode }}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -280,10 +318,10 @@
 
                     {{-- Action Buttons --}}
                     <div class="flex gap-4 pt-4">
-                        <flux:button wire:click="goBack" variant="outline" icon="arrow-left" class="h-16 flex-1 rounded-2xl border-2 border-slate-300 text-xl font-semibold text-slate-700 transition-all duration-200 hover:scale-[1.02] hover:border-slate-400 hover:bg-slate-50 active:scale-95">
+                        <flux:button wire:click="goBack" variant="outline" icon="arrow-left" class="h-16 flex-1 rounded-2xl border-2 border-slate-300 text-xl font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50">
                             Kembali
                         </flux:button>
-                        <flux:button wire:click="confirmBooking" variant="primary" icon="printer" class="h-16 flex-1 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-xl font-bold shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/30 active:scale-95" wire:loading.attr="disabled" wire:target="confirmBooking">
+                        <flux:button wire:click="confirmBooking" variant="primary" icon="printer" class="h-16 flex-1 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-xl font-bold shadow-lg shadow-emerald-500/25 transition-shadow hover:shadow-xl hover:shadow-emerald-500/30" wire:loading.attr="disabled" wire:target="confirmBooking">
                             <span wire:loading.remove wire:target="confirmBooking">Cetak Tiket</span>
                             <span wire:loading wire:target="confirmBooking" class="inline-flex items-center gap-2">
                                 <svg class="h-6 w-6 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -299,7 +337,7 @@
 
             {{-- Step 4: Ticket Printed --}}
             @if ($step === 4 && $ticket)
-                <div wire:key="kiosk-step-4" class="animate-in fade-in zoom-in mx-auto max-w-lg space-y-8 duration-500"
+                <div wire:key="kiosk-step-4" class="mx-auto max-w-lg space-y-8"
                     x-data="{ countdown: 30 }"
                     x-init="setInterval(() => { countdown--; if(countdown <= 0) $wire.resetWizard(); }, 1000)">
 
@@ -351,7 +389,7 @@
                             </div>
 
                             {{-- Barcode --}}
-                            <div class="flex justify-center rounded-2xl bg-slate-50 py-6">
+                            <div class="flex justify-center rounded-2xl bg-slate-50 py-6" wire:init="loadBarcode">
                                 @if ($barcodeSvg)
                                     <div class="barcode-container">{!! $barcodeSvg !!}</div>
                                 @else
@@ -378,7 +416,7 @@
                             </span>
                         </div>
 
-                        <flux:button wire:click="resetWizard" variant="primary" icon="plus-circle" class="h-16 w-full rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 text-xl font-bold shadow-lg shadow-cyan-500/25 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-95">
+                        <flux:button wire:click="resetWizard" variant="primary" icon="plus-circle" class="h-16 w-full rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 text-xl font-bold shadow-lg shadow-cyan-500/25 transition-shadow hover:shadow-xl">
                             Ambil Tiket Baru
                         </flux:button>
                     </div>
@@ -392,12 +430,12 @@
     <div class="mx-auto flex w-full max-w-5xl items-center justify-between">
         <form method="POST" action="{{ route('kiosk.logout') }}">
             @csrf
-            <flux:button type="submit" variant="danger" icon="arrow-right-start-on-rectangle" class="h-14 rounded-2xl px-8 text-lg font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95">
+            <flux:button type="submit" variant="danger" icon="arrow-right-start-on-rectangle" class="h-14 rounded-2xl px-8 text-lg font-semibold transition-colors">
                 Keluar Kiosk
             </flux:button>
         </form>
 
-        <flux:button wire:click="toggleFontSize" variant="ghost" icon="{{ $fontSize === 'large' ? 'minus' : 'plus' }}" class="h-14 rounded-2xl border border-slate-200 bg-white/70 px-6 text-base text-slate-600 shadow-sm transition-all duration-200 hover:scale-[1.02] active:scale-95">
+        <flux:button wire:click="toggleFontSize" variant="ghost" icon="{{ $fontSize === 'large' ? 'minus' : 'plus' }}" class="h-14 rounded-2xl border border-slate-200 bg-white/70 px-6 text-base text-slate-600 shadow-sm transition-colors">
             {{ $fontSize === 'large' ? 'Teks Normal' : 'Teks Besar' }}
         </flux:button>
     </div>

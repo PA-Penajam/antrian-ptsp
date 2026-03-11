@@ -25,6 +25,8 @@ class QueueTicket extends Model
         'visitor_name',
         'visitor_identifier',
         'visitor_phone',
+        'visitor_address',
+        'visitor_wilayah_kode',
         'notes',
         'status',
         'checked_in_at',

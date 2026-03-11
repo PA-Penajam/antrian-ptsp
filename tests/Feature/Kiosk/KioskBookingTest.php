@@ -1,7 +1,9 @@
 <?php
 
 use App\Livewire\KioskBooking;
+use App\Models\AppSetting;
 use App\Models\Service;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 use function Pest\Laravel\withSession;
@@ -12,6 +14,24 @@ function kioskSession(): array
         'kiosk_authenticated' => true,
         'kiosk_authenticated_at' => now()->timestamp,
     ];
+}
+
+/**
+ * @return array{kode:string,nama:string}
+ */
+function sampleWilayahDesa(): array
+{
+    $wilayah = [
+        'kode' => '64.09.01.1001',
+        'nama' => 'Penajam',
+    ];
+
+    DB::table('wilayah')->updateOrInsert(
+        ['kode' => $wilayah['kode']],
+        ['nama' => $wilayah['nama']]
+    );
+
+    return $wilayah;
 }
 
 it('renders kiosk booking page when authenticated', function () {
@@ -96,11 +116,44 @@ it('validates visitor name minimum length', function () {
         ->assertHasErrors(['visitorName' => 'min']);
 });
 
+it('validates wilayah is required', function () {
+    session(kioskSession());
+
+    $component = Livewire::test(KioskBooking::class);
+
+    $component->set('step', 2)
+        ->set('visitorName', 'Pengunjung Tes')
+        ->set('visitorWilayahKode', null)
+        ->call('submitData')
+        ->assertHasErrors([
+            'visitorWilayahKode' => 'required',
+        ]);
+});
+
+it('rejects wilayah outside selected kabupaten scope', function () {
+    DB::table('wilayah')->insert([
+        ['kode' => '64.09', 'nama' => 'Kabupaten Penajam Paser Utara'],
+        ['kode' => '64.01.01.1001', 'nama' => 'Desa Luar Scope'],
+    ]);
+    AppSetting::setValue('wilayah.scope.kabupaten_kode', '64.09');
+
+    session(kioskSession());
+
+    $component = Livewire::test(KioskBooking::class);
+
+    $component->set('step', 2)
+        ->set('visitorName', 'Pengunjung Tes')
+        ->set('visitorWilayahKode', '64.01.01.1001')
+        ->call('submitData')
+        ->assertHasErrors(['visitorWilayahKode' => 'exists']);
+});
+
 it('moves to step 3 when data is valid', function () {
     $service = Service::factory()->create([
         'is_active' => true,
         'walk_in_enabled' => true,
     ]);
+    $wilayah = sampleWilayahDesa();
 
     session(kioskSession());
 
@@ -110,6 +163,8 @@ it('moves to step 3 when data is valid', function () {
         ->set('visitorName', 'John Doe')
         ->set('visitorIdentifier', '123456789')
         ->set('visitorPhone', '081234567890')
+        ->set('visitorWilayahKode', $wilayah['kode'])
+        ->set('visitorWilayahNama', $wilayah['nama'])
         ->call('submitData')
         ->assertSet('step', 3);
 });
@@ -120,6 +175,7 @@ it('creates ticket with walk_in_kiosk channel on confirm', function () {
         'is_active' => true,
         'walk_in_enabled' => true,
     ]);
+    $wilayah = sampleWilayahDesa();
 
     session(kioskSession());
 
@@ -129,6 +185,8 @@ it('creates ticket with walk_in_kiosk channel on confirm', function () {
         ->set('visitorName', 'Jane Doe')
         ->set('visitorIdentifier', '987654321')
         ->set('visitorPhone', '089876543210')
+        ->set('visitorWilayahKode', $wilayah['kode'])
+        ->set('visitorWilayahNama', $wilayah['nama'])
         ->call('submitData')
         ->call('confirmBooking');
 
@@ -142,6 +200,7 @@ it('creates ticket with walk_in_kiosk channel on confirm', function () {
         'visitor_name' => 'Jane Doe',
         'visitor_identifier' => '987654321',
         'visitor_phone' => '089876543210',
+        'visitor_wilayah_kode' => $wilayah['kode'],
     ]);
 });
 
@@ -150,6 +209,7 @@ it('allows optional identifier and phone to be empty', function () {
         'is_active' => true,
         'walk_in_enabled' => true,
     ]);
+    $wilayah = sampleWilayahDesa();
 
     session(kioskSession());
 
@@ -157,6 +217,8 @@ it('allows optional identifier and phone to be empty', function () {
 
     $component->call('selectService', $service->id)
         ->set('visitorName', 'Anonymous User')
+        ->set('visitorWilayahKode', $wilayah['kode'])
+        ->set('visitorWilayahNama', $wilayah['nama'])
         ->call('submitData')
         ->call('confirmBooking');
 
@@ -168,6 +230,7 @@ it('allows optional identifier and phone to be empty', function () {
         'visitor_name' => 'Anonymous User',
         'visitor_identifier' => null,
         'visitor_phone' => null,
+        'visitor_wilayah_kode' => $wilayah['kode'],
     ]);
 });
 
@@ -193,6 +256,7 @@ it('resets wizard to initial state', function () {
         'is_active' => true,
         'walk_in_enabled' => true,
     ]);
+    $wilayah = sampleWilayahDesa();
 
     session(kioskSession());
 
@@ -200,6 +264,8 @@ it('resets wizard to initial state', function () {
 
     $component->call('selectService', $service->id)
         ->set('visitorName', 'Test User')
+        ->set('visitorWilayahKode', $wilayah['kode'])
+        ->set('visitorWilayahNama', $wilayah['nama'])
         ->call('submitData')
         ->call('confirmBooking')
         ->assertSet('step', 4)
@@ -208,7 +274,9 @@ it('resets wizard to initial state', function () {
         ->assertSet('selectedServiceId', null)
         ->assertSet('visitorName', '')
         ->assertSet('visitorIdentifier', '')
-        ->assertSet('visitorPhone', '');
+        ->assertSet('visitorPhone', '')
+        ->assertSet('visitorWilayahKode', null)
+        ->assertSet('visitorWilayahNama', '');
 });
 
 it('generates barcode SVG on ticket confirmation', function () {
@@ -216,6 +284,7 @@ it('generates barcode SVG on ticket confirmation', function () {
         'is_active' => true,
         'walk_in_enabled' => true,
     ]);
+    $wilayah = sampleWilayahDesa();
 
     session(kioskSession());
 
@@ -223,8 +292,11 @@ it('generates barcode SVG on ticket confirmation', function () {
 
     $component->call('selectService', $service->id)
         ->set('visitorName', 'Barcode Test User')
+        ->set('visitorWilayahKode', $wilayah['kode'])
+        ->set('visitorWilayahNama', $wilayah['nama'])
         ->call('submitData')
-        ->call('confirmBooking');
+        ->call('confirmBooking')
+        ->call('loadBarcode');
 
     $component->assertSet('step', 4)
         ->assertSeeHtml('<svg')
