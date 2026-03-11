@@ -162,3 +162,23 @@
 - Section layanan memakai data API untuk `name`, `description`, status `booking_enabled`, serta info kuota bila tersedia.
 - Section informasi memakai data institusi untuk jam operasional, alamat, dan kontak; ditambah alur kunjungan singkat agar halaman tetap fungsional walau template asli bersifat marketing.
 - `pnpm install --frozen-lockfile` perlu dijalankan lebih dulu karena binary `next` belum tersedia di `frontend-public/node_modules/.bin`; sesudah itu `pnpm exec tsc --noEmit` dan `pnpm build` berjalan sukses.
+## [2026-03-09] Task 12: Booking Wizard Public Page
+- `frontend-public/src/app/antrian/page.tsx` dibuat sebagai Client Component dengan `useState`, `useEffect`, dan `useRouter` untuk alur 3-step booking publik.
+- Step 1 fetch `getServices()` di client lalu hanya menampilkan layanan dengan `booking_enabled = true`; layanan dengan `remaining_quota <= 0` ditandai tidak bisa dipilih.
+- Step 2 memakai native `<input type="date">` dengan `min` hari ini dan `max` +14 hari; validasi client juga menolak tanggal weekend sebelum submit.
+- Error API 422 dari `createBooking(payload)` dibaca dari `ApiError.errors` dan dirender inline per field melalui state `errors`.
+- Redirect sukses menggunakan `router.push(`/antrian/konfirmasi/${ticket.data.ticket_number}`)`.
+- Verifikasi: `pnpm exec tsc --noEmit` dan `pnpm build` di `frontend-public` sama-sama sukses; build masih menampilkan warning Turbopack soal multiple lockfiles di root workspace.
+## [2026-03-09] Task 14: Ticket Confirmation Public Page
+- `frontend-public/src/app/antrian/konfirmasi/[ticket]/page.tsx` dibuat sebagai async Server Component tanpa `'use client'`, memakai pola Next.js App Router `params: Promise<{ ticket: string }>` lalu `await params`.
+- Detail tiket diambil server-side lewat `getTicketDetail(ticketNumber)`; error API ditangkap sebagai `ApiError` dan dirender menjadi state halaman error dengan pesan utama `Tiket tidak ditemukan`.
+- Halaman sukses memakai class Finris yang sudah ada (`page-header`, `services-one__single`, `about-one__points`, `process-one__single`, `thm-btn`, `section-title`, `inner-section`) tanpa Tailwind.
+- Field utama yang dirender: `ticket_number`, `service.name`, `status_label`, `service_date` (format `id-ID`), `visitor_name`, plus kondisi `queue_position` saat `waiting` dan `counter_name` saat `called`.
+- Verifikasi lulus: `pnpm exec tsc --noEmit`, LSP diagnostics bersih untuk file baru, dan `pnpm build` berhasil dengan route dinamis `/antrian/konfirmasi/[ticket]`.
+- 2026-03-09: Halaman publik lookup tiket Next.js memakai client component dengan `useState` untuk `ticketNumber`, `serviceDate`, `result`, `error`, dan `isLoading`, lalu memanggil `lookupTicket(ticketNumber, serviceDate)` dari `@/lib/api` pada submit.
+- 2026-03-09: Untuk halaman publik Finris, pola yang paling aman adalah menggabungkan `page-header`, `contact-page__right`, `contact-page__left`, `about-one__points`, dan `services-one__single` agar form dan kartu hasil tetap konsisten tanpa Tailwind.
+- 2026-03-09: `lookupTicket` melempar `ApiError` pada non-2xx; untuk skenario lookup tiket, fallback pesan `Tiket tidak ditemukan` perlu disiapkan agar 404 tampil ramah di UI.
+- 2026-03-09: Jika `pnpm build` gagal karena `.next/lock`, cek dulu proses `next build` yang masih berjalan; setelah proses selesai dan lock hilang, build berikutnya dapat berjalan normal.
+- F1 audit 2026-03-09 22:03:54: 6 API routes terdaftar via laravel-boost_list-routes; StoreBookingRequest + WeekdayOnly + ServiceResource + QueueTicketResource terverifikasi; CORS env-driven (FRONTEND_URL) tanpa wildcard origin; throttle booking/read aktif di routes/api.php.
+- Pest API suite terverifikasi pass via laravel-boost_tinker dengan override DB_CONNECTION=sqlite DB_DATABASE=:memory: -> 23 passed (58 assertions).
+- Guardrails terverifikasi: tidak ada Sanctum/install:api, tidak ada DB:: di API layer, tidak ada env() langsung di app/bootstrap/routes/tests/database, tidak ada frontend test suite custom, dan artefak Next.js wajib tersedia.

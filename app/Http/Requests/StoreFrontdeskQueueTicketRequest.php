@@ -2,7 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\QueueStatus;
+use App\Models\QueueTicket;
+use App\Models\Service;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreFrontdeskQueueTicketRequest extends FormRequest
 {
@@ -24,12 +28,52 @@ class StoreFrontdeskQueueTicketRequest extends FormRequest
         return [
             'service_id' => ['required', 'integer', 'exists:services,id'],
             'channel' => ['required', 'in:assisted_same_day,walk_in_kiosk'],
-            'service_date' => ['required', 'date'],
+            'service_date' => ['required', 'date', 'after_or_equal:today'],
             'visitor_name' => ['required', 'string', 'max:255'],
             'visitor_identifier' => ['nullable', 'string', 'max:64'],
             'visitor_phone' => ['nullable', 'string', 'max:30'],
             'notes' => ['nullable', 'string'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
+            $serviceId = $this->integer('service_id');
+            $serviceDate = (string) $this->input('service_date');
+            $channel = (string) $this->input('channel');
+
+            $service = Service::query()->find($serviceId);
+            if (! $service || ! $service->is_active) {
+                $validator->errors()->add('service_id', 'Layanan tidak tersedia saat ini.');
+
+                return;
+            }
+
+            if (in_array($channel, ['assisted_same_day', 'walk_in_kiosk'], true) && ! $service->walk_in_enabled) {
+                $validator->errors()->add('service_id', 'Layanan ini tidak menerima antrean walk-in/frontdesk.');
+
+                return;
+            }
+
+            if ($service->daily_quota === null) {
+                return;
+            }
+
+            $todayCount = QueueTicket::query()
+                ->where('service_id', $serviceId)
+                ->whereDate('service_date', $serviceDate)
+                ->whereNotIn('status', [QueueStatus::Cancelled])
+                ->count();
+
+            if ($todayCount >= $service->daily_quota) {
+                $validator->errors()->add('service_date', 'Kuota harian untuk layanan ini sudah penuh.');
+            }
+        });
     }
 
     /**
@@ -46,6 +90,7 @@ class StoreFrontdeskQueueTicketRequest extends FormRequest
             'channel.in' => 'Kanal yang dipilih tidak valid.',
             'service_date.required' => 'Tanggal layanan wajib diisi.',
             'service_date.date' => 'Format tanggal layanan tidak valid.',
+            'service_date.after_or_equal' => 'Tanggal layanan tidak boleh di masa lalu.',
             'visitor_name.required' => 'Nama pengunjung wajib diisi.',
             'visitor_name.max' => 'Nama pengunjung maksimal 255 karakter.',
         ];

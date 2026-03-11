@@ -10,13 +10,31 @@ use App\Actions\Queue\SkipTicket;
 use App\Http\Requests\QueueTicketActionRequest;
 use App\Models\Counter;
 use App\Models\QueueTicket;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Response;
 
 class OfficerQueueController extends Controller
 {
-    public function show(Counter $counter): Response
+    public function show(Counter $counter): View
     {
-        return response("Loket {$counter->id}", 200);
+        $user = request()->user();
+
+        abort_if(! $user, 403);
+
+        $allowedPoolIds = $user->services()
+            ->pluck('queue_pool_id')
+            ->filter()
+            ->values();
+
+        if ($allowedPoolIds->isNotEmpty()) {
+            abort_if(! $allowedPoolIds->contains($counter->queue_pool_id), 403);
+        }
+
+        $counter->loadMissing('queuePool');
+
+        return view('pages.officer.counter', [
+            'counter' => $counter,
+        ]);
     }
 
     public function callNext(Counter $counter, CallNextTicket $callNextTicket): Response

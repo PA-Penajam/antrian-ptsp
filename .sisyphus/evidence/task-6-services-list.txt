@@ -1,0 +1,10 @@
+
+   PASS  Tests\Feature\Api\ServiceTest
+  ✓ can list active services                                             1.22s  
+  ✓ can get service by slug                                              0.07s  
+  ✓ returns 404 for inactive service slug                                0.06s  
+  ✓ returns 404 for non-existent slug                                    0.05s  
+
+  Tests:    4 passed (12 assertions)
+  Duration: 2.02s
+

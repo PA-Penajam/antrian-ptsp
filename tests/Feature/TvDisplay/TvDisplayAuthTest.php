@@ -2,6 +2,7 @@
 
 use function Pest\Laravel\from;
 use function Pest\Laravel\get;
+use function Pest\Laravel\getJson;
 use function Pest\Laravel\post;
 use function Pest\Laravel\withSession;
 
@@ -56,4 +57,22 @@ it('middleware module password tv-display blocks unauthenticated access', functi
     $response = get('/tv-display');
 
     $response->assertRedirect('/tv-display/login');
+});
+
+it('blocks unauthenticated access to tv-display tts endpoint', function () {
+    $response = getJson(route('tv-display.tts.announcement', ['text' => 'Nomor A-001 ke Loket 1']));
+
+    $response->assertRedirect('/tv-display/login');
+});
+
+it('returns browser provider fallback when elevenlabs is not configured', function () {
+    $response = withSession([
+        'tv_display_authenticated' => true,
+        'tv_display_authenticated_at' => now()->timestamp,
+    ])->getJson(route('tv-display.tts.announcement', ['text' => 'Nomor A-001 ke Loket 1']));
+
+    $response->assertOk()
+        ->assertJson([
+            'provider' => 'browser',
+        ]);
 });

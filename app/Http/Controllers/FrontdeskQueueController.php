@@ -10,19 +10,34 @@ use App\Models\QueueTicket;
 use App\Models\Service;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use InvalidArgumentException;
 
 class FrontdeskQueueController extends Controller
 {
     public function index(): View
     {
+        $createdTicket = null;
+        $checkedInTicket = null;
+
+        $createdTicketId = session('created_ticket_id');
+        if (is_numeric($createdTicketId)) {
+            $createdTicket = QueueTicket::query()->find((int) $createdTicketId);
+        }
+
+        $checkedInTicketId = session('checked_in_ticket_id');
+        if (is_numeric($checkedInTicketId)) {
+            $checkedInTicket = QueueTicket::query()->find((int) $checkedInTicketId);
+        }
+
         return view('pages.frontdesk.antrian', [
-            'ticket' => null,
-            'checkedInTicket' => null,
+            'ticket' => $createdTicket,
+            'checkedInTicket' => $checkedInTicket,
             'services' => Service::query()->where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 
-    public function store(StoreFrontdeskQueueTicketRequest $request, CreateQueueTicket $createQueueTicket): View
+    public function store(StoreFrontdeskQueueTicketRequest $request, CreateQueueTicket $createQueueTicket): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -37,23 +52,32 @@ class FrontdeskQueueController extends Controller
             'created_by' => $request->user()?->id,
         ]);
 
-        return view('pages.frontdesk.antrian', [
-            'ticket' => $ticket,
-            'checkedInTicket' => null,
-            'services' => Service::query()->where('is_active', true)->orderBy('sort_order')->get(),
-        ]);
+        return redirect()
+            ->route('frontdesk.queue.index')
+            ->with('created_ticket_id', $ticket->id)
+            ->with('status', 'Tiket berhasil dibuat.');
     }
 
-    public function checkIn(CheckInQueueTicketRequest $request, CheckInQueueTicket $checkInQueueTicket): View
+    public function checkIn(CheckInQueueTicketRequest $request, CheckInQueueTicket $checkInQueueTicket): RedirectResponse
     {
         $validated = $request->validated();
-        $queueTicket = QueueTicket::query()->findOrFail($validated['ticket_id']);
-        $checkedInTicket = $checkInQueueTicket->handle($queueTicket, $request->user()?->id);
+        $queueTicket = QueueTicket::query()
+            ->where('ticket_number', $validated['ticket_number'])
+            ->firstOrFail();
 
-        return view('pages.frontdesk.antrian', [
-            'ticket' => null,
-            'checkedInTicket' => $checkedInTicket,
-            'services' => Service::query()->where('is_active', true)->orderBy('sort_order')->get(),
-        ]);
+        try {
+            $checkedInTicket = $checkInQueueTicket->handle($queueTicket, $request->user()?->id);
+        } catch (InvalidArgumentException) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'ticket_number' => 'Tiket ini tidak dapat check-in karena statusnya bukan terdaftar (online).',
+                ]);
+        }
+
+        return redirect()
+            ->route('frontdesk.queue.index')
+            ->with('checked_in_ticket_id', $checkedInTicket->id)
+            ->with('status', 'Check-in tiket berhasil diproses.');
     }
 }

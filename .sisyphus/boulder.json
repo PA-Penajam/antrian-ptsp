@@ -1,10 +1,9 @@
 {
-  "active_plan": "/media/moohard/windows/laragon/www/antrian-ptsp/.sisyphus/plans/admin-dashboard-redesign.md",
-  "started_at": "2026-03-07T14:23:04.407Z",
+  "active_plan": "/media/moohard/windows/laragon/www/antrian-ptsp/.sisyphus/plans/nextjs-public-pages.md",
+  "started_at": "2026-03-09T12:10:20.719Z",
   "session_ids": [
-    "ses_33751d1cbffe2Ueb5rHruTZhs1"
+    "ses_32d7f5187ffebGtwbQ0hk5A2g5"
   ],
-  "plan_name": "admin-dashboard-redesign",
-  "agent": "atlas",
-  "worktree_path": "/home/moohard/.config/superpowers/worktrees/antrian-ptsp/feat-admin-dashboard-redesign-20260307"
+  "plan_name": "nextjs-public-pages",
+  "agent": "atlas"
 }

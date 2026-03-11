@@ -35,4 +35,16 @@ return [
         ],
     ],
 
+    'elevenlabs' => [
+        'api_key' => env('ELEVENLABS_API_KEY'),
+        'voice_id' => env('ELEVENLABS_VOICE_ID'),
+        'model' => env('ELEVENLABS_MODEL', 'eleven_turbo_v2_5'),
+        'stability' => (float) env('ELEVENLABS_STABILITY', 0.45),
+        'similarity_boost' => (float) env('ELEVENLABS_SIMILARITY_BOOST', 0.8),
+        'style' => (float) env('ELEVENLABS_STYLE', 0.2),
+        'use_speaker_boost' => (bool) env('ELEVENLABS_USE_SPEAKER_BOOST', true),
+        'cache_disk' => env('ELEVENLABS_CACHE_DISK', 'public'),
+        'cache_prefix' => env('ELEVENLABS_CACHE_PREFIX', 'tts/elevenlabs'),
+    ],
+
 ];

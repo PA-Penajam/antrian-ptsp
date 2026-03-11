@@ -1,0 +1,1 @@
+{"id":1,"name":"Layanan E2E","code":"E2ESVC","slug":"layanan-e2e","description":"Layanan untuk e2e","requirements":"KTP","booking_enabled":true,"daily_quota":100,"remaining_quota":100}

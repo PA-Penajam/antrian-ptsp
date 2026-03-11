@@ -1,0 +1,10 @@
+php artisan test --filter=ExampleApiTest
+
+   PASS  Tests\Feature\Api\ExampleApiTest
+  ✓ it api test infrastructure is working                                6.65s  
+
+  Tests:    1 passed (1 assertions)
+  Duration: 7.17s
+
+---
+Test verification completed successfully.

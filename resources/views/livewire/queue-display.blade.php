@@ -86,11 +86,16 @@
 
     <script>
         (() => {
+            const elevenLabsEndpoint = "{{ route('tv-display.tts.announcement') }}";
+            const elevenLabsConfigured = Boolean(Number("{{ filled(config('services.elevenlabs.api_key')) && filled(config('services.elevenlabs.voice_id')) ? 1 : 0 }}"));
+
             const state = window.queueDisplayTts ??= {
                 announced: new Map(),
                 ttsEnabled: false,
                 hooksRegistered: false,
                 lastProcessedPayload: null,
+                playbackQueue: Promise.resolve(),
+                currentAudio: null,
             };
 
             const supportsSpeech = () => 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
@@ -111,21 +116,72 @@
                 }
             };
 
-            const syncToggleState = () => {
-                const toggleButton = document.getElementById('tts-toggle');
-                const offIcon = document.getElementById('tts-off-icon');
-                const onIcon = document.getElementById('tts-on-icon');
+            const buildAnnouncementText = (ticket) => ticket.counter_name
+                ? `Nomor antrian ${ticket.ticket_number}, silakan menuju ${ticket.counter_name}`
+                : `Nomor antrian ${ticket.ticket_number}, harap segera menuju loket petugas`;
 
-                if (!toggleButton || !offIcon || !onIcon) {
+            const stopCurrentAudio = () => {
+                if (!state.currentAudio) {
                     return;
                 }
 
-                const isSupported = supportsSpeech();
+                state.currentAudio.pause();
+                state.currentAudio.currentTime = 0;
+                state.currentAudio = null;
+            };
 
-                toggleButton.hidden = !isSupported;
-                toggleButton.setAttribute('aria-pressed', state.ttsEnabled ? 'true' : 'false');
-                offIcon.classList.toggle('hidden', state.ttsEnabled);
-                onIcon.classList.toggle('hidden', !state.ttsEnabled);
+            const playAudioUrl = (audioUrl) => new Promise((resolve, reject) => {
+                const audio = new Audio(audioUrl);
+
+                audio.preload = 'auto';
+                state.currentAudio = audio;
+
+                const cleanup = () => {
+                    if (state.currentAudio === audio) {
+                        state.currentAudio = null;
+                    }
+                };
+
+                audio.addEventListener('ended', () => {
+                    cleanup();
+                    resolve(true);
+                }, { once: true });
+
+                audio.addEventListener('error', () => {
+                    cleanup();
+                    reject(new Error('Audio playback failed.'));
+                }, { once: true });
+
+                audio.play().catch((error) => {
+                    cleanup();
+                    reject(error);
+                });
+            });
+
+            const fetchElevenLabsAudioUrl = async (text) => {
+                if (!elevenLabsConfigured || !text) {
+                    return null;
+                }
+
+                const query = new URLSearchParams({ text });
+                const response = await fetch(`${elevenLabsEndpoint}?${query.toString()}`, {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                    credentials: 'same-origin',
+                });
+
+                if (!response.ok) {
+                    return null;
+                }
+
+                const payload = await response.json();
+
+                if (payload?.provider !== 'elevenlabs' || typeof payload.audio_url !== 'string' || payload.audio_url === '') {
+                    return null;
+                }
+
+                return payload.audio_url;
             };
 
             const findIndonesianVoice = () => {
@@ -138,25 +194,61 @@
                     .find((voice) => voice.lang.toLowerCase().startsWith('id')) ?? null;
             };
 
-            const speakTicket = (ticket) => {
-                if (!supportsSpeech()) {
+            const speakWithBrowser = async (text) => {
+                if (!supportsSpeech() || !text) {
                     return;
                 }
 
-                const announcementText = ticket.counter_name
-                    ? `Nomor antrian ${ticket.ticket_number}, silakan menuju ${ticket.counter_name}`
-                    : `Nomor antrian ${ticket.ticket_number}, harap segera menuju loket petugas`;
-                const utterance = new SpeechSynthesisUtterance(announcementText);
-                const indonesianVoice = findIndonesianVoice();
+                await new Promise((resolve) => {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    const indonesianVoice = findIndonesianVoice();
 
-                utterance.lang = 'id-ID';
-                utterance.rate = 0.85;
+                    utterance.lang = 'id-ID';
+                    utterance.rate = 0.85;
 
-                if (indonesianVoice) {
-                    utterance.voice = indonesianVoice;
+                    if (indonesianVoice) {
+                        utterance.voice = indonesianVoice;
+                    }
+
+                    utterance.addEventListener('end', () => resolve(true), { once: true });
+                    utterance.addEventListener('error', () => resolve(true), { once: true });
+
+                    window.speechSynthesis.speak(utterance);
+                });
+            };
+
+            const speakTicket = async (ticket) => {
+                const announcementText = buildAnnouncementText(ticket);
+
+                try {
+                    const audioUrl = await fetchElevenLabsAudioUrl(announcementText);
+
+                    if (audioUrl) {
+                        await playAudioUrl(audioUrl);
+
+                        return;
+                    }
+                } catch {
                 }
 
-                window.speechSynthesis.speak(utterance);
+                await speakWithBrowser(announcementText);
+            };
+
+            const syncToggleState = () => {
+                const toggleButton = document.getElementById('tts-toggle');
+                const offIcon = document.getElementById('tts-off-icon');
+                const onIcon = document.getElementById('tts-on-icon');
+
+                if (!toggleButton || !offIcon || !onIcon) {
+                    return;
+                }
+
+                const isSupported = supportsSpeech() || elevenLabsConfigured;
+
+                toggleButton.hidden = !isSupported;
+                toggleButton.setAttribute('aria-pressed', state.ttsEnabled ? 'true' : 'false');
+                offIcon.classList.toggle('hidden', state.ttsEnabled);
+                onIcon.classList.toggle('hidden', !state.ttsEnabled);
             };
 
             const processCurrentCalls = (shouldAnnounce) => {
@@ -180,7 +272,9 @@
                         state.announced.set(ticketId, calledAt);
 
                         if (shouldAnnounce) {
-                            speakTicket(ticket);
+                            state.playbackQueue = state.playbackQueue
+                                .then(() => speakTicket(ticket))
+                                .catch(() => undefined);
                         }
                     }
                 });
@@ -189,22 +283,22 @@
             };
 
             const handleQueueDisplayUpdate = () => {
-                processCurrentCalls(state.ttsEnabled && supportsSpeech());
+                processCurrentCalls(state.ttsEnabled && (supportsSpeech() || elevenLabsConfigured));
             };
 
             window.toggleQueueDisplayTts = () => {
-                if (!supportsSpeech()) {
-                    return;
-                }
-
                 state.ttsEnabled = !state.ttsEnabled;
-                window.speechSynthesis.cancel();
+                stopCurrentAudio();
 
-                if (state.ttsEnabled) {
-                    const activationUtterance = new SpeechSynthesisUtterance('');
+                if (supportsSpeech()) {
+                    window.speechSynthesis.cancel();
 
-                    activationUtterance.volume = 0;
-                    window.speechSynthesis.speak(activationUtterance);
+                    if (state.ttsEnabled) {
+                        const activationUtterance = new SpeechSynthesisUtterance('');
+
+                        activationUtterance.volume = 0;
+                        window.speechSynthesis.speak(activationUtterance);
+                    }
                 }
 
                 syncToggleState();

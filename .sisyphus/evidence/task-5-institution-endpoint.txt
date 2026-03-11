@@ -1,0 +1,14 @@
+=== T5: Institution Endpoint Evidence ===
+
+1. Test Result:
+
+   PASS  Tests\Feature\Api\InstitutionTest
+  ✓ can get institution info                                             1.13s  
+  ✓ institution endpoint returns 405 for non-GET methods                 0.06s  
+
+  Tests:    2 passed (6 assertions)
+  Duration: 1.76s
+
+
+2. Pint Formatter:
+{"result":"pass"}

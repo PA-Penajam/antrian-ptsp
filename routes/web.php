@@ -11,6 +11,7 @@ use App\Http\Controllers\OfficerQueueController;
 use App\Http\Controllers\PublicQueueController;
 use App\Http\Controllers\Report\QueueReportController;
 use App\Http\Controllers\TvDisplayController;
+use App\Http\Controllers\TvDisplayTtsController;
 use App\Livewire\QueueDisplay;
 use Illuminate\Support\Facades\Route;
 
@@ -30,13 +31,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Frontdesk->value.','.UserRole::Admin->value])->group(function () {
-    Route::get('/frontdesk/antrian', [FrontdeskQueueController::class, 'index']);
-    Route::post('/frontdesk/antrian', [FrontdeskQueueController::class, 'store']);
-    Route::post('/frontdesk/antrian/check-in', [FrontdeskQueueController::class, 'checkIn']);
+    Route::get('/frontdesk/antrian', [FrontdeskQueueController::class, 'index'])->name('frontdesk.queue.index');
+    Route::post('/frontdesk/antrian', [FrontdeskQueueController::class, 'store'])->name('frontdesk.queue.store');
+    Route::post('/frontdesk/antrian/check-in', [FrontdeskQueueController::class, 'checkIn'])->name('frontdesk.queue.check-in');
 });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Officer->value])->group(function () {
-    Route::get('/petugas/loket/{counter}', [OfficerQueueController::class, 'show']);
+    Route::get('/petugas/loket/{counter}', [OfficerQueueController::class, 'show'])->name('officer.counter.show');
     Route::post('/petugas/loket/{counter}/call-next', [OfficerQueueController::class, 'callNext']);
     Route::post('/petugas/loket/{counter}/recall', [OfficerQueueController::class, 'recall']);
     Route::post('/petugas/loket/{counter}/skip', [OfficerQueueController::class, 'skip']);
@@ -96,6 +97,8 @@ Route::post('/tv-display/login', [TvDisplayController::class, 'login'])->name('t
 Route::post('/tv-display/logout', [TvDisplayController::class, 'logout'])->name('tv-display.logout');
 Route::middleware('module.password:tv-display')->group(function () {
     Route::get('/tv-display', [TvDisplayController::class, 'index'])->name('tv-display.index');
+    Route::get('/tv-display/tts/announcement', [TvDisplayTtsController::class, 'announcement'])->name('tv-display.tts.announcement');
+    Route::get('/tv-display/tts/audio/{cacheKey}', [TvDisplayTtsController::class, 'audio'])->name('tv-display.tts.audio');
 });
 
 require __DIR__.'/settings.php';
