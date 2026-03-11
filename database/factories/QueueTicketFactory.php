@@ -33,7 +33,6 @@ class QueueTicketFactory extends Factory
             'visitor_name' => fake()->name(),
             'visitor_identifier' => (string) fake()->numerify('################'),
             'visitor_phone' => fake()->phoneNumber(),
-            'visitor_address' => fake()->streetAddress(),
             'visitor_wilayah_kode' => null,
             'notes' => fake()->sentence(),
             'status' => QueueStatus::Waiting,
