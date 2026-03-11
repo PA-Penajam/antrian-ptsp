@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full overflow-hidden">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -16,7 +16,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @fluxAppearance
     </head>
-    <body class="min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-white to-cyan-100 text-slate-800 antialiased">
+    <body class="min-h-screen overflow-x-hidden overflow-y-auto bg-gradient-to-br from-slate-100 via-white to-cyan-100 text-slate-800 antialiased">
         {{-- Animated Background --}}
         <div class="fixed inset-0 overflow-hidden">
             {{-- Gradient Orbs --}}
@@ -28,8 +28,8 @@
             <div class="absolute inset-0 opacity-[0.02]" style="background-image: linear-gradient(to right, #0f172a 1px, transparent 1px), linear-gradient(to bottom, #0f172a 1px, transparent 1px); background-size: 60px 60px;"></div>
         </div>
 
-        <div class="relative min-h-screen overflow-hidden">
-            <main class="relative min-h-screen overflow-hidden">
+        <div class="relative min-h-screen">
+            <main class="relative min-h-screen">
                 {{ $slot }}
             </main>
         </div>
