@@ -67,6 +67,9 @@
                         <flux:sidebar.item icon="users" :href="route('admin.users.index')" :current="request()->routeIs('admin.users.*')" wire:navigate>
                             {{ __('Users') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="map" :href="route('admin.wilayah.index')" :current="request()->routeIs('admin.wilayah.*')" wire:navigate>
+                            {{ __('Setting Wilayah') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="device-tablet" :href="route('kiosk.index')" :current="request()->routeIs('kiosk.*')" wire:navigate>
                             {{ __('Kiosk') }}
                         </flux:sidebar.item>
@@ -160,6 +163,9 @@
                             </flux:menu.item>
                             <flux:menu.item :href="route('admin.users.index')" icon="users" wire:navigate>
                                 {{ __('Users') }}
+                            </flux:menu.item>
+                            <flux:menu.item :href="route('admin.wilayah.index')" icon="map" wire:navigate>
+                                {{ __('Setting Wilayah') }}
                             </flux:menu.item>
                             <flux:menu.item :href="route('kiosk.index')" icon="device-tablet" wire:navigate>
                                 {{ __('Kiosk') }}

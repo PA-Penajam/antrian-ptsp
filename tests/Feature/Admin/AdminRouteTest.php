@@ -22,6 +22,11 @@ it('has named admin users routes', function () {
     expect(Route::has('admin.users.destroy'))->toBeTrue();
 });
 
+it('has named admin wilayah routes', function () {
+    expect(Route::has('admin.wilayah.index'))->toBeTrue();
+    expect(Route::has('admin.wilayah.update'))->toBeTrue();
+});
+
 it('has named kiosk routes', function () {
     expect(Route::has('kiosk.index'))->toBeTrue();
     expect(Route::has('kiosk.login'))->toBeTrue();
@@ -88,5 +93,15 @@ it('admin users update route requires admin role middleware', function () {
 
 it('admin users destroy route requires admin role middleware', function () {
     $response = $this->delete(route('admin.users.destroy', 1));
+    $response->assertRedirect('/login');
+});
+
+it('admin wilayah index route requires admin role middleware', function () {
+    $response = $this->get(route('admin.wilayah.index'));
+    $response->assertRedirect('/login');
+});
+
+it('admin wilayah update route requires admin role middleware', function () {
+    $response = $this->put(route('admin.wilayah.update'), []);
     $response->assertRedirect('/login');
 });

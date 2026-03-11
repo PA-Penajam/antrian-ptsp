@@ -4,6 +4,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Admin\CounterManagementController;
 use App\Http\Controllers\Admin\ServiceManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\WilayahSettingController;
 use App\Http\Controllers\FrontdeskQueueController;
 use App\Http\Controllers\KioskController;
 use App\Http\Controllers\OfficerQueueController;
@@ -71,6 +72,10 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(f
     Route::post('/admin/users', [UserManagementController::class, 'store'])->name('admin.users.store');
     Route::put('/admin/users/{user}', [UserManagementController::class, 'update'])->name('admin.users.update');
     Route::delete('/admin/users/{user}', [UserManagementController::class, 'destroy'])->name('admin.users.destroy');
+
+    // Admin - Wilayah Scope
+    Route::get('/admin/wilayah', [WilayahSettingController::class, 'index'])->name('admin.wilayah.index');
+    Route::put('/admin/wilayah', [WilayahSettingController::class, 'update'])->name('admin.wilayah.update');
 
     // Admin - Roles & Permissions
     Route::get('/admin/roles', fn () => redirect()->route('admin.users.index', [], 301));

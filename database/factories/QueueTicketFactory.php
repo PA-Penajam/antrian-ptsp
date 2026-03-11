@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Enums\QueueStatus;
 use App\Models\Counter;
 use App\Models\QueuePool;
 use App\Models\Service;
 use App\Models\User;
-use App\Enums\QueueStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -33,6 +33,7 @@ class QueueTicketFactory extends Factory
             'visitor_name' => fake()->name(),
             'visitor_identifier' => (string) fake()->numerify('################'),
             'visitor_phone' => fake()->phoneNumber(),
+            'visitor_wilayah_kode' => null,
             'notes' => fake()->sentence(),
             'status' => QueueStatus::Waiting,
             'checked_in_at' => null,

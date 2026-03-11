@@ -11,9 +11,11 @@ class QueueTicketResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'ticket_number' => $this->ticket_number,
             'service_date' => $this->service_date?->format('Y-m-d'),
             'visitor_name' => $this->visitor_name,
+            'visitor_wilayah_kode' => $this->visitor_wilayah_kode,
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
             'service' => $this->whenLoaded('service', fn () => new ServiceResource($this->service)),
