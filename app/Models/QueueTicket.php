@@ -75,6 +75,23 @@ class QueueTicket extends Model
     }
 
     /**
+     * Hitung posisi antrian tiket ini di antara tiket waiting pada hari dan pool yang sama.
+     */
+    public function getQueuePosition(): ?int
+    {
+        if ($this->status !== QueueStatus::Waiting) {
+            return null;
+        }
+
+        return static::query()
+            ->where('queue_pool_id', $this->queue_pool_id)
+            ->whereDate('service_date', $this->service_date)
+            ->where('status', QueueStatus::Waiting)
+            ->where('sequence_number', '<', $this->sequence_number)
+            ->count() + 1;
+    }
+
+    /**
      * Get the route key name for Laravel's route model binding.
      */
     public function getRouteKeyName(): string
