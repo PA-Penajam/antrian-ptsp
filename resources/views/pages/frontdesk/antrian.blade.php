@@ -1,5 +1,4 @@
 <x-layouts::app :title="__('Frontdesk Antrian')">
-    <flux:main container>
         <div class="max-w-3xl mx-auto space-y-6">
             <div>
                 <flux:heading size="xl" level="1">Frontdesk Antrian</flux:heading>
@@ -156,7 +155,6 @@
                 </div>
             </flux:modal>
         </div>
-    </flux:main>
 
     <script>
         (() => {
