@@ -43,6 +43,19 @@ class PublicQueueController extends Controller
         return QueueTicketResource::make($ticket)->response();
     }
 
+    public function showById(int $id): JsonResponse
+    {
+        $ticket = QueueTicket::query()
+            ->with(['service', 'counter', 'queuePool'])
+            ->find($id);
+
+        if (! $ticket) {
+            return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
+        }
+
+        return QueueTicketResource::make($ticket)->response();
+    }
+
     public function show(string $ticketNumber): JsonResponse
     {
         $ticket = QueueTicket::query()
