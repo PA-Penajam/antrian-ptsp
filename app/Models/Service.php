@@ -87,4 +87,17 @@ class Service extends Model
 
         return max(0, $this->daily_quota - $usedCount);
     }
+
+    /**
+     * Periksa apakah kuota harian sudah penuh untuk tanggal tertentu.
+     * Mengembalikan false jika daily_quota null (unlimited).
+     */
+    public function isQuotaFull(string $date): bool
+    {
+        if ($this->daily_quota === null) {
+            return false;
+        }
+
+        return $this->getRemainingQuota($date) <= 0;
+    }
 }

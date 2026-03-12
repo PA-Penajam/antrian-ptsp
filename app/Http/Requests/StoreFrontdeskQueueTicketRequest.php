@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\QueueStatus;
-use App\Models\QueueTicket;
 use App\Models\Service;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -60,17 +58,7 @@ class StoreFrontdeskQueueTicketRequest extends FormRequest
                 return;
             }
 
-            if ($service->daily_quota === null) {
-                return;
-            }
-
-            $todayCount = QueueTicket::query()
-                ->where('service_id', $serviceId)
-                ->whereDate('service_date', $serviceDate)
-                ->whereNotIn('status', [QueueStatus::Cancelled])
-                ->count();
-
-            if ($todayCount >= $service->daily_quota) {
+            if ($service->isQuotaFull($serviceDate)) {
                 $validator->errors()->add('service_date', 'Kuota harian untuk layanan ini sudah penuh.');
             }
         });

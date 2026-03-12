@@ -99,6 +99,43 @@ class ServiceTest extends TestCase
         $this->assertEquals(0, $service->getRemainingQuota());
     }
 
+    public function test_is_quota_full_returns_false_when_no_daily_quota(): void
+    {
+        $service = Service::factory()->create(['daily_quota' => null]);
+
+        $this->assertFalse($service->isQuotaFull(today()->toDateString()));
+    }
+
+    public function test_is_quota_full_returns_false_when_quota_available(): void
+    {
+        $pool = QueuePool::factory()->create();
+        $service = Service::factory()->create(['daily_quota' => 10, 'queue_pool_id' => $pool->id]);
+
+        QueueTicket::factory()->count(5)->create([
+            'service_id' => $service->id,
+            'queue_pool_id' => $pool->id,
+            'service_date' => today(),
+            'status' => QueueStatus::Waiting,
+        ]);
+
+        $this->assertFalse($service->isQuotaFull(today()->toDateString()));
+    }
+
+    public function test_is_quota_full_returns_true_when_quota_exhausted(): void
+    {
+        $pool = QueuePool::factory()->create();
+        $service = Service::factory()->create(['daily_quota' => 3, 'queue_pool_id' => $pool->id]);
+
+        QueueTicket::factory()->count(3)->create([
+            'service_id' => $service->id,
+            'queue_pool_id' => $pool->id,
+            'service_date' => today(),
+            'status' => QueueStatus::Waiting,
+        ]);
+
+        $this->assertTrue($service->isQuotaFull(today()->toDateString()));
+    }
+
     public function test_scope_active_returns_only_active_services(): void
     {
         Service::factory()->create(['is_active' => true, 'name' => 'Aktif A', 'sort_order' => 2]);
