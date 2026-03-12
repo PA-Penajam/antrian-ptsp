@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\QueueStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -53,5 +54,26 @@ class Service extends Model
     {
         return $this->belongsToMany(User::class)
             ->withTimestamps();
+    }
+
+    /**
+     * Hitung sisa kuota harian untuk tanggal tertentu.
+     * Mengembalikan null jika daily_quota tidak diset (unlimited).
+     */
+    public function getRemainingQuota(?string $date = null): ?int
+    {
+        if ($this->daily_quota === null) {
+            return null;
+        }
+
+        $targetDate = $date ?? today()->toDateString();
+
+        $usedCount = QueueTicket::query()
+            ->where('service_id', $this->id)
+            ->whereDate('service_date', $targetDate)
+            ->whereNotIn('status', [QueueStatus::Cancelled])
+            ->count();
+
+        return max(0, $this->daily_quota - $usedCount);
     }
 }

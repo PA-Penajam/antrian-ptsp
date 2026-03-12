@@ -18,22 +18,7 @@ class ServiceResource extends JsonResource
             'requirements' => $this->requirements,
             'booking_enabled' => (bool) $this->booking_enabled,
             'daily_quota' => $this->daily_quota,
-            'remaining_quota' => $this->computeRemainingQuota(),
+            'remaining_quota' => $this->resource->getRemainingQuota(),
         ];
-    }
-
-    private function computeRemainingQuota(): ?int
-    {
-        if ($this->daily_quota === null) {
-            return null;
-        }
-
-        $todayCount = \App\Models\QueueTicket::query()
-            ->where('service_id', $this->id)
-            ->whereDate('service_date', today())
-            ->whereNotIn('status', [\App\Enums\QueueStatus::Cancelled])
-            ->count();
-
-        return max(0, $this->daily_quota - $todayCount);
     }
 }
