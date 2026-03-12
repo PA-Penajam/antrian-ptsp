@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\QueueStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -54,6 +55,16 @@ class Service extends Model
     {
         return $this->belongsToMany(User::class)
             ->withTimestamps();
+    }
+
+    /**
+     * Scope: hanya layanan aktif, diurutkan berdasarkan sort_order lalu nama.
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name');
     }
 
     /**

@@ -33,7 +33,7 @@ class FrontdeskQueueController extends Controller
         return view('pages.frontdesk.antrian', [
             'ticket' => $createdTicket,
             'checkedInTicket' => $checkedInTicket,
-            'services' => Service::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            'services' => Service::active()->get(),
         ]);
     }
 

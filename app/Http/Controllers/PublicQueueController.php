@@ -16,11 +16,7 @@ class PublicQueueController extends Controller
 {
     public function index(): View
     {
-        $services = Service::query()
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
+        $services = Service::active()->get();
 
         return view('welcome', [
             'services' => $services,
@@ -29,11 +25,8 @@ class PublicQueueController extends Controller
 
     public function booking(): View
     {
-        $bookableServices = Service::query()
-            ->where('is_active', true)
+        $bookableServices = Service::active()
             ->where('booking_enabled', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
             ->get();
 
         return view('pages.public.antrian.booking', [

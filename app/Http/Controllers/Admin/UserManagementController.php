@@ -22,10 +22,7 @@ class UserManagementController extends Controller
             ->orderBy('name')
             ->get();
 
-        $services = Service::query()
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        $services = Service::active()->get();
 
         return view('pages.admin.users.index', [
             'users' => $users,

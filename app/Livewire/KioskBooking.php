@@ -46,11 +46,8 @@ class KioskBooking extends Component
     #[Computed(persist: true, seconds: 600)]
     public function services(): Collection
     {
-        return Service::query()
-            ->where('is_active', true)
+        return Service::active()
             ->where('walk_in_enabled', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
             ->get();
     }
 

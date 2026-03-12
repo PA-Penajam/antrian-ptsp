@@ -98,4 +98,18 @@ class ServiceTest extends TestCase
 
         $this->assertEquals(0, $service->getRemainingQuota());
     }
+
+    public function test_scope_active_returns_only_active_services(): void
+    {
+        Service::factory()->create(['is_active' => true, 'name' => 'Aktif A', 'sort_order' => 2]);
+        Service::factory()->create(['is_active' => false, 'name' => 'Nonaktif']);
+        Service::factory()->create(['is_active' => true, 'name' => 'Aktif B', 'sort_order' => 1]);
+
+        $results = Service::active()->get();
+
+        $this->assertCount(2, $results);
+        // Harus urut by sort_order ASC lalu name ASC
+        $this->assertEquals('Aktif B', $results->first()->name);
+        $this->assertEquals('Aktif A', $results->last()->name);
+    }
 }
