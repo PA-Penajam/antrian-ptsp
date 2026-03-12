@@ -11,7 +11,7 @@ class QueueTicketResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => encrypt($this->id),
             'ticket_number' => $this->ticket_number,
             'service_date' => $this->service_date?->format('Y-m-d'),
             'visitor_name' => $this->visitor_name,

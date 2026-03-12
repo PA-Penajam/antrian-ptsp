@@ -43,8 +43,14 @@ class PublicQueueController extends Controller
         return QueueTicketResource::make($ticket)->response();
     }
 
-    public function showById(int $id): JsonResponse
+    public function showById(string $encryptedId): JsonResponse
     {
+        try {
+            $id = decrypt($encryptedId);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException) {
+            return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
+        }
+
         $ticket = QueueTicket::query()
             ->with(['service', 'counter', 'queuePool'])
             ->find($id);

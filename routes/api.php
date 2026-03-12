@@ -11,7 +11,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('services/{slug}', [PublicServiceController::class, 'show'])->name('api.services.show');
     Route::get('queue/lookup', [PublicQueueController::class, 'lookup'])->name('api.queue.lookup');
     Route::get('queue/ticket/{ticketNumber}', [PublicQueueController::class, 'show'])->name('api.queue.show');
-    Route::get('queue/ticket-by-id/{id}', [PublicQueueController::class, 'showById'])->name('api.queue.showById');
+    Route::get('queue/ticket-by-id/{encryptedId}', [PublicQueueController::class, 'showById'])->name('api.queue.showById');
 });
 
 Route::middleware('throttle:10,1')->group(function () {
