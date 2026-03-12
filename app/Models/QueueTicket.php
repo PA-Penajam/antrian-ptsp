@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\QueueStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -89,6 +90,23 @@ class QueueTicket extends Model
             ->where('status', QueueStatus::Waiting)
             ->where('sequence_number', '<', $this->sequence_number)
             ->count() + 1;
+    }
+
+    /**
+     * Scope: tiket yang belum dibatalkan.
+     */
+    public function scopeNotCancelled(Builder $query): Builder
+    {
+        return $query->whereNotIn('status', [QueueStatus::Cancelled]);
+    }
+
+    /**
+     * Scope: tiket untuk layanan dan tanggal tertentu.
+     */
+    public function scopeForServiceOnDate(Builder $query, int $serviceId, string $date): Builder
+    {
+        return $query->where('service_id', $serviceId)
+            ->whereDate('service_date', $date);
     }
 
     /**

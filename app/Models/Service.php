@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\QueueStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -79,10 +78,8 @@ class Service extends Model
 
         $targetDate = $date ?? today()->toDateString();
 
-        $usedCount = QueueTicket::query()
-            ->where('service_id', $this->id)
-            ->whereDate('service_date', $targetDate)
-            ->whereNotIn('status', [QueueStatus::Cancelled])
+        $usedCount = QueueTicket::forServiceOnDate($this->id, $targetDate)
+            ->notCancelled()
             ->count();
 
         return max(0, $this->daily_quota - $usedCount);

@@ -66,6 +66,55 @@ class QueueTicketTest extends TestCase
         $this->assertEquals(3, $thirdTicket->getQueuePosition());
     }
 
+    public function test_scope_not_cancelled_excludes_cancelled_tickets(): void
+    {
+        $pool = QueuePool::factory()->create();
+        $service = Service::factory()->create(['queue_pool_id' => $pool->id]);
+
+        QueueTicket::factory()->create([
+            'service_id' => $service->id,
+            'queue_pool_id' => $pool->id,
+            'service_date' => today(),
+            'status' => QueueStatus::Waiting,
+        ]);
+        QueueTicket::factory()->create([
+            'service_id' => $service->id,
+            'queue_pool_id' => $pool->id,
+            'service_date' => today(),
+            'status' => QueueStatus::Cancelled,
+        ]);
+        QueueTicket::factory()->create([
+            'service_id' => $service->id,
+            'queue_pool_id' => $pool->id,
+            'service_date' => today(),
+            'status' => QueueStatus::Completed,
+        ]);
+
+        $this->assertEquals(2, QueueTicket::notCancelled()->count());
+    }
+
+    public function test_scope_for_service_on_date_filters_correctly(): void
+    {
+        $pool = QueuePool::factory()->create();
+        $service = Service::factory()->create(['queue_pool_id' => $pool->id]);
+
+        QueueTicket::factory()->count(3)->create([
+            'service_id' => $service->id,
+            'queue_pool_id' => $pool->id,
+            'service_date' => today(),
+            'status' => QueueStatus::Waiting,
+        ]);
+        // Tiket untuk besok (harus diabaikan)
+        QueueTicket::factory()->create([
+            'service_id' => $service->id,
+            'queue_pool_id' => $pool->id,
+            'service_date' => today()->addDay(),
+            'status' => QueueStatus::Waiting,
+        ]);
+
+        $this->assertEquals(3, QueueTicket::forServiceOnDate($service->id, today()->toDateString())->count());
+    }
+
     public function test_get_queue_position_ignores_non_waiting_tickets(): void
     {
         $pool = QueuePool::factory()->create();
