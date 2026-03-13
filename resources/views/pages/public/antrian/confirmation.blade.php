@@ -5,8 +5,35 @@
 <x-layouts::public :title="'Konfirmasi Antrian - ' . $institutionName">
     <style>
         @media print {
-            .no-print {
+            /* Hilangkan header/footer bawaan browser */
+            @page {
+                margin: 0;
+            }
+            /* Sembunyikan semua elemen layout kecuali tiket */
+            body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            flux-header, header, footer, .no-print {
                 display: none !important;
+            }
+            /* Sembunyikan elemen dekoratif background */
+            div[aria-hidden="true"] {
+                display: none !important;
+            }
+            /* Reset container agar tiket full-width */
+            main, main > div {
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            /* Tiket card: hilangkan shadow, border minimal */
+            #printable-ticket {
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 0 !important;
+                margin: 10mm !important;
             }
         }
     </style>
@@ -20,7 +47,7 @@
         </div>
 
         <!-- Ticket Card -->
-        <div class="bg-white rounded-3xl shadow-lg border border-cyan-100 overflow-hidden mb-8">
+        <div id="printable-ticket" class="bg-white rounded-3xl shadow-lg border border-cyan-100 overflow-hidden mb-8">
             <!-- Ticket Header -->
             <div class="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4">
                 <div class="flex justify-between items-center">
