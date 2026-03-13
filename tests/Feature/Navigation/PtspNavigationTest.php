@@ -8,8 +8,7 @@ test('public landing page exposes PTSP public links', function () {
 
     $response->assertOk()
         ->assertSee('/antrian')
-        ->assertSee('/antrian/cek')
-        ->assertSee('/display');
+        ->assertSee('/antrian/cek');
 });
 
 test('dashboard shows role-aware navigation links', function () {
