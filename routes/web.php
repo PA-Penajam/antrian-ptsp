@@ -83,7 +83,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(f
 
 // Kiosk routes (no auth - uses own password system)
 Route::get('/kiosk/login', [KioskController::class, 'showLogin'])->name('kiosk.login');
-Route::post('/kiosk/login', [KioskController::class, 'login'])->name('kiosk.authenticate');
+Route::post('/kiosk/login', [KioskController::class, 'login'])->name('kiosk.authenticate')->middleware('throttle:5,1');
 Route::post('/kiosk/logout', [KioskController::class, 'logout'])->name('kiosk.logout');
 Route::middleware('module.password:kiosk')->group(function () {
     Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk.index');
@@ -91,7 +91,7 @@ Route::middleware('module.password:kiosk')->group(function () {
 
 // TV Display routes (no auth - uses own password system)
 Route::get('/tv-display/login', [TvDisplayController::class, 'showLogin'])->name('tv-display.login');
-Route::post('/tv-display/login', [TvDisplayController::class, 'login'])->name('tv-display.authenticate');
+Route::post('/tv-display/login', [TvDisplayController::class, 'login'])->name('tv-display.authenticate')->middleware('throttle:5,1');
 Route::post('/tv-display/logout', [TvDisplayController::class, 'logout'])->name('tv-display.logout');
 Route::middleware('module.password:tv-display')->group(function () {
     Route::get('/tv-display', [TvDisplayController::class, 'index'])->name('tv-display.index');
