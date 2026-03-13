@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ModuleSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class KioskController extends Controller
@@ -20,7 +21,9 @@ class KioskController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if ($request->input('password') !== config('kiosk.password')) {
+        $hashedPassword = (string) config('kiosk.kiosk_password');
+
+        if (! $hashedPassword || ! Hash::check($request->input('password'), $hashedPassword)) {
             return back()->withErrors([
                 'password' => 'Error: Password yang dimasukkan salah.',
             ]);

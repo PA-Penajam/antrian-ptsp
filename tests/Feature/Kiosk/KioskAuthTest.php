@@ -20,8 +20,10 @@ it('shows kiosk login page', function () {
 });
 
 it('logs in with correct password', function () {
+    config(['kiosk.kiosk_password' => bcrypt('test-pass')]);
+
     $response = post(route('kiosk.authenticate'), [
-        'password' => config('kiosk.password'),
+        'password' => 'test-pass',
     ]);
 
     $response->assertRedirect(route('kiosk.index'))
@@ -31,6 +33,8 @@ it('logs in with correct password', function () {
 });
 
 it('rejects wrong kiosk password', function () {
+    config(['kiosk.kiosk_password' => bcrypt('correct-pass')]);
+
     $response = from(route('kiosk.login'))->post(route('kiosk.authenticate'), [
         'password' => 'wrong-password',
     ]);
