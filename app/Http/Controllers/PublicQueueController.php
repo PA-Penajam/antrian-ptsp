@@ -11,6 +11,7 @@ use App\Models\Service;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\URL;
 
 class PublicQueueController extends Controller
 {
@@ -50,7 +51,7 @@ class PublicQueueController extends Controller
             'created_by' => null,
         ]);
 
-        return redirect()->route('queue.confirmation', $ticket);
+        return redirect()->to(URL::signedRoute('queue.confirmation', $ticket));
     }
 
     public function lookup(LookupQueueTicketRequest $request): View
