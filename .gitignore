@@ -17,7 +17,8 @@ npm-debug.log
 yarn-error.log
 /auth.json
 /.fleet
-/.github
+/.github/workflows/lint.yml
+/.github/workflows/tests.yml
 /.idea
 /.nova
 /.vscode
