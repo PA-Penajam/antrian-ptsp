@@ -59,7 +59,7 @@
                             Beranda
                         </flux:navbar.item>
                         <flux:navbar.item href="{{ url('/antrian') }}" :current="request()->is('antrian')" wire:navigate>
-                            Daftar Antrian
+                            Ambil Antrian
                         </flux:navbar.item>
                         <flux:navbar.item href="{{ url('/antrian/cek') }}" :current="request()->is('antrian/cek')" wire:navigate>
                             Cek Status
@@ -87,7 +87,7 @@
                                     Beranda
                                 </flux:navlist.item>
                                 <flux:navlist.item href="{{ url('/antrian') }}" :current="request()->is('antrian')" icon="ticket" wire:navigate>
-                                    Daftar Antrian
+                                    Ambil Antrian
                                 </flux:navlist.item>
                                 <flux:navlist.item href="{{ url('/antrian/cek') }}" :current="request()->is('antrian/cek')" icon="magnifying-glass" wire:navigate>
                                     Cek Status
