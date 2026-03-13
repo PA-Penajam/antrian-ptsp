@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Actions\Queue\CreateQueueTicket;
+use App\Enums\QueueStatus;
 use App\Models\AppSetting;
 use App\Models\QueueTicket;
 use App\Models\Service;
@@ -42,6 +43,12 @@ class KioskBooking extends Component
     public string $fontSize = 'normal';
 
     public string $barcodeSvg = '';
+
+    public string $reprintQuery = '';
+
+    public ?QueueTicket $reprintTicket = null;
+
+    public string $reprintBarcodeSvg = '';
 
     #[Computed(persist: true, seconds: 600)]
     public function services(): Collection
@@ -180,6 +187,9 @@ class KioskBooking extends Component
         $this->ticket = null;
         $this->fontSize = 'normal';
         $this->barcodeSvg = '';
+        $this->reprintQuery = '';
+        $this->reprintTicket = null;
+        $this->reprintBarcodeSvg = '';
     }
 
     /**
@@ -194,6 +204,48 @@ class KioskBooking extends Component
         $renderer->setForegroundColor([255, 255, 255]);
 
         return $renderer->render($barcode, 250, 60);
+    }
+
+    public function enterReprintMode(): void
+    {
+        $this->step = 0;
+        $this->reprintQuery = '';
+        $this->reprintTicket = null;
+        $this->reprintBarcodeSvg = '';
+    }
+
+    public function exitReprintMode(): void
+    {
+        $this->step = 1;
+        $this->reprintQuery = '';
+        $this->reprintTicket = null;
+        $this->reprintBarcodeSvg = '';
+    }
+
+    public function searchTicketForReprint(): void
+    {
+        $this->validate([
+            'reprintQuery' => ['required', 'string', 'min:3'],
+        ]);
+
+        $this->reprintTicket = QueueTicket::query()
+            ->with('service')
+            ->whereDate('service_date', today())
+            ->whereIn('status', [
+                QueueStatus::Booked,
+                QueueStatus::Waiting,
+                QueueStatus::Called,
+            ])
+            ->where(function ($query) {
+                $query->where('visitor_identifier', $this->reprintQuery)
+                    ->orWhere('visitor_phone', $this->reprintQuery);
+            })
+            ->latest()
+            ->first();
+
+        if ($this->reprintTicket) {
+            $this->reprintBarcodeSvg = $this->generateBarcodeSvg($this->reprintTicket->ticket_number);
+        }
     }
 
     public function render(): View
