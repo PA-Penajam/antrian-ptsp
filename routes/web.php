@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicQueueController::class, 'index'])->name('home');
 Route::get('/antrian', [PublicQueueController::class, 'booking']);
-Route::post('/antrian', [PublicQueueController::class, 'storeBooking']);
-Route::get('/antrian/cek', [PublicQueueController::class, 'lookup'])->name('queue.cek');
+Route::post('/antrian', [PublicQueueController::class, 'storeBooking'])->middleware('throttle:10,1');
+Route::get('/antrian/cek', [PublicQueueController::class, 'lookup'])->name('queue.cek')->middleware('throttle:30,1');
 Route::get('/antrian/konfirmasi/{ticket}', [PublicQueueController::class, 'confirmation'])->name('queue.confirmation')->middleware('signed');
 
 Route::middleware(['auth', 'verified'])->group(function () {
