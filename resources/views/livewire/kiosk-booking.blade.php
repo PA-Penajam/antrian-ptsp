@@ -2,6 +2,125 @@
     <div class="mx-auto flex w-full max-w-5xl flex-1 items-center justify-center">
         <flux:card class="w-full border-slate-200 bg-white/90 p-8 text-center shadow-xl backdrop-blur sm:p-10">
 
+            {{-- Step 0: Reprint / Cetak Ulang Tiket --}}
+            @if ($step === 0)
+                <div wire:key="kiosk-step-reprint" class="mx-auto max-w-xl space-y-8">
+                    {{-- Header --}}
+                    <div class="space-y-4">
+                        <div class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-2 shadow-lg">
+                            <flux:icon.printer class="size-5 text-white" />
+                            <span class="ml-2 text-base font-semibold text-white">Cetak Ulang Tiket</span>
+                        </div>
+                        <flux:heading level="1" size="3xl" class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black text-transparent">
+                            Cari Tiket Anda
+                        </flux:heading>
+                        <flux:text class="text-xl text-slate-600">
+                            Masukkan nomor KTP atau nomor HP yang digunakan saat mendaftar
+                        </flux:text>
+                    </div>
+
+                    {{-- Form Pencarian --}}
+                    <div class="space-y-6 rounded-3xl bg-white p-8 shadow-lg">
+                        <flux:field>
+                            <flux:label class="flex items-center gap-2 text-left text-xl font-semibold text-slate-800">
+                                <flux:icon.magnifying-glass class="size-5 text-cyan-600" />
+                                Nomor KTP atau Nomor HP
+                            </flux:label>
+                            <flux:input
+                                wire:model="reprintQuery"
+                                wire:keydown.enter="searchTicketForReprint"
+                                size="lg"
+                                placeholder="Masukkan nomor KTP atau nomor HP"
+                                autofocus
+                                class="mt-3 h-16 text-xl [&_[data-flux-control]]:h-16 [&_[data-flux-control]]:rounded-2xl [&_[data-flux-control]]:border-2 [&_[data-flux-control]]:border-slate-200 [&_[data-flux-control]]:text-xl [&_[data-flux-control]]:focus:border-cyan-500"
+                            />
+                            <flux:error name="reprintQuery" />
+                        </flux:field>
+
+                        <flux:button wire:click="searchTicketForReprint" variant="primary" icon="magnifying-glass" class="h-16 w-full rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 text-xl font-bold shadow-lg shadow-cyan-500/25" wire:loading.attr="disabled" wire:target="searchTicketForReprint">
+                            <span wire:loading.remove wire:target="searchTicketForReprint">Cari Tiket</span>
+                            <span wire:loading wire:target="searchTicketForReprint" class="inline-flex items-center gap-2">
+                                <svg class="h-6 w-6 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                                Mencari...
+                            </span>
+                        </flux:button>
+                    </div>
+
+                    {{-- Hasil Pencarian: Tiket Ditemukan --}}
+                    @if ($reprintTicket)
+                        <div class="relative overflow-hidden rounded-3xl border-2 border-emerald-200 bg-white p-8 shadow-2xl">
+                            <div class="absolute left-0 right-0 top-0 h-2 bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500"></div>
+
+                            <div class="space-y-6">
+                                {{-- Success badge --}}
+                                <div class="flex justify-center">
+                                    <div class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-emerald-700">
+                                        <flux:icon.check-circle class="size-5" />
+                                        <span class="text-base font-semibold">Tiket Ditemukan</span>
+                                    </div>
+                                </div>
+
+                                {{-- Nomor Tiket --}}
+                                <div class="text-center">
+                                    <div class="bg-gradient-to-br from-cyan-600 via-blue-600 to-violet-600 bg-clip-text text-8xl font-black tracking-wider text-transparent">
+                                        {{ $reprintTicket->ticket_number }}
+                                    </div>
+                                </div>
+
+                                {{-- Detail --}}
+                                <div class="rounded-2xl bg-slate-50 p-5 text-center">
+                                    <div class="text-sm font-medium uppercase tracking-wide text-slate-500">Layanan</div>
+                                    <div class="mt-1 text-xl font-bold text-slate-800">{{ $reprintTicket->service?->name }}</div>
+                                    <div class="mt-2 text-base text-slate-500">{{ $reprintTicket->visitor_name }}</div>
+                                </div>
+
+                                {{-- Barcode --}}
+                                @if ($reprintBarcodeSvg)
+                                    <div class="flex justify-center rounded-2xl bg-slate-50 py-4">
+                                        <div class="barcode-container">{!! $reprintBarcodeSvg !!}</div>
+                                    </div>
+                                @endif
+
+                                {{-- Tombol cetak --}}
+                                <flux:button
+                                    variant="primary"
+                                    icon="printer"
+                                    class="h-16 w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-xl font-bold shadow-lg shadow-emerald-500/25"
+                                    x-on:click="$dispatch('print-ticket', {
+                                        ticketNumber: '{{ $reprintTicket->ticket_number }}',
+                                        serviceName: '{{ $reprintTicket->service?->name }}',
+                                        visitorName: '{{ $reprintTicket->visitor_name }}',
+                                        serviceDate: '{{ $reprintTicket->service_date?->format('d/m/Y') }}',
+                                        status: '{{ $reprintTicket->status->label() }}'
+                                    })"
+                                >
+                                    Cetak Ulang
+                                </flux:button>
+                            </div>
+                        </div>
+                    @elseif ($reprintQuery !== '')
+                        {{-- Tidak ditemukan --}}
+                        <div class="rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50/50 p-10 text-center">
+                            <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                                <flux:icon.magnifying-glass class="size-10 text-slate-400" />
+                            </div>
+                            <flux:heading level="2" size="xl" class="mt-6 text-slate-700">Tiket Tidak Ditemukan</flux:heading>
+                            <flux:text class="mt-2 text-lg text-slate-500">
+                                Tidak ada tiket aktif hari ini untuk nomor tersebut. Pastikan nomor KTP atau HP sudah benar.
+                            </flux:text>
+                        </div>
+                    @endif
+
+                    {{-- Tombol Kembali --}}
+                    <flux:button wire:click="exitReprintMode" variant="outline" icon="arrow-left" class="h-16 w-full rounded-2xl border-2 border-slate-300 text-xl font-semibold text-slate-700">
+                        Kembali ke Menu Utama
+                    </flux:button>
+                </div>
+            @endif
+
             {{-- Step 1: Select Service --}}
             @if ($step === 1)
                 <div wire:key="kiosk-step-1" class="space-y-10">
@@ -95,6 +214,13 @@
                     <div class="flex items-center justify-center gap-2 rounded-2xl bg-slate-50 py-4 text-slate-500">
                         <flux:icon.hand-raised class="size-5" />
                         <span class="text-base">Ketuk kartu layanan untuk melanjutkan</span>
+                    </div>
+
+                    {{-- Tombol Cetak Ulang --}}
+                    <div class="flex items-center justify-center pt-2">
+                        <flux:button wire:click="enterReprintMode" variant="outline" icon="printer" class="h-14 rounded-2xl border-2 border-slate-300 px-8 text-lg font-semibold text-slate-700 transition-colors hover:border-cyan-400 hover:bg-cyan-50">
+                            Cetak Ulang Tiket
+                        </flux:button>
                     </div>
                 </div>
             @endif
