@@ -31,7 +31,7 @@
                 @endguest
 
                 @auth
-                <flux:sidebar.group :heading="__('Manajemen Internal')" class="grid mt-4">
+                <flux:sidebar.group :heading="__('Manajemen Internal')" expandable class="grid mt-4">
                     @unless (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
                         <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                             @if (auth()->user()?->hasRole(\App\Enums\UserRole::Officer))
@@ -54,7 +54,7 @@
                 </flux:sidebar.group>
                 @php($isAdminSectionRoute = request()->is('admin/*'))
                 @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
-                    <flux:sidebar.group :heading="__('Admin')" class="grid mt-4">
+                    <flux:sidebar.group :heading="__('Admin')" expandable class="grid mt-4">
                         <flux:sidebar.item icon="chart-pie" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                             {{ __('Dashboard') }}
                         </flux:sidebar.item>
