@@ -202,14 +202,16 @@ describe('kiosk module', function () {
     });
 
     it('kiosk authentication works with correct password', function () {
+        config(['kiosk.kiosk_password' => bcrypt('test-pass')]);
         $this->post(route('kiosk.authenticate'), [
-            'password' => config('kiosk.password'),
+            'password' => 'test-pass',
         ])
             ->assertRedirect(route('kiosk.index'))
             ->assertSessionHas('kiosk_authenticated', true);
     });
 
     it('kiosk rejects wrong password', function () {
+        config(['kiosk.kiosk_password' => bcrypt('correct-pass')]);
         $this->from(route('kiosk.login'))->post(route('kiosk.authenticate'), [
             'password' => 'wrong-password',
         ])
@@ -258,14 +260,16 @@ describe('tv display module', function () {
     });
 
     it('tv display authentication works with correct password', function () {
+        config(['kiosk.tv_display_password' => bcrypt('test-tv-pass')]);
         $this->post(route('tv-display.authenticate'), [
-            'password' => config('kiosk.password'),
+            'password' => 'test-tv-pass',
         ])
             ->assertRedirect(route('tv-display.index'))
             ->assertSessionHas('tv_display_authenticated', true);
     });
 
     it('tv display rejects wrong password', function () {
+        config(['kiosk.tv_display_password' => bcrypt('correct-pass')]);
         $this->from(route('tv-display.login'))->post(route('tv-display.authenticate'), [
             'password' => 'wrong-password',
         ])

@@ -87,6 +87,5 @@ it('looks up a ticket', function () {
     $response->assertStatus(200)
         ->assertJsonFragment([
             'ticket_number' => $ticket->ticket_number,
-            'visitor_name' => $ticket->visitor_name,
         ]);
 });

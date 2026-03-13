@@ -21,8 +21,10 @@ it('shows tv-display login page', function () {
 });
 
 it('logs in with correct password', function () {
+    config(['kiosk.tv_display_password' => bcrypt('test-tv-pass')]);
+
     $response = post(route('tv-display.authenticate'), [
-        'password' => config('kiosk.password'),
+        'password' => 'test-tv-pass',
     ]);
 
     $response->assertRedirect(route('tv-display.index'))
@@ -32,6 +34,8 @@ it('logs in with correct password', function () {
 });
 
 it('rejects wrong tv-display password', function () {
+    config(['kiosk.tv_display_password' => bcrypt('correct-pass')]);
+
     $response = from(route('tv-display.login'))->post(route('tv-display.authenticate'), [
         'password' => 'wrong-password',
     ]);

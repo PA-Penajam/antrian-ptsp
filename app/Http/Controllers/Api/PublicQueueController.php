@@ -6,6 +6,7 @@ use App\Actions\Queue\CreateQueueTicket;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\LookupTicketRequest;
 use App\Http\Requests\Api\StoreBookingRequest;
+use App\Http\Resources\PublicQueueTicketResource;
 use App\Http\Resources\QueueTicketResource;
 use App\Models\QueueTicket;
 use Illuminate\Http\JsonResponse;
@@ -40,7 +41,7 @@ class PublicQueueController extends Controller
             return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
         }
 
-        return QueueTicketResource::make($ticket)->response();
+        return PublicQueueTicketResource::make($ticket)->response();
     }
 
     public function showById(string $encryptedId): JsonResponse
@@ -59,21 +60,7 @@ class PublicQueueController extends Controller
             return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
         }
 
-        return QueueTicketResource::make($ticket)->response();
-    }
-
-    public function show(string $ticketNumber): JsonResponse
-    {
-        $ticket = QueueTicket::query()
-            ->with(['service', 'counter', 'queuePool'])
-            ->where('ticket_number', $ticketNumber)
-            ->first();
-
-        if (! $ticket) {
-            return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
-        }
-
-        return QueueTicketResource::make($ticket)->response();
+        return PublicQueueTicketResource::make($ticket)->response();
     }
 
     private function findTicket(string $ticketNumber, string $serviceDate): ?QueueTicket
