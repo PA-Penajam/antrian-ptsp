@@ -13,9 +13,7 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $services = Service::where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
+        $services = Service::active()->get();
 
         return ServiceResource::collection($services);
     }
@@ -25,8 +23,8 @@ class ServiceController extends Controller
      */
     public function show(string $slug)
     {
-        $service = Service::where('slug', $slug)
-            ->where('is_active', true)
+        $service = Service::active()
+            ->where('slug', $slug)
             ->firstOrFail();
 
         return new ServiceResource($service);

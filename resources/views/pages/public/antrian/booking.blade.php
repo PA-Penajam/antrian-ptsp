@@ -66,7 +66,7 @@
                     },
 
                     canAdvanceToReview() {
-                        return Boolean(this.serviceId && this.serviceDate && this.visitorName.trim());
+                        return Boolean(this.serviceId && this.serviceDate && this.visitorName.trim() && this.visitorIdentifier.trim() && this.visitorPhone.trim());
                     },
 
                     goToStep(stepNumber) {
@@ -202,105 +202,20 @@
                 },
             })"
         >
-            <flux:card class="overflow-hidden border-cyan-200 bg-[linear-gradient(145deg,#effbff_0%,#f8fdff_45%,#ffffff_100%)] p-0 shadow-[0_34px_90px_-54px_rgba(14,116,144,0.48)]">
-                <div class="grid gap-8 px-6 py-8 sm:px-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.7fr)] lg:px-10">
-                    <div class="space-y-5">
-                        <div class="flex flex-wrap items-center gap-3">
-                            <flux:badge color="cyan" rounded icon="sparkles">Booking Online PTSP</flux:badge>
-                            <flux:badge color="sky" rounded icon="rectangle-group">3 Langkah Cepat</flux:badge>
-                        </div>
-
-                        <div class="space-y-3">
-                            <flux:heading size="xl" level="1" class="text-balance text-slate-900">
-                                Ambil Antrian PTSP dengan alur yang lebih jelas.
-                            </flux:heading>
-
-                            <flux:subheading class="max-w-3xl text-base leading-7 text-slate-600 sm:text-lg">
-                                Pilih layanan, lengkapi data kunjungan, lalu periksa ulang ringkasan sebelum mengirim booking Anda.
-                            </flux:subheading>
-                        </div>
-
-                        <div class="grid gap-3 sm:grid-cols-3">
-                            <flux:card class="border-slate-200 bg-white/90 p-4 shadow-none">
-                                <div class="space-y-2">
-                                    <div class="flex size-10 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700">
-                                        <flux:icon.ticket class="size-5" />
-                                    </div>
-                                    <flux:text class="text-xs font-semibold tracking-[0.18em] text-cyan-700 uppercase">Pilih</flux:text>
-                                    <flux:text class="text-sm leading-6 text-slate-700">Layanan ditampilkan sebagai kartu agar lebih mudah dibandingkan cepat.</flux:text>
-                                </div>
-                            </flux:card>
-
-                            <flux:card class="border-slate-200 bg-white/90 p-4 shadow-none">
-                                <div class="space-y-2">
-                                    <div class="flex size-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                                        <flux:icon.identification class="size-5" />
-                                    </div>
-                                    <flux:text class="text-xs font-semibold tracking-[0.18em] text-emerald-700 uppercase">Lengkapi</flux:text>
-                                    <flux:text class="text-sm leading-6 text-slate-700">Isi data pengunjung dan cek persyaratan layanan sebelum datang ke loket.</flux:text>
-                                </div>
-                            </flux:card>
-
-                            <flux:card class="border-slate-200 bg-white/90 p-4 shadow-none">
-                                <div class="space-y-2">
-                                    <div class="flex size-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
-                                        <flux:icon.clipboard-document-check class="size-5" />
-                                    </div>
-                                    <flux:text class="text-xs font-semibold tracking-[0.18em] text-amber-700 uppercase">Konfirmasi</flux:text>
-                                    <flux:text class="text-sm leading-6 text-slate-700">Tinjau ringkasan terakhir agar booking yang dikirim tetap rapi dan akurat.</flux:text>
-                                </div>
-                            </flux:card>
-                        </div>
-                    </div>
-
-                    <flux:card class="space-y-5 border-slate-200 bg-white/92 p-6 shadow-none">
-                        <div class="space-y-2">
-                            <flux:heading size="lg" class="text-slate-900">Yang perlu disiapkan</flux:heading>
-                            <flux:text class="text-sm leading-6 text-slate-600">
-                                Gunakan wizard ini untuk memastikan Anda memilih layanan yang tepat dan datang dengan dokumen yang sesuai.
-                            </flux:text>
-                        </div>
-
-                        <div class="grid gap-3">
-                            <flux:card class="border-slate-200 bg-slate-50 p-4 shadow-none">
-                                <div class="flex items-start gap-3">
-                                    <div class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700">
-                                        <flux:icon.calendar-days class="size-5" />
-                                    </div>
-                                    <div class="space-y-1">
-                                        <flux:text class="text-xs font-semibold tracking-[0.18em] text-cyan-700 uppercase">Tanggal Layanan</flux:text>
-                                        <flux:text class="text-sm leading-6 text-slate-700">Pilih tanggal yang diinginkan, minimal hari ini.</flux:text>
-                                    </div>
-                                </div>
-                            </flux:card>
-
-                            <flux:card class="border-slate-200 bg-slate-50 p-4 shadow-none">
-                                <div class="flex items-start gap-3">
-                                    <div class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                                        <flux:icon.document-text class="size-5" />
-                                    </div>
-                                    <div class="space-y-1">
-                                        <flux:text class="text-xs font-semibold tracking-[0.18em] text-emerald-700 uppercase">Persyaratan</flux:text>
-                                        <flux:text class="text-sm leading-6 text-slate-700">Setiap layanan menampilkan kebutuhan dokumen agar pengajuan tidak tertunda.</flux:text>
-                                    </div>
-                                </div>
-                            </flux:card>
-
-                            <flux:card class="border-slate-200 bg-slate-50 p-4 shadow-none">
-                                <div class="flex items-start gap-3">
-                                    <div class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
-                                        <flux:icon.phone class="size-5" />
-                                    </div>
-                                    <div class="space-y-1">
-                                        <flux:text class="text-xs font-semibold tracking-[0.18em] text-amber-700 uppercase">Kontak Opsional</flux:text>
-                                        <flux:text class="text-sm leading-6 text-slate-700">Tambahkan nomor telepon atau WhatsApp agar petugas lebih mudah menghubungi bila diperlukan.</flux:text>
-                                    </div>
-                                </div>
-                            </flux:card>
-                        </div>
-                    </flux:card>
+            <div class="space-y-3 text-center">
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <flux:badge color="cyan" rounded icon="sparkles">Booking Online PTSP</flux:badge>
+                    <flux:badge color="sky" rounded icon="rectangle-group">3 Langkah Cepat</flux:badge>
                 </div>
-            </flux:card>
+
+                <flux:heading size="xl" level="1" class="text-balance text-slate-900">
+                    Ambil Antrian PTSP
+                </flux:heading>
+
+                <flux:subheading class="mx-auto max-w-3xl text-base leading-7 text-slate-600 sm:text-lg">
+                    Pilih layanan, lengkapi data kunjungan, lalu periksa ulang ringkasan sebelum mengirim booking Anda.
+                </flux:subheading>
+            </div>
 
             <form method="POST" action="{{ url('/antrian') }}" class="grid gap-6 lg:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
                 @csrf
@@ -497,13 +412,13 @@
 
                             <flux:field>
                                 <flux:label>Nomor Identitas</flux:label>
-                                <flux:input type="text" name="visitor_identifier" x-model="visitorIdentifier" placeholder="Opsional" />
+                                <flux:input type="text" name="visitor_identifier" x-model="visitorIdentifier" required placeholder="Masukkan nomor KTP atau identitas lainnya" />
                                 <flux:error name="visitor_identifier" />
                             </flux:field>
 
                             <flux:field>
                                 <flux:label>Nomor Telepon / WhatsApp</flux:label>
-                                <flux:input type="text" name="visitor_phone" x-model="visitorPhone" placeholder="Opsional" />
+                                <flux:input type="text" name="visitor_phone" x-model="visitorPhone" required placeholder="Contoh: 081234567890" />
                                 <flux:error name="visitor_phone" />
                             </flux:field>
                         </div>
@@ -617,29 +532,6 @@
                         </div>
                     </flux:card>
 
-                    <flux:card class="space-y-4 border-slate-200 bg-white/92 p-5 shadow-[0_24px_60px_-52px_rgba(15,23,42,0.35)]">
-                        <div class="space-y-2">
-                            <flux:text class="text-xs font-semibold tracking-[0.18em] text-slate-500 uppercase">Petunjuk</flux:text>
-                            <flux:heading size="base" class="text-slate-900">Alur cepat pengunjung</flux:heading>
-                        </div>
-
-                        <div class="space-y-3">
-                            <div class="rounded-3xl border border-cyan-100 bg-cyan-50/70 p-4">
-                                <flux:text class="text-xs font-semibold tracking-[0.16em] text-cyan-700 uppercase">1. Pilih layanan</flux:text>
-                                <flux:text class="mt-1 text-sm leading-6 text-slate-700">Bandingkan kartu layanan dan hindari pilihan yang sudah berstatus kuota habis.</flux:text>
-                            </div>
-
-                            <div class="rounded-3xl border border-emerald-100 bg-emerald-50/70 p-4">
-                                <flux:text class="text-xs font-semibold tracking-[0.16em] text-emerald-700 uppercase">2. Isi data</flux:text>
-                                <flux:text class="mt-1 text-sm leading-6 text-slate-700">Masukkan nama lengkap dan tanggal layanan, lalu tambahkan identitas atau catatan bila perlu.</flux:text>
-                            </div>
-
-                            <div class="rounded-3xl border border-amber-100 bg-amber-50/70 p-4">
-                                <flux:text class="text-xs font-semibold tracking-[0.16em] text-amber-700 uppercase">3. Konfirmasi</flux:text>
-                                <flux:text class="mt-1 text-sm leading-6 text-slate-700">Periksa ringkasan terakhir sebelum mengirim booking ke sistem antrian.</flux:text>
-                            </div>
-                        </div>
-                    </flux:card>
                 </div>
             </form>
         </div>

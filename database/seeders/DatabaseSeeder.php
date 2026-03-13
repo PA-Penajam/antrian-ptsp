@@ -24,14 +24,23 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        User::query()->firstOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Administrator',
-                'role' => UserRole::Admin->value,
-                'email_verified_at' => now(),
-                'password' => 'password',
-            ]
-        );
+        $demoUsers = [
+            ['name' => 'Administrator', 'email' => 'admin@example.com', 'role' => UserRole::Admin],
+            ['name' => 'Frontdesk Demo', 'email' => 'frontdesk@example.com', 'role' => UserRole::Frontdesk],
+            ['name' => 'Officer Demo', 'email' => 'officer@example.com', 'role' => UserRole::Officer],
+            ['name' => 'Monitor Demo', 'email' => 'monitor@example.com', 'role' => UserRole::Monitor],
+        ];
+
+        foreach ($demoUsers as $demo) {
+            User::query()->firstOrCreate(
+                ['email' => $demo['email']],
+                [
+                    'name' => $demo['name'],
+                    'role' => $demo['role']->value,
+                    'email_verified_at' => now(),
+                    'password' => 'password',
+                ]
+            );
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -53,5 +54,47 @@ class Service extends Model
     {
         return $this->belongsToMany(User::class)
             ->withTimestamps();
+    }
+
+    /**
+     * Scope: hanya layanan aktif, diurutkan berdasarkan sort_order lalu nama.
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name');
+    }
+
+    /**
+     * Hitung sisa kuota harian untuk tanggal tertentu.
+     * Mengembalikan null jika daily_quota tidak diset (unlimited).
+     */
+    public function getRemainingQuota(?string $date = null): ?int
+    {
+        if ($this->daily_quota === null) {
+            return null;
+        }
+
+        $targetDate = $date ?? today()->toDateString();
+
+        $usedCount = QueueTicket::forServiceOnDate($this->id, $targetDate)
+            ->notCancelled()
+            ->count();
+
+        return max(0, $this->daily_quota - $usedCount);
+    }
+
+    /**
+     * Periksa apakah kuota harian sudah penuh untuk tanggal tertentu.
+     * Mengembalikan false jika daily_quota null (unlimited).
+     */
+    public function isQuotaFull(string $date): bool
+    {
+        if ($this->daily_quota === null) {
+            return false;
+        }
+
+        return $this->getRemainingQuota($date) <= 0;
     }
 }

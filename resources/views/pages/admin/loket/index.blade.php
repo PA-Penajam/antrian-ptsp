@@ -1,14 +1,18 @@
 <x-layouts::app :title="__('Manajemen Loket')">
     <div class="mx-auto w-full max-w-6xl space-y-6">
-        <div>
-            <flux:heading size="xl" level="1">Manajemen Loket</flux:heading>
-            <flux:subheading>Kelola loket antrian, mapping pool, dan status aktif.</flux:subheading>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div class="space-y-3">
+                <flux:badge color="amber" rounded>Admin Panel</flux:badge>
+                <div>
+                    <flux:heading size="xl" level="1">Manajemen Loket</flux:heading>
+                    <flux:subheading class="mt-1">Kelola loket antrian, mapping pool, dan status aktif.</flux:subheading>
+                </div>
+                <flux:breadcrumbs>
+                    <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
+                    <flux:breadcrumbs.item>Loket</flux:breadcrumbs.item>
+                </flux:breadcrumbs>
+            </div>
         </div>
-
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
-            <flux:breadcrumbs.item>Loket</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
 
         @if (session('status'))
             <flux:callout icon="check-circle" color="green">
@@ -23,8 +27,13 @@
         @endif
 
         {{-- Form Tambah Loket --}}
-        <flux:card class="space-y-4">
-            <flux:heading size="lg">Tambah Loket Baru</flux:heading>
+        <flux:card class="admin-card-elevated space-y-4 border-amber-200 dark:border-amber-800">
+            <div class="flex items-center gap-3">
+                <div class="admin-icon-box bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
+                    <flux:icon.plus-circle class="size-5" />
+                </div>
+                <flux:heading size="lg">Tambah Loket Baru</flux:heading>
+            </div>
             <form method="POST" action="{{ route('admin.loket.store') }}" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 @csrf
                 <flux:field>
@@ -69,7 +78,12 @@
 
         {{-- Daftar Loket --}}
         <flux:card class="space-y-4">
-            <flux:heading size="lg">Daftar Loket</flux:heading>
+            <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
+                        <flux:icon.building-office class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Daftar Loket</flux:heading>
+                </div>
             <flux:table>
                 <flux:table.columns>
                     <flux:table.column>Loket</flux:table.column>

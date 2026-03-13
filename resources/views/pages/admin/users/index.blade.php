@@ -1,14 +1,18 @@
 <x-layouts::app :title="__('Manajemen User')">
     <div class="mx-auto w-full max-w-6xl space-y-6" x-data="{ tab: 'list', editUser: null }">
-        <div>
-            <flux:heading size="xl" level="1">Manajemen User</flux:heading>
-            <flux:subheading>Kelola role dan izin layanan setiap user internal.</flux:subheading>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div class="space-y-3">
+                <flux:badge color="violet" rounded>Admin Panel</flux:badge>
+                <div>
+                    <flux:heading size="xl" level="1">Manajemen User</flux:heading>
+                    <flux:subheading class="mt-1">Kelola role dan izin layanan setiap user internal.</flux:subheading>
+                </div>
+                <flux:breadcrumbs>
+                    <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
+                    <flux:breadcrumbs.item>Users</flux:breadcrumbs.item>
+                </flux:breadcrumbs>
+            </div>
         </div>
-
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
-            <flux:breadcrumbs.item>Users</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
 
         @if (session('status'))
             <flux:callout icon="check-circle" color="green">
@@ -23,40 +27,46 @@
         @endif
 
         {{-- Tabs Navigation --}}
-        <flux:card>
-            <div class="flex gap-1 border-b border-zinc-200 pb-1 dark:border-zinc-700">
-                <button
-                    type="button"
-                    x-on:click="tab = 'list'"
-                    :class="tab === 'list' ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100' : 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800'"
-                    class="rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
-                >
-                    Semua Users
-                </button>
-                <button
-                    type="button"
-                    x-on:click="tab = 'roles'"
-                    :class="tab === 'roles' ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100' : 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800'"
-                    class="rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
-                >
-                    Role & Izin
-                </button>
-                <button
-                    type="button"
-                    x-on:click="tab = 'create'"
-                    :class="tab === 'create' ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100' : 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800'"
-                    class="rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
-                >
-                    Tambah User
-                </button>
-            </div>
-        </flux:card>
+        <div class="flex gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-800/50">
+            <button
+                type="button"
+                x-on:click="tab = 'list'"
+                :class="tab === 'list' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'"
+                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+            >
+                <flux:icon.users class="size-4" />
+                Semua Users
+            </button>
+            <button
+                type="button"
+                x-on:click="tab = 'roles'"
+                :class="tab === 'roles' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'"
+                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+            >
+                <flux:icon.shield-check class="size-4" />
+                Role & Izin
+            </button>
+            <button
+                type="button"
+                x-on:click="tab = 'create'"
+                :class="tab === 'create' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'"
+                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+            >
+                <flux:icon.user-plus class="size-4" />
+                Tambah User
+            </button>
+        </div>
 
 
         {{-- Tab 1: Semua Users --}}
         <div x-show="tab === 'list'" x-cloak>
             <flux:card class="space-y-4">
-                <flux:heading size="lg">Daftar User</flux:heading>
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
+                        <flux:icon.users class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Daftar User</flux:heading>
+                </div>
 
                 @php
                     $otherUsers = $users->filter(fn ($user) => $user->id !== auth()->id());
@@ -100,7 +110,7 @@
                                                     'email' => $user->email,
                                                     'role' => $user->role->value,
                                                     'services' => $user->services->pluck('id')->toArray(),
-                                                ]) }}"
+                                                ]) }}; $dispatch('open-modal', 'edit-user-modal')"
                                             >
                                                 Edit
                                             </flux:button>
@@ -129,7 +139,12 @@
         {{-- Tab 2: Role & Izin --}}
         <div x-show="tab === 'roles'" x-cloak>
             <flux:card class="space-y-4">
-                <flux:heading size="lg">Role & Izin Layanan</flux:heading>
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                        <flux:icon.shield-check class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Role & Izin Layanan</flux:heading>
+                </div>
                 <flux:table>
                     <flux:table.columns>
                         <flux:table.column>Nama</flux:table.column>
@@ -199,7 +214,12 @@
         {{-- Tab 3: Tambah User --}}
         <div x-show="tab === 'create'" x-cloak>
             <flux:card class="space-y-4">
-                <flux:heading size="lg">Tambah User</flux:heading>
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400">
+                        <flux:icon.user-plus class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Tambah User Baru</flux:heading>
+                </div>
                 <form method="POST" action="{{ route('admin.users.store') }}" class="grid gap-4 md:grid-cols-2">
                     @csrf
                     <flux:field>
@@ -251,48 +271,43 @@
         </div>
 
         {{-- Edit Modal --}}
-        <template x-teleport="body">
-            <div
-                x-show="editUser !== null"
-                x-cloak
-                class="fixed inset-0 z-50 flex items-center justify-center"
-                style="display: none;"
-            >
-                <div x-on:click="editUser = null" class="absolute inset-0 bg-black/50"></div>
-                <div class="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-xl dark:bg-zinc-800">
+        <flux:modal name="edit-user-modal" class="w-full max-w-lg">
+            <form x-bind:action="editUser ? '{{ route('admin.users.index') }}/' + editUser.id : '#'" method="POST" class="space-y-4">
+                @csrf
+                @method('PUT')
+
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
+                        <flux:icon.pencil-square class="size-5" />
+                    </div>
                     <flux:heading size="lg">Edit User</flux:heading>
-
-                    <form x-bind:action="editUser ? '{{ route('admin.users.index') }}/' + editUser.id : '#'" method="POST" class="mt-4 space-y-4">
-                        @csrf
-                        @method('PUT')
-
-                        <flux:field>
-                            <flux:label>Nama</flux:label>
-                            <flux:input name="name" x-bind:value="editUser?.name" required />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>Email</flux:label>
-                            <flux:input type="email" name="email" x-bind:value="editUser?.email" required />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>Role</flux:label>
-                            <flux:select name="role" x-model="editUser?.role">
-                                <flux:select.option value="admin">Admin</flux:select.option>
-                                <flux:select.option value="frontdesk">Frontdesk</flux:select.option>
-                                <flux:select.option value="officer">Officer</flux:select.option>
-                                <flux:select.option value="monitor">Monitor</flux:select.option>
-                            </flux:select>
-                        </flux:field>
-
-                        <div class="flex justify-end gap-2 pt-4">
-                            <flux:button type="button" variant="ghost" x-on:click="editUser = null">Batal</flux:button>
-                            <flux:button type="submit" variant="primary">Simpan Perubahan</flux:button>
-                        </div>
-                    </form>
                 </div>
-            </div>
-        </template>
+
+                <flux:field>
+                    <flux:label>Nama</flux:label>
+                    <flux:input name="name" x-bind:value="editUser?.name" required />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Email</flux:label>
+                    <flux:input type="email" name="email" x-bind:value="editUser?.email" required />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Role</flux:label>
+                    <flux:select name="role" x-model="editUser?.role">
+                        <flux:select.option value="admin">Admin</flux:select.option>
+                        <flux:select.option value="frontdesk">Frontdesk</flux:select.option>
+                        <flux:select.option value="officer">Officer</flux:select.option>
+                        <flux:select.option value="monitor">Monitor</flux:select.option>
+                    </flux:select>
+                </flux:field>
+
+                <div class="flex justify-end gap-2 pt-4">
+                    <flux:button type="button" variant="ghost" x-on:click="$dispatch('close-modal', 'edit-user-modal')">Batal</flux:button>
+                    <flux:button type="submit" variant="primary">Simpan Perubahan</flux:button>
+                </div>
+            </form>
+        </flux:modal>
     </div>
 </x-layouts::app>

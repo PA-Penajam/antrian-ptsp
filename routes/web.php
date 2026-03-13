@@ -12,15 +12,13 @@ use App\Http\Controllers\PublicQueueController;
 use App\Http\Controllers\Report\QueueReportController;
 use App\Http\Controllers\TvDisplayController;
 use App\Http\Controllers\TvDisplayTtsController;
-use App\Livewire\QueueDisplay;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicQueueController::class, 'index'])->name('home');
 Route::get('/antrian', [PublicQueueController::class, 'booking']);
 Route::post('/antrian', [PublicQueueController::class, 'storeBooking']);
 Route::get('/antrian/cek', [PublicQueueController::class, 'lookup'])->name('queue.cek');
-Route::get('/antrian/konfirmasi/{ticket}', [PublicQueueController::class, 'confirmation'])->name('queue.confirmation');
-Route::get('/display', QueueDisplay::class)->name('queue.display');
+Route::get('/antrian/konfirmasi/{ticket}', [PublicQueueController::class, 'confirmation'])->name('queue.confirmation')->middleware('signed');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function (\Illuminate\Http\Request $request) {
@@ -28,6 +26,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'activeRole' => $request->user()?->role,
         ]);
     })->name('dashboard');
+
+    Route::get('workstation', function () {
+        return view('dashboard', [
+            'activeRole' => 'officer',
+        ]);
+    })->name('workstation');
 });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Frontdesk->value.','.UserRole::Admin->value])->group(function () {
@@ -59,12 +63,6 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(f
     // Admin - Loket (Counters)
     Route::get('/admin/loket', [CounterManagementController::class, 'index'])->name('admin.loket.index');
     Route::post('/admin/loket', [CounterManagementController::class, 'store'])->name('admin.loket.store');
-    Route::put('/admin/loket/{counter}', [CounterManagementController::class, 'update'])->name('admin.loket.update');
-    Route::delete('/admin/loket/{counter}', [CounterManagementController::class, 'destroy'])->name('admin.loket.destroy');
-    Route::get('/admin/loket', [CounterManagementController::class, 'index'])->name('admin.loket.index');
-    Route::put('/admin/loket/{counter}', [CounterManagementController::class, 'update'])->name('admin.loket.update');
-    Route::delete('/admin/loket/{counter}', [CounterManagementController::class, 'destroy'])->name('admin.loket.destroy');
-    Route::get('/admin/loket', [CounterManagementController::class, 'index'])->name('admin.loket.index');
     Route::put('/admin/loket/{counter}', [CounterManagementController::class, 'update'])->name('admin.loket.update');
     Route::delete('/admin/loket/{counter}', [CounterManagementController::class, 'destroy'])->name('admin.loket.destroy');
 

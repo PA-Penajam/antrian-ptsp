@@ -5,27 +5,55 @@
 <x-layouts::public :title="'Konfirmasi Antrian - ' . $institutionName">
     <style>
         @media print {
-            .no-print {
+            /* Hilangkan header/footer bawaan browser */
+            @page {
+                margin: 0;
+            }
+            /* Sembunyikan semua elemen layout kecuali tiket */
+            body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            flux-header, header, footer, .no-print {
                 display: none !important;
+            }
+            /* Sembunyikan elemen dekoratif background */
+            div[aria-hidden="true"] {
+                display: none !important;
+            }
+            /* Reset container agar tiket full-width */
+            main, main > div {
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            /* Tiket card: hilangkan shadow, border minimal */
+            #printable-ticket {
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 0 !important;
+                margin: 10mm !important;
             }
         }
     </style>
 
     <div class="max-w-2xl mx-auto">
         <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-slate-900 mb-2">Konfirmasi Antrian</h1>
-            <p class="text-slate-600">Terima kasih telah melakukan pendaftaran antrian</p>
+        <div class="space-y-2 text-center mb-8 no-print">
+            <flux:badge color="emerald" rounded icon="check-circle">Berhasil</flux:badge>
+            <flux:heading size="xl" level="1" class="text-slate-900">Konfirmasi Antrian</flux:heading>
+            <flux:subheading>Terima kasih telah melakukan pendaftaran antrian</flux:subheading>
         </div>
 
         <!-- Ticket Card -->
-        <div class="bg-white rounded-3xl shadow-lg border border-cyan-100 overflow-hidden mb-8">
+        <div id="printable-ticket" class="bg-white rounded-3xl shadow-lg border border-cyan-100 overflow-hidden mb-8">
             <!-- Ticket Header -->
             <div class="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-2">
                         <flux:icon name="ticket" class="text-white" size="xl" />
-                        <h2 class="text-white font-semibold text-lg">Detail Tiket Antrian</h2>
+                        <flux:heading size="lg" class="text-white">Detail Tiket Antrian</flux:heading>
                     </div>
                     <flux:badge :color="$ticket->status->color()" class="text-sm">
                         {{ $ticket->status->label() }}
@@ -37,26 +65,26 @@
             <div class="p-6 space-y-6">
                 <!-- Ticket Number -->
                 <div class="text-center">
-                    <p class="text-slate-500 text-sm font-medium mb-1">Nomor Tiket</p>
+                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Nomor Tiket</flux:text>
                     <p class="text-6xl font-bold text-slate-900">{{ $ticket->ticket_number }}</p>
                 </div>
 
                 <!-- Service Info -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
-                        <p class="text-slate-500 text-sm font-medium">Layanan</p>
-                        <p class="text-slate-900 font-semibold">{{ $ticket->service->name }}</p>
+                        <flux:text class="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Layanan</flux:text>
+                        <flux:text class="font-semibold text-slate-900">{{ $ticket->service->name }}</flux:text>
                     </div>
                     <div class="space-y-2">
-                        <p class="text-slate-500 text-sm font-medium">Tanggal</p>
-                        <p class="text-slate-900 font-semibold">{{ $ticket->service_date->format('d M Y') }}</p>
+                        <flux:text class="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Tanggal</flux:text>
+                        <flux:text class="font-semibold text-slate-900">{{ $ticket->service_date->format('d M Y') }}</flux:text>
                     </div>
                 </div>
 
                 <!-- Visitor Info -->
                 <div class="space-y-2">
-                    <p class="text-slate-500 text-sm font-medium">Nama Pengunjung</p>
-                    <p class="text-slate-900 font-semibold">{{ $ticket->visitor_name }}</p>
+                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Nama Pengunjung</flux:text>
+                    <flux:text class="font-semibold text-slate-900">{{ $ticket->visitor_name }}</flux:text>
                 </div>
 
                 <!-- Queue Position -->
@@ -64,11 +92,11 @@
                     <div class="bg-orange-50 border border-orange-100 rounded-xl p-4">
                         <div class="flex items-center gap-2 mb-2">
                             <flux:icon name="clock" class="text-orange-600" />
-                            <p class="text-orange-700 font-semibold text-sm">Posisi Antrian</p>
+                            <flux:text class="text-orange-700 font-semibold text-sm">Posisi Antrian</flux:text>
                         </div>
-                        <p class="text-orange-900 text-lg font-bold">
+                        <flux:text class="text-orange-900 text-lg font-bold">
                             Anda adalah antrian ke-{{ $queuePosition }} hari ini
-                        </p>
+                        </flux:text>
                     </div>
                 @endif
 
@@ -76,42 +104,42 @@
                 <div class="bg-cyan-50 border border-cyan-100 rounded-xl p-4">
                     <div class="flex items-center gap-2 mb-2">
                         <flux:icon name="information-circle" class="text-cyan-600" />
-                        <p class="text-cyan-700 font-semibold text-sm">Panduan</p>
+                        <flux:text class="text-cyan-700 font-semibold text-sm">Panduan</flux:text>
                     </div>
-                    <p class="text-cyan-900 text-sm">
+                    <flux:text class="text-cyan-900 text-sm">
                         Silakan datang ke kantor pada jam operasional. Tunjukkan nomor tiket ini kepada petugas.
-                    </p>
+                    </flux:text>
                 </div>
             </div>
 
             <!-- Ticket Footer -->
             <div class="bg-slate-50 px-6 py-4 border-t border-slate-100">
                 <div class="flex justify-between items-center">
-                    <div class="text-xs text-slate-500">
+                    <flux:text class="text-xs text-slate-500">
                         Dibuat pada {{ $ticket->created_at->format('d M Y H:i') }}
-                    </div>
-                    <div class="text-xs text-slate-500">
+                    </flux:text>
+                    <flux:text class="text-xs text-slate-500">
                         {{ $institutionName }}
-                    </div>
+                    </flux:text>
                 </div>
             </div>
         </div>
 
         <!-- Actions -->
-        <div class="flex flex-col gap-3 mb-8">
+        <div class="flex flex-col gap-3 mb-8 no-print">
             <flux:button onclick="window.print()" icon="printer" class="w-full">
                 Cetak Tiket
             </flux:button>
         </div>
 
         <!-- Links -->
-        <div class="flex flex-col gap-2 text-center">
-            <a href="{{ route('queue.cek') }}" class="text-cyan-600 hover:text-cyan-700 font-medium text-sm no-print">
+        <div class="flex flex-col gap-2 text-center no-print">
+            <flux:button href="{{ route('queue.cek') }}" variant="subtle" icon="magnifying-glass" class="justify-center">
                 Cek Status Antrian
-            </a>
-            <a href="{{ route('home') }}" class="text-slate-600 hover:text-slate-700 font-medium text-sm no-print">
+            </flux:button>
+            <flux:button href="{{ route('home') }}" variant="ghost" icon="home" class="justify-center">
                 Kembali ke Beranda
-            </a>
+            </flux:button>
         </div>
     </div>
 </x-layouts::public>

@@ -34,6 +34,12 @@
             </main>
         </div>
 
+        {{-- Epson ePOS SDK untuk thermal printing --}}
+        @if (config('services.thermal_printer.enabled'))
+            <script src="{{ asset('vendor/epson/epos-2.27.0.js') }}"></script>
+            @vite(['resources/js/thermal-printer.js'])
+        @endif
+
         @fluxScripts
     </body>
 </html>

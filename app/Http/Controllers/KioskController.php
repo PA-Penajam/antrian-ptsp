@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ModuleSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -26,8 +27,8 @@ class KioskController extends Controller
         }
 
         session([
-            'kiosk_authenticated' => true,
-            'kiosk_authenticated_at' => now()->timestamp,
+            ModuleSession::KioskAuthenticated->value => true,
+            ModuleSession::KioskAuthenticatedAt->value => now()->timestamp,
         ]);
 
         return redirect()->route('kiosk.index');
@@ -35,7 +36,7 @@ class KioskController extends Controller
 
     public function logout(): RedirectResponse
     {
-        session()->forget(['kiosk_authenticated', 'kiosk_authenticated_at']);
+        session()->forget([ModuleSession::KioskAuthenticated->value, ModuleSession::KioskAuthenticatedAt->value]);
 
         return redirect()->route('kiosk.login');
     }

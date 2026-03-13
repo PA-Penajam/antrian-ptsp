@@ -15,7 +15,6 @@ it('returns institution data', function () {
             'name',
             'address',
             'phone',
-            'email',
             'operating_hours',
             'logo_path',
         ]);
@@ -53,7 +52,7 @@ it('creates a new booking', function () {
     /** @var \Tests\TestCase $this */
     $response = $this->postJson('/api/queue/booking', [
         'service_id' => $service->id,
-        'service_date' => now()->addDay()->format('Y-m-d'),
+        'service_date' => now()->nextWeekday()->format('Y-m-d'),
         'visitor_name' => 'John Doe',
         'visitor_phone' => '08123456789',
     ]);

@@ -14,7 +14,7 @@ test('can lookup ticket by ticket_number and service_date', function () {
         'status' => QueueStatus::Waiting,
     ]);
 
-    $response = $this->getJson('/api/queue/lookup?ticket_number=TKT001&service_date=' . Carbon::today()->toDateString());
+    $response = $this->getJson('/api/queue/lookup?ticket_number=TKT001&service_date='.Carbon::today()->toDateString());
 
     $response->assertSuccessful()
         ->assertJsonPath('data.ticket_number', 'TKT001')
@@ -23,7 +23,7 @@ test('can lookup ticket by ticket_number and service_date', function () {
 });
 
 test('lookup returns 404 when ticket not found', function () {
-    $response = $this->getJson('/api/queue/lookup?ticket_number=NONEXISTENT&service_date=' . Carbon::today()->toDateString());
+    $response = $this->getJson('/api/queue/lookup?ticket_number=NONEXISTENT&service_date='.Carbon::today()->toDateString());
 
     $response->assertNotFound()
         ->assertJson(['message' => 'Tiket tidak ditemukan']);
@@ -31,7 +31,7 @@ test('lookup returns 404 when ticket not found', function () {
 
 test('lookup returns 422 when missing params', function () {
     // Missing ticket_number
-    $response = $this->getJson('/api/queue/lookup?service_date=' . Carbon::today()->toDateString());
+    $response = $this->getJson('/api/queue/lookup?service_date='.Carbon::today()->toDateString());
 
     $response->assertStatus(422);
 
@@ -57,7 +57,7 @@ test('lookup returns queue position for waiting tickets', function () {
         'queue_pool_id' => $ticket1->queue_pool_id,
     ]);
 
-    $response = $this->getJson('/api/queue/lookup?ticket_number=TKT002&service_date=' . Carbon::today()->toDateString());
+    $response = $this->getJson('/api/queue/lookup?ticket_number=TKT002&service_date='.Carbon::today()->toDateString());
 
     $response->assertSuccessful()
         ->assertJsonPath('data.queue_position', 2);
@@ -70,7 +70,7 @@ test('lookup returns null position for booked tickets', function () {
         'status' => QueueStatus::Booked,
     ]);
 
-    $response = $this->getJson('/api/queue/lookup?ticket_number=TKT001&service_date=' . Carbon::today()->toDateString());
+    $response = $this->getJson('/api/queue/lookup?ticket_number=TKT001&service_date='.Carbon::today()->toDateString());
 
     $response->assertSuccessful()
         ->assertJsonPath('data.queue_position', null);

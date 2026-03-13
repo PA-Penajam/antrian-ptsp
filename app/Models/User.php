@@ -68,7 +68,26 @@ class User extends Authenticatable
 
     public function hasRole(UserRole $role): bool
     {
+        if ($this->role === UserRole::Admin) {
+            return true;
+        }
+
         return $this->role === $role;
+    }
+
+    /**
+     * Mengembalikan role aktif berdasarkan session (untuk admin) atau role asli.
+     */
+    public function activeRole(): UserRole
+    {
+        if ($this->role === UserRole::Admin) {
+            $sessionRole = session('admin_active_role');
+            if ($sessionRole && UserRole::tryFrom($sessionRole)) {
+                return UserRole::from($sessionRole);
+            }
+        }
+
+        return $this->role;
     }
 
     public function services(): BelongsToMany

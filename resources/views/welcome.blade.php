@@ -40,7 +40,7 @@
                         <div class="space-y-2">
                             <flux:heading size="lg" class="text-slate-900">Informasi Pelayanan</flux:heading>
                             <flux:text class="text-sm leading-6 text-slate-600">
-                                Gunakan katalog layanan untuk menyiapkan berkas, cek tiket tanpa antre ulang, lalu pantau panggilan melalui display antrian saat tiba di PTSP.
+                                Gunakan katalog layanan untuk menyiapkan berkas dan cek tiket tanpa perlu antre ulang di kantor.
                             </flux:text>
                         </div>
 
@@ -78,69 +78,6 @@
                     </flux:card>
                 </div>
             </flux:card>
-
-            <section class="space-y-4">
-                <div class="space-y-2 text-center">
-                    <flux:badge color="cyan" rounded>Akses Cepat</flux:badge>
-                    <flux:heading level="2" size="lg" class="text-slate-900">Layanan utama untuk pengunjung</flux:heading>
-                    <flux:text class="mx-auto max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-                        Pilih tindakan yang Anda butuhkan untuk mengambil antrian, memantau tiket, atau melihat display panggilan secara langsung.
-                    </flux:text>
-                </div>
-
-                <div class="grid gap-4 lg:grid-cols-3">
-                    <flux:card class="flex h-full flex-col gap-4 border-cyan-200 bg-white p-6 shadow-[0_24px_60px_-48px_rgba(8,145,178,0.55)]">
-                        <div class="flex size-12 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700">
-                            <flux:icon.ticket class="size-6" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <flux:heading size="lg" class="text-slate-900">Ambil Antrian</flux:heading>
-                            <flux:text class="text-sm leading-6 text-slate-600">
-                                Ambil nomor antrian untuk layanan PTSP dan siapkan data dasar sebelum datang ke loket pelayanan.
-                            </flux:text>
-                        </div>
-
-                        <flux:button href="{{ url('/antrian') }}" variant="primary" icon="ticket" class="mt-auto justify-center">
-                            Ambil Antrian
-                        </flux:button>
-                    </flux:card>
-
-                    <flux:card class="flex h-full flex-col gap-4 border-slate-200 bg-white p-6 shadow-[0_24px_60px_-52px_rgba(15,23,42,0.35)]">
-                        <div class="flex size-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
-                            <flux:icon.magnifying-glass class="size-6" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <flux:heading size="lg" class="text-slate-900">Cek Status Tiket</flux:heading>
-                            <flux:text class="text-sm leading-6 text-slate-600">
-                                Periksa status tiket, posisi layanan, dan pastikan berkas sudah siap sebelum tiba di area pelayanan.
-                            </flux:text>
-                        </div>
-
-                        <flux:button href="{{ url('/antrian/cek') }}" variant="filled" icon="magnifying-glass" class="mt-auto justify-center">
-                            Cek Status Antrian
-                        </flux:button>
-                    </flux:card>
-
-                    <flux:card class="flex h-full flex-col gap-4 border-slate-200 bg-white p-6 shadow-[0_24px_60px_-52px_rgba(15,23,42,0.35)]">
-                        <div class="flex size-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                            <flux:icon.tv class="size-6" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <flux:heading size="lg" class="text-slate-900">Display Antrian</flux:heading>
-                            <flux:text class="text-sm leading-6 text-slate-600">
-                                Pantau panggilan loket melalui papan antrian agar proses pelayanan tetap tertib dan mudah diikuti.
-                            </flux:text>
-                        </div>
-
-                        <flux:button href="{{ url('/display') }}" variant="filled" icon="tv" class="mt-auto justify-center">
-                            Lihat Papan Antrian
-                        </flux:button>
-                    </flux:card>
-                </div>
-            </section>
 
             <section class="space-y-4">
                 <div class="space-y-2">
@@ -184,10 +121,6 @@
                                     @endif
                                 </div>
 
-                                @if ($service->daily_quota)
-                                    <flux:text class="text-xs leading-5 text-slate-500">Kuota/hari: {{ $service->daily_quota }}</flux:text>
-                                @endif
-
                                 <flux:separator />
 
                                 <div class="space-y-2">
@@ -217,7 +150,7 @@
                 @endif
             </section>
 
-            <section class="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
+            <section>
                 <flux:card class="space-y-5 border-cyan-200 bg-[linear-gradient(180deg,#ffffff_0%,#f4fbff_100%)] p-6 sm:p-7">
                     <div class="space-y-2">
                         <flux:badge color="cyan" rounded>Panduan Pengunjung</flux:badge>
@@ -258,42 +191,22 @@
                             </div>
                         </flux:card>
                     </div>
-                </flux:card>
-
-                <flux:card class="space-y-5 border-slate-200 bg-white p-6 sm:p-7">
-                    <div class="space-y-2 text-center lg:text-left">
-                        <flux:badge color="zinc" rounded>Akun & Akses</flux:badge>
-                        <flux:heading level="2" size="lg" class="text-slate-900">Masuk ke layanan digital</flux:heading>
-                        <flux:text class="text-sm leading-6 text-slate-600">
-                            Gunakan akun Anda untuk mengelola proses layanan internal, atau lanjutkan sebagai pengunjung melalui fitur publik yang tersedia.
-                        </flux:text>
-                    </div>
-
-                    <div class="flex justify-center gap-3 lg:justify-start">
-                        @auth
-                            <flux:button href="{{ route('dashboard') }}" variant="primary" icon="squares-2x2">
-                                Dashboard
-                            </flux:button>
-                        @else
-                            <flux:button href="{{ route('login') }}" variant="filled" icon="arrow-right-start-on-rectangle">
-                                Masuk
-                            </flux:button>
-
-                            @if (Route::has('register'))
-                                <flux:button href="{{ route('register') }}" variant="subtle" icon="user-plus">
-                                    Daftar
-                                </flux:button>
-                            @endif
-                        @endauth
-                    </div>
 
                     <flux:separator />
 
-                    <div class="space-y-3">
-                        <flux:text class="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Komitmen Pelayanan</flux:text>
-                        <flux:text class="text-sm leading-6 text-slate-700">
-                            {{ $institutionName }} berupaya memberikan informasi layanan yang jelas, proses kedatangan yang tertib, dan pengalaman pelayanan publik yang lebih cepat untuk setiap pengunjung.
-                        </flux:text>
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <flux:text class="text-sm text-slate-600">Petugas PTSP? Masuk ke panel administrasi.</flux:text>
+                        <div class="flex gap-2">
+                            @auth
+                                <flux:button href="{{ route('dashboard') }}" variant="subtle" icon="squares-2x2" size="sm">
+                                    Dashboard
+                                </flux:button>
+                            @else
+                                <flux:button href="{{ route('login') }}" variant="subtle" icon="arrow-right-start-on-rectangle" size="sm">
+                                    Masuk
+                                </flux:button>
+                            @endauth
+                        </div>
                     </div>
                 </flux:card>
             </section>

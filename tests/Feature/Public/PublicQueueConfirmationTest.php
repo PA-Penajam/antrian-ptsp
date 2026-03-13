@@ -4,10 +4,11 @@ use App\Enums\QueueStatus;
 use App\Models\QueueTicket;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 
 uses(RefreshDatabase::class);
 
-test('confirmation page displays ticket details', function () {
+test('confirmation page displays ticket details with signed url', function () {
     $service = Service::factory()->create();
     $ticket = QueueTicket::factory()->create([
         'service_id' => $service->id,
@@ -17,11 +18,54 @@ test('confirmation page displays ticket details', function () {
         'sequence_number' => 5,
     ]);
 
-    $url = route('queue.confirmation', $ticket);
+    $url = URL::signedRoute('queue.confirmation', $ticket);
     $response = $this->get($url);
 
-    $response->assertOk();
-    $response->assertSee('Konfirmasi Antrian');
-    $response->assertSee('ABC123');
-    $response->assertSee('John Doe');
+    $response->assertOk()
+        ->assertSee('Konfirmasi Antrian')
+        ->assertSee('ABC123')
+        ->assertSee('John Doe')
+        ->assertSee($service->name)
+        ->assertSee($ticket->status->label());
+});
+
+test('confirmation page has print button and navigation links', function () {
+    $service = Service::factory()->create();
+    $ticket = QueueTicket::factory()->create([
+        'service_id' => $service->id,
+        'status' => QueueStatus::Booked,
+    ]);
+
+    $url = URL::signedRoute('queue.confirmation', $ticket);
+    $response = $this->get($url);
+
+    $response->assertOk()
+        ->assertSee('Cetak Tiket')
+        ->assertSee('Cek Status Antrian')
+        ->assertSee('Kembali ke Beranda');
+});
+
+test('confirmation page rejects unsigned url', function () {
+    $service = Service::factory()->create();
+    $ticket = QueueTicket::factory()->create([
+        'service_id' => $service->id,
+        'status' => QueueStatus::Booked,
+    ]);
+
+    $response = $this->get(route('queue.confirmation', $ticket));
+
+    $response->assertForbidden();
+});
+
+test('confirmation page rejects tampered signature', function () {
+    $service = Service::factory()->create();
+    $ticket = QueueTicket::factory()->create([
+        'service_id' => $service->id,
+        'status' => QueueStatus::Booked,
+    ]);
+
+    $url = URL::signedRoute('queue.confirmation', $ticket).'&tampered=1';
+    $response = $this->get($url);
+
+    $response->assertForbidden();
 });

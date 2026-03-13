@@ -11,7 +11,6 @@ test('public user can open landing page and see primary guidance', function () {
         ->assertSeeText('Sistem Antrian PTSP')
         ->assertSeeText('Ambil Nomor Antrian')
         ->assertSeeText('Cek Status Antrian')
-        ->assertSeeText('Lihat Papan Antrian')
         ->assertSeeText('Panduan Pengunjung')
         ->assertSeeTextInOrder([
             'Pilih Layanan',
@@ -42,6 +41,5 @@ test('landing page renders service catalog details when services are available',
         ->toContain('KTP')
         ->toContain('Dokumen pendukung')
         ->toContain('Online')
-        ->toContain('Walk-in')
-        ->toContain('Kuota/hari: 25');
+        ->toContain('Walk-in');
 });

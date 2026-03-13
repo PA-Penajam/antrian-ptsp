@@ -17,20 +17,15 @@ class PublicServiceController extends Controller
 
     public function index(): AnonymousResourceCollection
     {
-        $services = Service::query()
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
+        $services = Service::active()->get();
 
         return ServiceResource::collection($services);
     }
 
     public function show(string $slug): ServiceResource
     {
-        $service = Service::query()
+        $service = Service::active()
             ->where('slug', $slug)
-            ->where('is_active', true)
             ->firstOrFail();
 
         return ServiceResource::make($service);

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Api;
 
-use App\Enums\QueueStatus;
 use App\Models\Service;
 use App\Rules\WeekdayOnly;
 use Illuminate\Foundation\Http\FormRequest;
@@ -51,16 +50,8 @@ class StoreBookingRequest extends FormRequest
                 return;
             }
 
-            if ($service->daily_quota !== null) {
-                $todayCount = \App\Models\QueueTicket::query()
-                    ->where('service_id', $serviceId)
-                    ->whereDate('service_date', $serviceDate)
-                    ->whereNotIn('status', [QueueStatus::Cancelled])
-                    ->count();
-
-                if ($todayCount >= $service->daily_quota) {
-                    $validator->errors()->add('service_date', 'Kuota harian untuk layanan ini sudah penuh.');
-                }
+            if ($service->isQuotaFull((string) $serviceDate)) {
+                $validator->errors()->add('service_date', 'Kuota harian untuk layanan ini sudah penuh.');
             }
         });
     }

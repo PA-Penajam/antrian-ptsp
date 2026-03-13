@@ -1,9 +1,11 @@
 <x-layouts::app :title="__('Frontdesk Antrian')">
-    <flux:main container>
         <div class="max-w-3xl mx-auto space-y-6">
-            <div>
-                <flux:heading size="xl" level="1">Frontdesk Antrian</flux:heading>
-                <flux:subheading>Buat tiket antrian baru atau lakukan check-in tiket yang sudah ada.</flux:subheading>
+            <div class="space-y-3">
+                <flux:badge color="cyan" rounded>Frontdesk</flux:badge>
+                <div>
+                    <flux:heading size="xl" level="1">Frontdesk Antrian</flux:heading>
+                    <flux:subheading class="mt-1">Buat tiket antrian baru atau lakukan check-in tiket yang sudah ada.</flux:subheading>
+                </div>
             </div>
 
             @if (session('status'))
@@ -13,32 +15,47 @@
             @endif
 
             @if ($ticket)
-                <flux:card class="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-                    <flux:heading size="lg" class="text-green-700 dark:text-green-300">Tiket Berhasil Dibuat</flux:heading>
-                    <div class="mt-4 space-y-2">
-                        <flux:text><strong>Nomor Antrian:</strong> {{ $ticket->ticket_number }}</flux:text>
-                        <flux:text><strong>Status:</strong>
-                            <flux:badge size="sm" color="{{ $ticket->status->color() }}">{{ $ticket->status->label() }}</flux:badge>
-                        </flux:text>
+                <flux:card class="admin-stat-success admin-card-elevated p-5">
+                    <div class="flex items-start gap-4">
+                        <div class="admin-icon-box bg-emerald-200 text-emerald-700 dark:bg-emerald-800 dark:text-emerald-300">
+                            <flux:icon.check-circle class="size-6" />
+                        </div>
+                        <div class="space-y-1">
+                            <flux:heading size="lg" class="text-emerald-800 dark:text-emerald-200">Tiket Berhasil Dibuat</flux:heading>
+                            <flux:text class="text-emerald-700 dark:text-emerald-300"><strong>Nomor Antrian:</strong> {{ $ticket->ticket_number }}</flux:text>
+                            <flux:text class="text-emerald-700 dark:text-emerald-300"><strong>Status:</strong>
+                                <flux:badge size="sm" color="{{ $ticket->status->color() }}">{{ $ticket->status->label() }}</flux:badge>
+                            </flux:text>
+                        </div>
                     </div>
                 </flux:card>
             @endif
 
             @if ($checkedInTicket)
-                <flux:card class="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                    <flux:heading size="lg" class="text-blue-700 dark:text-blue-300">Check-in Berhasil</flux:heading>
-                    <div class="mt-4 space-y-2">
-                        <flux:text><strong>Nomor Antrian:</strong> {{ $checkedInTicket->ticket_number }}</flux:text>
-                        <flux:text><strong>Status:</strong>
-                            <flux:badge size="sm" color="{{ $checkedInTicket->status->color() }}">{{ $checkedInTicket->status->label() }}</flux:badge>
-                        </flux:text>
+                <flux:card class="admin-stat-info admin-card-elevated p-5">
+                    <div class="flex items-start gap-4">
+                        <div class="admin-icon-box bg-violet-200 text-violet-700 dark:bg-violet-800 dark:text-violet-300">
+                            <flux:icon.check-circle class="size-6" />
+                        </div>
+                        <div class="space-y-1">
+                            <flux:heading size="lg" class="text-violet-800 dark:text-violet-200">Check-in Berhasil</flux:heading>
+                            <flux:text class="text-violet-700 dark:text-violet-300"><strong>Nomor Antrian:</strong> {{ $checkedInTicket->ticket_number }}</flux:text>
+                            <flux:text class="text-violet-700 dark:text-violet-300"><strong>Status:</strong>
+                                <flux:badge size="sm" color="{{ $checkedInTicket->status->color() }}">{{ $checkedInTicket->status->label() }}</flux:badge>
+                            </flux:text>
+                        </div>
                     </div>
                 </flux:card>
             @endif
 
             {{-- Form Buat Tiket Baru --}}
-            <flux:card>
-                <flux:heading size="lg">Buat Tiket Antrian Baru</flux:heading>
+            <flux:card class="admin-card-elevated">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="admin-icon-box bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400">
+                        <flux:icon.plus-circle class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Buat Tiket Antrian Baru</flux:heading>
+                </div>
                 <form method="POST" action="{{ route('frontdesk.queue.store') }}" class="mt-4 space-y-6">
                     @csrf
 
@@ -100,9 +117,14 @@
             </flux:card>
 
             {{-- Form Check-in --}}
-            <flux:card>
+            <flux:card class="admin-card-elevated">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <flux:heading size="lg">Check-in Tiket</flux:heading>
+                    <div class="flex items-center gap-3">
+                        <div class="admin-icon-box bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                            <flux:icon.check-circle class="size-5" />
+                        </div>
+                        <flux:heading size="lg">Check-in Tiket</flux:heading>
+                    </div>
                     <flux:button
                         type="button"
                         variant="ghost"
@@ -156,7 +178,6 @@
                 </div>
             </flux:modal>
         </div>
-    </flux:main>
 
     <script>
         (() => {

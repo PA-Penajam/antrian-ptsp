@@ -279,6 +279,107 @@ it('resets wizard to initial state', function () {
         ->assertSet('visitorWilayahNama', '');
 });
 
+// --- Reprint Tests ---
+
+it('shows reprint search form when entering reprint mode', function () {
+    session(kioskSession());
+
+    $component = Livewire::test(KioskBooking::class);
+
+    $component->call('enterReprintMode')
+        ->assertSet('step', 0)
+        ->assertSee('Cetak Ulang Tiket');
+});
+
+it('finds ticket by visitor identifier for today', function () {
+    $service = Service::factory()->create([
+        'is_active' => true,
+        'walk_in_enabled' => true,
+    ]);
+    $ticket = \App\Models\QueueTicket::factory()->for($service)->create([
+        'visitor_identifier' => '3507XXXXXXXXXXXX',
+        'service_date' => today(),
+        'status' => 'waiting',
+    ]);
+
+    session(kioskSession());
+
+    $component = Livewire::test(KioskBooking::class);
+
+    $component->call('enterReprintMode')
+        ->set('reprintQuery', '3507XXXXXXXXXXXX')
+        ->call('searchTicketForReprint')
+        ->assertSet('reprintTicket.id', $ticket->id)
+        ->assertSee($ticket->ticket_number);
+});
+
+it('finds ticket by visitor phone for today', function () {
+    $service = Service::factory()->create([
+        'is_active' => true,
+        'walk_in_enabled' => true,
+    ]);
+    $ticket = \App\Models\QueueTicket::factory()->for($service)->create([
+        'visitor_phone' => '081234567890',
+        'service_date' => today(),
+        'status' => 'waiting',
+    ]);
+
+    session(kioskSession());
+
+    $component = Livewire::test(KioskBooking::class);
+
+    $component->call('enterReprintMode')
+        ->set('reprintQuery', '081234567890')
+        ->call('searchTicketForReprint')
+        ->assertSet('reprintTicket.id', $ticket->id);
+});
+
+it('shows not found when no ticket matches reprint query', function () {
+    session(kioskSession());
+
+    $component = Livewire::test(KioskBooking::class);
+
+    $component->call('enterReprintMode')
+        ->set('reprintQuery', '0000000000000000')
+        ->call('searchTicketForReprint')
+        ->assertSet('reprintTicket', null)
+        ->assertSee('Tiket Tidak Ditemukan');
+});
+
+it('ignores tickets from other dates in reprint search', function () {
+    $service = Service::factory()->create([
+        'is_active' => true,
+        'walk_in_enabled' => true,
+    ]);
+    \App\Models\QueueTicket::factory()->for($service)->create([
+        'visitor_identifier' => '3507XXXXXXXXXXXX',
+        'service_date' => today()->subDay(),
+        'status' => 'waiting',
+    ]);
+
+    session(kioskSession());
+
+    $component = Livewire::test(KioskBooking::class);
+
+    $component->call('enterReprintMode')
+        ->set('reprintQuery', '3507XXXXXXXXXXXX')
+        ->call('searchTicketForReprint')
+        ->assertSet('reprintTicket', null);
+});
+
+it('returns to step 1 when exiting reprint mode', function () {
+    session(kioskSession());
+
+    $component = Livewire::test(KioskBooking::class);
+
+    $component->call('enterReprintMode')
+        ->assertSet('step', 0)
+        ->call('exitReprintMode')
+        ->assertSet('step', 1)
+        ->assertSet('reprintQuery', '')
+        ->assertSet('reprintTicket', null);
+});
+
 it('generates barcode SVG on ticket confirmation', function () {
     $service = Service::factory()->create([
         'is_active' => true,

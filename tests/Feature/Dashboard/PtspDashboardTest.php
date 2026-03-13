@@ -50,12 +50,11 @@ test('officer dashboard renders workstation modules and actions', function () {
         ->assertSee('Modul Panggilan Petugas')
         ->assertSee('Tiket Aktif')
         ->assertSee('Panggil Berikutnya')
-        ->assertSee('Proses Layanan')
         ->assertSee('Panggil Ulang')
         ->assertSee('Lewati')
         ->assertSee('Selesai')
         ->assertSee('Daftar Skip Layanan')
-        ->assertSee('Jumlah pihak yang dilayani hari ini')
+        ->assertSee('Kinerja Hari Ini')
         ->assertSee('UMUM-0007')
         ->assertSee('UMUM-0008');
 });
@@ -120,13 +119,12 @@ test('admin dashboard renders health widgets and shortcuts', function () {
         ->get(route('dashboard'))
         ->assertOk()
         ->assertSee('Health Aplikasi')
-        ->assertSee('Booking Berhasil Hari Ini')
-        ->assertSee('Booking Gagal Hari Ini')
+        ->assertSee('Booking Berhasil')
+        ->assertSee('Booking Gagal')
         ->assertSee('Shortcut Manajemen')
         ->assertSee('/admin/layanan')
         ->assertSee('/admin/loket')
         ->assertSee('/admin/users')
-        ->assertSee('/admin/roles')
-        ->assertSee('/admin/izin-layanan')
-        ->assertSee('Ringkasan Failure Operasional');
+        ->assertSee('/admin/wilayah')
+        ->assertSee('/frontdesk/antrian');
 });

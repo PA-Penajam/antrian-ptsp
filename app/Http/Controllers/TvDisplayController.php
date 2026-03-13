@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ModuleSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -26,8 +27,8 @@ class TvDisplayController extends Controller
         }
 
         session([
-            'tv_display_authenticated' => true,
-            'tv_display_authenticated_at' => now()->timestamp,
+            ModuleSession::TvDisplayAuthenticated->value => true,
+            ModuleSession::TvDisplayAuthenticatedAt->value => now()->timestamp,
         ]);
 
         return redirect()->route('tv-display.index');
@@ -35,7 +36,7 @@ class TvDisplayController extends Controller
 
     public function logout(): RedirectResponse
     {
-        session()->forget(['tv_display_authenticated', 'tv_display_authenticated_at']);
+        session()->forget([ModuleSession::TvDisplayAuthenticated->value, ModuleSession::TvDisplayAuthenticatedAt->value]);
 
         return redirect()->route('tv-display.login');
     }
