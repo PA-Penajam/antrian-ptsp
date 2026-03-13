@@ -1,4 +1,15 @@
-<div class="flex min-h-screen flex-col justify-between gap-6 p-4 sm:p-6 lg:p-8 {{ $fontSize === 'large' ? 'text-lg' : 'text-base' }}">
+<div
+    x-data="ThermalPrinter({
+        enabled: {{ config('services.thermal_printer.enabled') ? 'true' : 'false' }},
+        ip: '{{ config('services.thermal_printer.ip') }}',
+        port: {{ config('services.thermal_printer.port', 8043) }},
+        deviceId: '{{ config('services.thermal_printer.device_id', 'local_printer') }}',
+        institutionName: '{{ config('institution.name') }}',
+    })"
+    x-init="init()"
+    x-on:print-ticket.window="printTicket($event.detail)"
+    class="flex min-h-screen flex-col justify-between gap-6 p-4 sm:p-6 lg:p-8 {{ $fontSize === 'large' ? 'text-lg' : 'text-base' }}"
+>
     <div class="mx-auto flex w-full max-w-5xl flex-1 items-center justify-center">
         <flux:card class="w-full border-slate-200 bg-white/90 p-8 text-center shadow-xl backdrop-blur sm:p-10">
 
@@ -465,7 +476,16 @@
             @if ($step === 4 && $ticket)
                 <div wire:key="kiosk-step-4" class="mx-auto max-w-lg space-y-8"
                     x-data="{ countdown: 30 }"
-                    x-init="setInterval(() => { countdown--; if(countdown <= 0) $wire.resetWizard(); }, 1000)">
+                    x-init="
+                        setInterval(() => { countdown--; if(countdown <= 0) $wire.resetWizard(); }, 1000);
+                        $dispatch('print-ticket', {
+                            ticketNumber: '{{ $ticket->ticket_number }}',
+                            serviceName: '{{ $ticket->service?->name }}',
+                            visitorName: '{{ $ticket->visitor_name }}',
+                            serviceDate: '{{ $ticket->service_date?->format('d/m/Y') }}',
+                            status: '{{ $ticket->status->label() }}'
+                        });
+                    "
 
                     {{-- Success Header dengan Animation --}}
                     <div class="space-y-4">
