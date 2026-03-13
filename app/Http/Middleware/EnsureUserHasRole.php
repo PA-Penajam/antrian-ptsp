@@ -21,7 +21,13 @@ class EnsureUserHasRole
             abort(401);
         }
 
-        if (! in_array($user->role?->value ?? $user->role, $roles, true)) {
+        $userRole = $user->role?->value ?? $user->role;
+
+        if ($userRole === 'admin') {
+            return $next($request);
+        }
+
+        if (! in_array($userRole, $roles, true)) {
             abort(403);
         }
 

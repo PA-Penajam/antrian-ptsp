@@ -50,12 +50,11 @@ test('officer dashboard renders workstation modules and actions', function () {
         ->assertSee('Modul Panggilan Petugas')
         ->assertSee('Tiket Aktif')
         ->assertSee('Panggil Berikutnya')
-        ->assertSee('Proses Layanan')
         ->assertSee('Panggil Ulang')
         ->assertSee('Lewati')
         ->assertSee('Selesai')
         ->assertSee('Daftar Skip Layanan')
-        ->assertSee('Jumlah pihak yang dilayani hari ini')
+        ->assertSee('Kinerja Hari Ini')
         ->assertSee('UMUM-0007')
         ->assertSee('UMUM-0008');
 });

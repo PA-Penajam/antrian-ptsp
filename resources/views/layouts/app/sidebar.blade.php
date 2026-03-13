@@ -31,22 +31,27 @@
                 @endguest
 
                 @auth
+                @if (auth()->user()?->role === \App\Enums\UserRole::Admin)
+                    <livewire:admin-role-switcher />
+                @endif
+
+                @php
+                    $viewRole = auth()->user()?->activeRole();
+                    $isAdmin = auth()->user()?->role === \App\Enums\UserRole::Admin;
+                @endphp
+
                 <flux:sidebar.group :heading="__('Manajemen Internal')" expandable class="grid mt-4">
-                    @unless (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
-                        <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                            @if (auth()->user()?->hasRole(\App\Enums\UserRole::Officer))
-                                {{ __('Workstation') }}
-                            @else
-                                {{ __('Dashboard') }}
-                            @endif
+                    @if ($viewRole === \App\Enums\UserRole::Officer || $viewRole === \App\Enums\UserRole::Admin || (! $isAdmin && auth()->user()?->hasRole(\App\Enums\UserRole::Officer)))
+                        <flux:sidebar.item icon="megaphone" :href="route('workstation')" :current="request()->routeIs('workstation')" wire:navigate>
+                            {{ __('Workstation') }}
                         </flux:sidebar.item>
-                    @endunless
-                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk) || auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
+                    @endif
+                    @if ($viewRole === \App\Enums\UserRole::Frontdesk || $viewRole === \App\Enums\UserRole::Admin || (! $isAdmin && auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk)))
                         <flux:sidebar.item icon="users" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate>
                             {{ __('Frontdesk') }}
                         </flux:sidebar.item>
                     @endif
-                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Monitor))
+                    @if ($viewRole === \App\Enums\UserRole::Monitor || $viewRole === \App\Enums\UserRole::Admin || (! $isAdmin && auth()->user()?->hasRole(\App\Enums\UserRole::Monitor)))
                         <flux:sidebar.item icon="chart-bar" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate>
                             {{ __('Laporan') }}
                         </flux:sidebar.item>
