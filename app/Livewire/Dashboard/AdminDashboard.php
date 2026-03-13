@@ -21,7 +21,23 @@ class AdminDashboard extends Component
         $this->endDate = today()->toDateString();
     }
 
-    #[Computed]
+    public function filterByDate(): void
+    {
+        unset(
+            $this->todayTotal,
+            $this->todayServed,
+            $this->todayWaiting,
+            $this->todayAvgWaitMinutes,
+            $this->bookingSuccess,
+            $this->bookingFailed,
+            $this->byService,
+            $this->byCounter,
+            $this->byChannel,
+            $this->trendData,
+        );
+    }
+
+    #[Computed(persist: true)]
     public function todayTotal(): int
     {
         return QueueTicket::query()
@@ -29,7 +45,7 @@ class AdminDashboard extends Component
             ->count();
     }
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function todayServed(): int
     {
         return QueueTicket::query()
@@ -38,7 +54,7 @@ class AdminDashboard extends Component
             ->count();
     }
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function todayWaiting(): int
     {
         return QueueTicket::query()
@@ -51,26 +67,27 @@ class AdminDashboard extends Component
             ->count();
     }
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function todayAvgWaitMinutes(): float
     {
-        $tickets = QueueTicket::query()
+        $driver = DB::connection()->getDriverName();
+
+        $diffExpression = $driver === 'sqlite'
+            ? '(strftime(\'%s\', completed_at) - strftime(\'%s\', called_at)) / 60.0'
+            : 'TIMESTAMPDIFF(MINUTE, called_at, completed_at)';
+
+        $avg = QueueTicket::query()
             ->whereBetween('service_date', [$this->startDate, $this->endDate])
             ->where('status', QueueStatus::Completed)
             ->whereNotNull('called_at')
             ->whereNotNull('completed_at')
-            ->get(['called_at', 'completed_at']);
+            ->selectRaw("AVG({$diffExpression}) as avg_minutes")
+            ->value('avg_minutes');
 
-        if ($tickets->isEmpty()) {
-            return 0.0;
-        }
-
-        $totalMinutes = $tickets->sum(fn ($ticket) => $ticket->called_at->diffInMinutes($ticket->completed_at));
-
-        return round($totalMinutes / $tickets->count(), 1);
+        return round((float) ($avg ?? 0), 1);
     }
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function bookingSuccess(): int
     {
         return QueueTicket::query()
@@ -80,7 +97,7 @@ class AdminDashboard extends Component
             ->count();
     }
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function bookingFailed(): int
     {
         return QueueTicket::query()
@@ -90,7 +107,7 @@ class AdminDashboard extends Component
             ->count();
     }
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function byService(): array
     {
         return QueueTicket::query()
@@ -103,7 +120,7 @@ class AdminDashboard extends Component
             ->toArray();
     }
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function byCounter(): array
     {
         return QueueTicket::query()
@@ -117,7 +134,7 @@ class AdminDashboard extends Component
             ->toArray();
     }
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function byChannel(): array
     {
         $counts = QueueTicket::query()
@@ -134,27 +151,48 @@ class AdminDashboard extends Component
         ];
     }
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function trendData(): array
     {
-        $days = 7;
+        $today = today()->toDateString();
+        $isDefaultRange = $this->startDate === $today && $this->endDate === $today;
+
+        if ($isDefaultRange) {
+            $start = today()->subDays(6);
+            $end = today();
+        } else {
+            $start = $this->startDate;
+            $end = $this->endDate;
+        }
+
+        $counts = QueueTicket::query()
+            ->selectRaw('DATE(service_date) as date, COUNT(*) as total')
+            ->whereBetween('service_date', [$start, $end])
+            ->groupByRaw('DATE(service_date)')
+            ->pluck('total', 'date');
+
+        $period = new \DatePeriod(
+            new \DateTime((string) $start),
+            new \DateInterval('P1D'),
+            (new \DateTime((string) $end))->modify('+1 day'),
+        );
+
         $data = [];
-
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = today()->subDays($i);
-            $count = QueueTicket::query()
-                ->whereDate('service_date', $date)
-                ->count();
-
+        foreach ($period as $day) {
+            $date = $day->format('Y-m-d');
             $data[] = [
-                'date' => $date->format('Y-m-d'),
-                'total' => $count,
+                'date' => $date,
+                'total' => $counts[$date] ?? 0,
             ];
         }
 
         return $data;
     }
 
+    /**
+     * Intentionally not persisted — recentActivities must always reflect the
+     * latest activity feed regardless of the selected date filter.
+     */
     #[Computed]
     public function recentActivities(): \Illuminate\Database\Eloquent\Collection
     {

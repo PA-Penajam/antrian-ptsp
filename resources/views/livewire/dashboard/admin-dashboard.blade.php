@@ -65,11 +65,11 @@
             <div class="flex items-end gap-3">
                 <flux:field>
                     <flux:label>Dari</flux:label>
-                    <flux:input type="date" wire:model.live="startDate" />
+                    <flux:input type="date" wire:model="startDate" wire:change="filterByDate" />
                 </flux:field>
                 <flux:field>
                     <flux:label>Sampai</flux:label>
-                    <flux:input type="date" wire:model.live="endDate" />
+                    <flux:input type="date" wire:model="endDate" wire:change="filterByDate" />
                 </flux:field>
             </div>
         </div>
