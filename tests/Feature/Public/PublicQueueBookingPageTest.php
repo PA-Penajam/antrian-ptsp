@@ -28,7 +28,7 @@ test('public user can submit booking and receive confirmation', function () {
 
     $response = $this->post('/antrian', [
         'service_id' => $service->id,
-        'service_date' => now()->addDay()->toDateString(),
+        'service_date' => now()->nextWeekday()->toDateString(),
         'visitor_name' => 'Pemohon Publik',
         'visitor_identifier' => '7371AAAAAAAAAAAA',
         'visitor_phone' => '081234567890',

@@ -23,11 +23,11 @@ class StorePublicQueueBookingRequest extends FormRequest
     {
         return [
             'service_id' => ['required', 'integer', 'exists:services,id'],
-            'service_date' => ['required', 'date'],
+            'service_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:+14 days', new \App\Rules\WeekdayOnly],
             'visitor_name' => ['required', 'string', 'max:255'],
             'visitor_identifier' => ['required', 'string', 'max:64'],
             'visitor_phone' => ['required', 'string', 'max:30'],
-            'notes' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
