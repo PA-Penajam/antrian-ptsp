@@ -12,7 +12,15 @@ class PublicServiceController extends Controller
 {
     public function institution(): JsonResponse
     {
-        return response()->json(config('institution'));
+        $config = (array) config('institution', []);
+
+        return response()->json(collect($config)->only([
+            'name',
+            'address',
+            'phone',
+            'operating_hours',
+            'logo_path',
+        ])->all());
     }
 
     public function index(): AnonymousResourceCollection
