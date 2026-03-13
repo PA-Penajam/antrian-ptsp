@@ -1,14 +1,21 @@
 <x-layouts::app :title="__('Manajemen Layanan')">
     <div class="mx-auto w-full max-w-6xl space-y-6">
-        <div>
-            <flux:heading size="xl" level="1">Manajemen Layanan</flux:heading>
-            <flux:subheading>Kelola layanan aktif dan konfigurasi kanal layanan.</flux:subheading>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div class="space-y-3">
+                <flux:badge color="cyan" rounded>Admin Panel</flux:badge>
+                <div>
+                    <flux:heading size="xl" level="1">Manajemen Layanan</flux:heading>
+                    <flux:subheading class="mt-1">Kelola layanan aktif dan konfigurasi kanal layanan.</flux:subheading>
+                </div>
+                <flux:breadcrumbs>
+                    <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
+                    <flux:breadcrumbs.item>Layanan</flux:breadcrumbs.item>
+                </flux:breadcrumbs>
+            </div>
+            <div class="flex items-center gap-2">
+                <flux:badge size="sm" color="green">{{ $services->total() ?? $services->count() }} layanan</flux:badge>
+            </div>
         </div>
-
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
-            <flux:breadcrumbs.item>Layanan</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
 
         @if (session('status'))
             <flux:callout icon="check-circle" color="green">
@@ -22,8 +29,13 @@
             </flux:callout>
         @endif
 
-        <flux:card class="space-y-4">
-            <flux:heading size="lg">Tambah Layanan</flux:heading>
+        <flux:card class="admin-card-elevated space-y-4 border-cyan-200 dark:border-cyan-800">
+            <div class="flex items-center gap-3">
+                <div class="admin-icon-box bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400">
+                    <flux:icon.plus-circle class="size-5" />
+                </div>
+                <flux:heading size="lg">Tambah Layanan Baru</flux:heading>
+            </div>
             <form method="POST" action="{{ route('admin.layanan.store') }}" class="grid gap-4 md:grid-cols-2">
                 @csrf
                 <flux:field>
@@ -86,7 +98,12 @@
 
         <flux:card class="space-y-4">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <flux:heading size="lg">Daftar Layanan</flux:heading>
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
+                        <flux:icon.clipboard-document-list class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Daftar Layanan</flux:heading>
+                </div>
                 <form method="GET" action="{{ route('admin.layanan.index') }}" class="w-full sm:w-auto">
                     <flux:input
                         name="search"
