@@ -35,6 +35,13 @@ return [
         ],
     ],
 
+    'thermal_printer' => [
+        'enabled' => (bool) env('THERMAL_PRINTER_ENABLED', false),
+        'ip' => env('THERMAL_PRINTER_IP', '192.168.1.100'),
+        'port' => (int) env('THERMAL_PRINTER_PORT', 8043),
+        'device_id' => env('THERMAL_PRINTER_DEVICE_ID', 'local_printer'),
+    ],
+
     'elevenlabs' => [
         'api_key' => env('ELEVENLABS_API_KEY'),
         'voice_id' => env('ELEVENLABS_VOICE_ID'),
