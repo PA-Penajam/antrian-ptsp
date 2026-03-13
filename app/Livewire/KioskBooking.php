@@ -71,7 +71,7 @@ class KioskBooking extends Component
         return $service;
     }
 
-    #[Computed]
+    #[Computed(persist: true)]
     public function wilayahOptions(): Collection
     {
         $selectedKabupatenKode = $this->selectedKabupatenKode();
