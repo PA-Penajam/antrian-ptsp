@@ -26,3 +26,6 @@ yarn-error.log
 
 # Frontend public (moved to separate repo: antrian-ptsp-public)
 frontend-public/
+
+# Git worktrees
+.worktrees/
