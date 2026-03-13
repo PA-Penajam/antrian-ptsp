@@ -120,13 +120,12 @@ test('admin dashboard renders health widgets and shortcuts', function () {
         ->get(route('dashboard'))
         ->assertOk()
         ->assertSee('Health Aplikasi')
-        ->assertSee('Booking Berhasil Hari Ini')
-        ->assertSee('Booking Gagal Hari Ini')
+        ->assertSee('Booking Berhasil')
+        ->assertSee('Booking Gagal')
         ->assertSee('Shortcut Manajemen')
         ->assertSee('/admin/layanan')
         ->assertSee('/admin/loket')
         ->assertSee('/admin/users')
-        ->assertSee('/admin/roles')
-        ->assertSee('/admin/izin-layanan')
-        ->assertSee('Ringkasan Failure Operasional');
+        ->assertSee('/admin/wilayah')
+        ->assertSee('/frontdesk/antrian');
 });

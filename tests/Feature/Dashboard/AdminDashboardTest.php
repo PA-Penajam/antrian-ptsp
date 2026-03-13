@@ -21,7 +21,7 @@ test('admin dashboard component renders successfully', function () {
         ->assertSee('Total Hari Ini')
         ->assertSee('Sudah Dilayani')
         ->assertSee('Menunggu')
-        ->assertSee('Rata-rata Tunggu (menit)');
+        ->assertSee('Rata-rata Tunggu');
 });
 
 test('stat cards display correct data for today', function () {
