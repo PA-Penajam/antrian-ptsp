@@ -66,7 +66,7 @@
                     },
 
                     canAdvanceToReview() {
-                        return Boolean(this.serviceId && this.serviceDate && this.visitorName.trim());
+                        return Boolean(this.serviceId && this.serviceDate && this.visitorName.trim() && this.visitorIdentifier.trim() && this.visitorPhone.trim());
                     },
 
                     goToStep(stepNumber) {
@@ -412,13 +412,13 @@
 
                             <flux:field>
                                 <flux:label>Nomor Identitas</flux:label>
-                                <flux:input type="text" name="visitor_identifier" x-model="visitorIdentifier" placeholder="Opsional" />
+                                <flux:input type="text" name="visitor_identifier" x-model="visitorIdentifier" required placeholder="Masukkan nomor KTP atau identitas lainnya" />
                                 <flux:error name="visitor_identifier" />
                             </flux:field>
 
                             <flux:field>
                                 <flux:label>Nomor Telepon / WhatsApp</flux:label>
-                                <flux:input type="text" name="visitor_phone" x-model="visitorPhone" placeholder="Opsional" />
+                                <flux:input type="text" name="visitor_phone" x-model="visitorPhone" required placeholder="Contoh: 081234567890" />
                                 <flux:error name="visitor_phone" />
                             </flux:field>
                         </div>
