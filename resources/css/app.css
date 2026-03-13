@@ -64,3 +64,63 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
+
+/* === Admin Panel Design System === */
+
+@layer utilities {
+    /* Stat card gradients */
+    .admin-stat-total {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border-color: #bae6fd;
+    }
+    .admin-stat-success {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border-color: #bbf7d0;
+    }
+    .admin-stat-warning {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border-color: #fde68a;
+    }
+    .admin-stat-info {
+        background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+        border-color: #e9d5ff;
+    }
+    .admin-stat-danger {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border-color: #fecaca;
+    }
+
+    /* Section card with subtle shadow */
+    .admin-card-elevated {
+        box-shadow: 0 24px 60px -48px rgba(15, 23, 42, 0.18);
+    }
+
+    /* Icon decorator box */
+    .admin-icon-box {
+        @apply flex size-10 shrink-0 items-center justify-center rounded-2xl;
+    }
+}
+
+/* Admin dark mode overrides */
+@layer theme {
+    .dark .admin-stat-total {
+        background: linear-gradient(135deg, #0c1929 0%, #0f2338 100%);
+        border-color: #1e3a5f;
+    }
+    .dark .admin-stat-success {
+        background: linear-gradient(135deg, #052e16 0%, #0a3622 100%);
+        border-color: #166534;
+    }
+    .dark .admin-stat-warning {
+        background: linear-gradient(135deg, #1c1303 0%, #2c1f08 100%);
+        border-color: #854d0e;
+    }
+    .dark .admin-stat-info {
+        background: linear-gradient(135deg, #1a0533 0%, #250a42 100%);
+        border-color: #6b21a8;
+    }
+    .dark .admin-stat-danger {
+        background: linear-gradient(135deg, #2a0a0a 0%, #3b1010 100%);
+        border-color: #991b1b;
+    }
+}
