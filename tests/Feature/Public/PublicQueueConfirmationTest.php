@@ -20,8 +20,25 @@ test('confirmation page displays ticket details', function () {
     $url = route('queue.confirmation', $ticket);
     $response = $this->get($url);
 
-    $response->assertOk();
-    $response->assertSee('Konfirmasi Antrian');
-    $response->assertSee('ABC123');
-    $response->assertSee('John Doe');
+    $response->assertOk()
+        ->assertSee('Konfirmasi Antrian')
+        ->assertSee('ABC123')
+        ->assertSee('John Doe')
+        ->assertSee($service->name)
+        ->assertSee($ticket->status->label());
+});
+
+test('confirmation page has print button and navigation links', function () {
+    $service = Service::factory()->create();
+    $ticket = QueueTicket::factory()->create([
+        'service_id' => $service->id,
+        'status' => QueueStatus::Booked,
+    ]);
+
+    $response = $this->get(route('queue.confirmation', $ticket));
+
+    $response->assertOk()
+        ->assertSee('Cetak Tiket')
+        ->assertSee('Cek Status Antrian')
+        ->assertSee('Kembali ke Beranda');
 });
