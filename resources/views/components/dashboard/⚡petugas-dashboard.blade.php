@@ -10,7 +10,6 @@ use App\Models\Counter;
 use App\Models\QueueTicket;
 use App\Models\User;
 use App\Support\Dashboard\PetugasStats;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -35,6 +34,10 @@ new class extends Component
     public string $feedbackTone = 'zinc';
 
     public string $feedbackMessage = '';
+
+    private ?array $cachedStats = null;
+
+    private ?string $cachedStatsDate = null;
 
     /**
      * @var array<int,array{id:int,ticket_number:string,sequence_number:int,service_name:string,visitor_name:string}>
@@ -264,7 +267,7 @@ new class extends Component
             $this->activeTicket = null;
             $this->waitingTickets = [];
             $this->skippedTickets = [];
-            $this->stats = $petugasStats->build($user, $today);
+            $this->stats = $this->resolveStatsWithCache($petugasStats, $user, $today);
 
             return;
         }
@@ -277,7 +280,7 @@ new class extends Component
                 $this->activeTicket = null;
                 $this->waitingTickets = [];
                 $this->skippedTickets = [];
-                $this->stats = $petugasStats->build($user, $today);
+                $this->stats = $this->resolveStatsWithCache($petugasStats, $user, $today);
                 $this->setFeedback('Anda tidak memiliki akses ke loket ini.', 'red');
 
                 return;
@@ -296,7 +299,7 @@ new class extends Component
             $this->activeTicket = null;
             $this->waitingTickets = [];
             $this->skippedTickets = [];
-            $this->stats = $petugasStats->build($user, $today);
+            $this->stats = $this->resolveStatsWithCache($petugasStats, $user, $today);
 
             return;
         }
@@ -347,7 +350,26 @@ new class extends Component
             ])
             ->toArray();
 
-        $this->stats = $petugasStats->build($user, $today);
+        $this->stats = $this->resolveStatsWithCache($petugasStats, $user, $today);
+    }
+
+    /**
+     * @return array{
+     *     served_today:int,
+     *     action_counts:array{skipped:int,recalled:int,completed:int},
+     *     service_distribution:array<string,int>
+     * }
+     */
+    private function resolveStatsWithCache(PetugasStats $petugasStats, User $user, string $today): array
+    {
+        if ($this->cachedStatsDate === $today && $this->cachedStats !== null) {
+            return $this->cachedStats;
+        }
+
+        $this->cachedStats = $petugasStats->build($user, $today);
+        $this->cachedStatsDate = $today;
+
+        return $this->cachedStats;
     }
 
     private function resolveSelectedCounter(): ?Counter
@@ -356,30 +378,16 @@ new class extends Component
             return null;
         }
 
-        $counter = Counter::query()
+        $cached = collect($this->counters)
+            ->firstWhere('id', $this->selectedCounterId);
+
+        if ($cached === null) {
+            return null;
+        }
+
+        return Counter::query()
             ->where('is_active', true)
             ->find($this->selectedCounterId);
-
-        if (! $counter instanceof Counter) {
-            return null;
-        }
-
-        $user = $this->currentUser();
-        if (! $user instanceof User) {
-            return null;
-        }
-
-        /** @var Collection<int,int> $allowedPoolIds */
-        $allowedPoolIds = $user->services()
-            ->pluck('queue_pool_id')
-            ->filter()
-            ->values();
-
-        if (! $allowedPoolIds->contains($counter->queue_pool_id)) {
-            return null;
-        }
-
-        return $counter;
     }
 
     private function resolveActiveTicket(): ?QueueTicket
