@@ -19,36 +19,48 @@ class QueueReportBuilder
      */
     public function build(string $from, string $to): array
     {
-        $tickets = QueueTicket::query()
-            ->with(['service', 'counter', 'creator'])
+        $dateScope = fn ($query) => $query
             ->whereDate('service_date', '>=', $from)
-            ->whereDate('service_date', '<=', $to)
-            ->get();
+            ->whereDate('service_date', '<=', $to);
 
         return [
-            'by_service' => $this->groupAndCount($tickets, fn (QueueTicket $ticket): string => $ticket->service?->name ?? '-'),
-            'by_counter' => $this->groupAndCount($tickets, fn (QueueTicket $ticket): string => $ticket->counter?->name ?? '-'),
-            'by_officer' => $this->groupAndCount($tickets, fn (QueueTicket $ticket): string => $ticket->creator?->name ?? '-'),
-            'by_status' => $this->groupAndCount($tickets, fn (QueueTicket $ticket): string => $ticket->status->value),
+            'by_service' => QueueTicket::query()
+                ->tap($dateScope)
+                ->join('services', 'queue_tickets.service_id', '=', 'services.id')
+                ->selectRaw('services.name, COUNT(*) as count')
+                ->groupBy('services.name')
+                ->orderBy('services.name')
+                ->pluck('count', 'services.name')
+                ->toArray(),
+
+            'by_counter' => QueueTicket::query()
+                ->tap($dateScope)
+                ->whereNotNull('counter_id')
+                ->join('counters', 'queue_tickets.counter_id', '=', 'counters.id')
+                ->selectRaw('counters.name, COUNT(*) as count')
+                ->groupBy('counters.name')
+                ->orderBy('counters.name')
+                ->pluck('count', 'counters.name')
+                ->toArray(),
+
+            'by_officer' => QueueTicket::query()
+                ->tap($dateScope)
+                ->join('users', 'queue_tickets.created_by', '=', 'users.id')
+                ->selectRaw('users.name, COUNT(*) as count')
+                ->groupBy('users.name')
+                ->orderBy('users.name')
+                ->pluck('count', 'users.name')
+                ->toArray(),
+
+            'by_status' => QueueTicket::query()
+                ->tap($dateScope)
+                ->selectRaw('status, COUNT(*) as count')
+                ->groupBy('status')
+                ->pluck('count', 'status')
+                ->toArray(),
+
             'officer_service_distribution' => $this->buildOfficerServiceDistribution($from, $to),
         ];
-    }
-
-    /**
-     * @param  Collection<int,QueueTicket>  $tickets
-     * @param  callable(QueueTicket):string  $groupBy
-     * @return array<string,int>
-     */
-    private function groupAndCount(Collection $tickets, callable $groupBy): array
-    {
-        /** @var array<string,int> $result */
-        $result = $tickets
-            ->groupBy($groupBy)
-            ->map(fn (Collection $group): int => $group->count())
-            ->sortKeys()
-            ->toArray();
-
-        return $result;
     }
 
     /**

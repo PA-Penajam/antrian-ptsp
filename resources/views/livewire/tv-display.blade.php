@@ -1,16 +1,3 @@
-<style>
-    @keyframes pulse-gentle {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
-        50% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
-    }
-    .animate-pulse-gentle { animation: pulse-gentle 2s ease-in-out infinite; }
-    @keyframes marquee {
-        0% { transform: translateX(100%); }
-        100% { transform: translateX(-100%); }
-    }
-    .animate-marquee { animation: marquee 20s linear infinite; }
-</style>
-
 <div wire:poll.5s.keep-alive class="h-screen bg-slate-50 text-slate-900 overflow-hidden p-5"
      x-data="{
          connected: navigator.onLine,

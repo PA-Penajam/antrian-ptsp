@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+
+@source '../views/livewire/kiosk-booking.blade.php';
+@source '../views/layouts/kiosk.blade.php';

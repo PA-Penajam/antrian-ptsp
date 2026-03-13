@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Enums\QueueStatus;
 use App\Models\QueueTicket;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -60,20 +61,22 @@ class TvDisplay extends Component
     protected function videos(): array
     {
         try {
-            $files = Storage::disk('public')->files('videos');
+            return Cache::remember('tv-display:videos', 60, function (): array {
+                $files = Storage::disk('public')->files('videos');
 
-            $allowed = ['mp4', 'webm', 'ogg'];
+                $allowed = ['mp4', 'webm', 'ogg'];
 
-            return collect($files)
-                ->filter(fn (string $file): bool => in_array(
-                    strtolower(pathinfo($file, PATHINFO_EXTENSION)),
-                    $allowed,
-                    true,
-                ))
-                ->map(fn (string $file): string => asset('storage/'.$file))
-                ->sort()
-                ->values()
-                ->all();
+                return collect($files)
+                    ->filter(fn (string $file): bool => in_array(
+                        strtolower(pathinfo($file, PATHINFO_EXTENSION)),
+                        $allowed,
+                        true,
+                    ))
+                    ->map(fn (string $file): string => asset('storage/'.$file))
+                    ->sort()
+                    ->values()
+                    ->all();
+            });
         } catch (\Throwable $e) {
             return [];
         }

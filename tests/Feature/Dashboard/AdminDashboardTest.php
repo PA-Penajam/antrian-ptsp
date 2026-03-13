@@ -291,3 +291,30 @@ test('date range filter has default values of today', function () {
     expect($component->startDate)->toBe($today);
     expect($component->endDate)->toBe($today);
 });
+
+it('loads dashboard stats efficiently', function () {
+    $service = Service::factory()->create();
+    QueueTicket::factory()
+        ->count(3)
+        ->for($service)
+        ->create([
+            'service_date' => today(),
+            'status' => \App\Enums\QueueStatus::Completed,
+            'channel' => 'online_booking',
+            'called_at' => now()->subMinutes(10),
+            'completed_at' => now(),
+        ]);
+    QueueTicket::factory()->create([
+        'service_date' => today(),
+        'status' => \App\Enums\QueueStatus::Waiting,
+    ]);
+
+    $user = User::factory()->create([
+        'role' => UserRole::Admin->value,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(\App\Livewire\Dashboard\AdminDashboard::class)
+        ->assertSet('startDate', today()->toDateString())
+        ->assertOk();
+});

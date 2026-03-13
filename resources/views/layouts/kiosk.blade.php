@@ -13,7 +13,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/kiosk.css', 'resources/js/kiosk.js'])
         @fluxAppearance
     </head>
     <body class="min-h-screen overflow-x-hidden overflow-y-auto bg-gradient-to-br from-slate-100 via-white to-cyan-100 text-slate-800 antialiased">
