@@ -1,39 +1,77 @@
 <div class="space-y-6">
     {{-- Stat Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <flux:card class="p-4">
-            <flux:heading size="sm">Total Hari Ini</flux:heading>
-            <p class="text-3xl font-bold mt-2">{{ $this->todayTotal }}</p>
+    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <flux:card class="admin-stat-total admin-card-elevated p-5">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-sky-700 uppercase dark:text-sky-300">Total Hari Ini</flux:text>
+                    <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ $this->todayTotal }}</p>
+                </div>
+                <div class="admin-icon-box bg-sky-100 text-sky-600 dark:bg-sky-900/50 dark:text-sky-400">
+                    <flux:icon.ticket class="size-5" />
+                </div>
+            </div>
         </flux:card>
 
-        <flux:card class="p-4">
-            <flux:heading size="sm">Sudah Dilayani</flux:heading>
-            <p class="text-3xl font-bold mt-2 text-green-600">{{ $this->todayServed }}</p>
+        <flux:card class="admin-stat-success admin-card-elevated p-5">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-emerald-700 uppercase dark:text-emerald-300">Sudah Dilayani</flux:text>
+                    <p class="text-3xl font-bold text-emerald-700 dark:text-emerald-400">{{ $this->todayServed }}</p>
+                </div>
+                <div class="admin-icon-box bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                    <flux:icon.check-circle class="size-5" />
+                </div>
+            </div>
         </flux:card>
 
-        <flux:card class="p-4">
-            <flux:heading size="sm">Menunggu</flux:heading>
-            <p class="text-3xl font-bold mt-2 text-orange-600">{{ $this->todayWaiting }}</p>
+        <flux:card class="admin-stat-warning admin-card-elevated p-5">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-amber-700 uppercase dark:text-amber-300">Menunggu</flux:text>
+                    <p class="text-3xl font-bold text-amber-700 dark:text-amber-400">{{ $this->todayWaiting }}</p>
+                </div>
+                <div class="admin-icon-box bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
+                    <flux:icon.clock class="size-5" />
+                </div>
+            </div>
         </flux:card>
 
-        <flux:card class="p-4">
-            <flux:heading size="sm">Rata-rata Tunggu (menit)</flux:heading>
-            <p class="text-3xl font-bold mt-2 text-blue-600">{{ $this->todayAvgWaitMinutes }}</p>
+        <flux:card class="admin-stat-info admin-card-elevated p-5">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-violet-700 uppercase dark:text-violet-300">Rata-rata Tunggu</flux:text>
+                    <p class="text-3xl font-bold text-violet-700 dark:text-violet-400">{{ $this->todayAvgWaitMinutes }}<span class="ml-1 text-base font-medium">mnt</span></p>
+                </div>
+                <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
+                    <flux:icon.chart-bar class="size-5" />
+                </div>
+            </div>
         </flux:card>
     </div>
 
     {{-- Date Range Filter --}}
-    <flux:card class="p-4">
-        <div class="flex gap-4 items-end">
-            <flux:field>
-                <flux:label>Dari Tanggal</flux:label>
-                <flux:input type="date" wire:model.live="startDate" />
-            </flux:field>
-
-            <flux:field>
-                <flux:label>Sampai Tanggal</flux:label>
-                <flux:input type="date" wire:model.live="endDate" />
-            </flux:field>
+    <flux:card class="p-5">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div class="flex items-center gap-3">
+                <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
+                    <flux:icon.funnel class="size-5" />
+                </div>
+                <div>
+                    <flux:heading size="sm">Filter Periode</flux:heading>
+                    <flux:text class="text-xs text-zinc-500">Pilih rentang tanggal untuk analisis data</flux:text>
+                </div>
+            </div>
+            <div class="flex items-end gap-3">
+                <flux:field>
+                    <flux:label>Dari</flux:label>
+                    <flux:input type="date" wire:model.live="startDate" />
+                </flux:field>
+                <flux:field>
+                    <flux:label>Sampai</flux:label>
+                    <flux:input type="date" wire:model.live="endDate" />
+                </flux:field>
+            </div>
         </div>
     </flux:card>
 
@@ -58,8 +96,13 @@
     @endphp
 
     <div id="charts-placeholder" class="space-y-4">
-        <flux:card class="p-4">
-            <flux:heading size="sm">Tren 7 Hari Terakhir</flux:heading>
+        <flux:card class="admin-card-elevated p-5">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="admin-icon-box bg-sky-100 text-sky-600 dark:bg-sky-900/50 dark:text-sky-400">
+                    <flux:icon.chart-bar class="size-5" />
+                </div>
+                <flux:heading size="sm">Tren 7 Hari Terakhir</flux:heading>
+            </div>
 
             @if (count($this->trendData) > 0 && collect($this->trendData)->sum('total') > 0)
                 <flux:chart :value="$this->trendData" class="w-full">
@@ -95,8 +138,13 @@
         </flux:card>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <flux:card class="p-4">
-                <flux:heading size="sm">Per Layanan</flux:heading>
+            <flux:card class="admin-card-elevated p-5">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="admin-icon-box bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                        <flux:icon.clipboard-document-list class="size-5" />
+                    </div>
+                    <flux:heading size="sm">Per Layanan</flux:heading>
+                </div>
 
                 @if (count($serviceData) > 0 && collect($serviceData)->sum('count') > 0)
                     <flux:chart :value="$serviceData" class="w-full">
@@ -129,8 +177,13 @@
                 @endif
             </flux:card>
 
-            <flux:card class="p-4">
-                <flux:heading size="sm">Per Loket</flux:heading>
+            <flux:card class="admin-card-elevated p-5">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="admin-icon-box bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
+                        <flux:icon.building-office class="size-5" />
+                    </div>
+                    <flux:heading size="sm">Per Loket</flux:heading>
+                </div>
 
                 @if (count($counterData) > 0 && collect($counterData)->sum('count') > 0)
                     <flux:chart :value="$counterData" class="w-full">
@@ -164,8 +217,13 @@
             </flux:card>
         </div>
 
-        <flux:card class="p-4">
-            <flux:heading size="sm">Distribusi Kanal</flux:heading>
+        <flux:card class="admin-card-elevated p-5">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="admin-icon-box bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-900/50 dark:text-fuchsia-400">
+                    <flux:icon.signal class="size-5" />
+                </div>
+                <flux:heading size="sm">Distribusi Kanal</flux:heading>
+            </div>
 
             @if (count($channelData) > 0 && collect($channelData)->sum('total') > 0)
                 <flux:chart :value="$channelData" class="w-full">
@@ -201,8 +259,19 @@
     </div>
 
     {{-- Activity log (auto-updates every 30s) --}}
-    <flux:card class="p-4" wire:poll.30s>
-        <flux:heading size="sm">Aktivitas Terkini</flux:heading>
+    <flux:card class="admin-card-elevated p-5" wire:poll.30s>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="admin-icon-box bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
+                    <flux:icon.clock class="size-5" />
+                </div>
+                <div>
+                    <flux:heading size="sm">Aktivitas Terkini</flux:heading>
+                    <flux:text class="text-xs text-zinc-500">Auto-refresh setiap 30 detik</flux:text>
+                </div>
+            </div>
+            <flux:badge size="sm" color="green" variant="pill">Live</flux:badge>
+        </div>
 
         @if($this->recentActivities->isEmpty())
             <div class="py-8 text-center text-zinc-400">
@@ -238,30 +307,49 @@
         @endif
     </flux:card>
 
-    {{-- Ringkasan Failure Operasional --}}
-    <flux:card class="p-4">
-        <flux:heading size="lg">Ringkasan Failure Operasional</flux:heading>
-        <div class="grid grid-cols-2 gap-4 mt-3">
-            <div>
-                <flux:heading size="sm">Booking Berhasil Hari Ini</flux:heading>
-                <p class="text-2xl font-bold mt-1 text-green-600">{{ $this->bookingSuccess }}</p>
+    {{-- Ringkasan Operasional --}}
+    <div class="grid grid-cols-2 gap-4">
+        <flux:card class="admin-stat-success p-5">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-emerald-700 uppercase dark:text-emerald-300">Booking Berhasil</flux:text>
+                    <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{{ $this->bookingSuccess }}</p>
+                    <flux:text class="text-xs text-emerald-600/70 dark:text-emerald-400/70">Hari ini</flux:text>
+                </div>
+                <div class="admin-icon-box bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                    <flux:icon.check class="size-5" />
+                </div>
             </div>
-            <div>
-                <flux:heading size="sm">Booking Gagal Hari Ini</flux:heading>
-                <p class="text-2xl font-bold mt-1 text-red-600">{{ $this->bookingFailed }}</p>
+        </flux:card>
+
+        <flux:card class="admin-stat-danger p-5">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-red-700 uppercase dark:text-red-300">Booking Gagal</flux:text>
+                    <p class="text-2xl font-bold text-red-700 dark:text-red-400">{{ $this->bookingFailed }}</p>
+                    <flux:text class="text-xs text-red-600/70 dark:text-red-400/70">Hari ini</flux:text>
+                </div>
+                <div class="admin-icon-box bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400">
+                    <flux:icon.x-circle class="size-5" />
+                </div>
             </div>
-        </div>
-    </flux:card>
+        </flux:card>
+    </div>
 
     {{-- Shortcut Manajemen --}}
-    <flux:card class="p-4">
-        <flux:heading size="lg">Shortcut Manajemen</flux:heading>
-        <div class="flex flex-wrap gap-2 mt-3">
-            <flux:button :href="route('admin.layanan.index')" variant="primary">Layanan</flux:button>
-            <flux:button :href="route('admin.loket.index')" variant="filled">Loket</flux:button>
-            <flux:button :href="route('admin.users.index')" variant="ghost">Users</flux:button>
-            <flux:button :href="url('/admin/roles')" variant="ghost">Roles</flux:button>
-            <flux:button :href="url('/admin/izin-layanan')" variant="ghost">Izin Layanan</flux:button>
+    <flux:card class="p-5">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
+                <flux:icon.squares-2x2 class="size-5" />
+            </div>
+            <flux:heading size="sm">Shortcut Manajemen</flux:heading>
+        </div>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <flux:button :href="route('admin.layanan.index')" variant="filled" icon="clipboard-document-list" class="justify-center">Layanan</flux:button>
+            <flux:button :href="route('admin.loket.index')" variant="filled" icon="building-office" class="justify-center">Loket</flux:button>
+            <flux:button :href="route('admin.users.index')" variant="filled" icon="users" class="justify-center">Users</flux:button>
+            <flux:button :href="route('admin.wilayah.index')" variant="filled" icon="map" class="justify-center">Wilayah</flux:button>
+            <flux:button :href="url('/frontdesk/antrian')" variant="filled" icon="ticket" class="justify-center">Frontdesk</flux:button>
         </div>
     </flux:card>
 </div>
