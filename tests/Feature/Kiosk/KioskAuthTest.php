@@ -56,6 +56,15 @@ it('logs out and clears kiosk session', function () {
         ->assertSessionMissing('kiosk_authenticated_at');
 });
 
+it('blocks access when timestamp exists but authenticated flag is false', function () {
+    $response = withSession([
+        'kiosk_authenticated' => false,
+        'kiosk_authenticated_at' => now()->timestamp,
+    ])->get('/kiosk');
+
+    $response->assertRedirect('/kiosk/login');
+});
+
 it('middleware module password kiosk blocks unauthenticated access', function () {
     $response = get('/kiosk');
 

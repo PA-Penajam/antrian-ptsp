@@ -19,10 +19,13 @@ class CheckModulePassword
         $sessionKey = self::resolveSessionKey($module);
         $timestampKey = self::resolveTimestampKey($module);
 
+        $isAuthenticated = session($sessionKey, false);
         $authenticatedAt = session($timestampKey);
         $sessionLifetimeSeconds = config('kiosk.session_lifetime', 1440) * 60;
 
-        if (! $authenticatedAt || (now()->timestamp - $authenticatedAt) >= $sessionLifetimeSeconds) {
+        if (! $isAuthenticated || ! $authenticatedAt || (now()->timestamp - $authenticatedAt) >= $sessionLifetimeSeconds) {
+            session()->forget([$sessionKey, $timestampKey]);
+
             return redirect()->to('/'.$module.'/login');
         }
 
