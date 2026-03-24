@@ -51,6 +51,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Officer->value])->group
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Monitor->value])->group(function () {
     Route::get('/laporan/antrian', [QueueReportController::class, 'index']);
+    Route::get('/laporan/audit', [App\Http\Controllers\Report\AuditTrailController::class, 'index'])->name('laporan.audit');
 });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(function () {

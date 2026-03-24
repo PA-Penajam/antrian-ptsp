@@ -55,6 +55,9 @@
                         <flux:sidebar.item icon="chart-bar" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate>
                             {{ __('Laporan') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="clock" :href="route('laporan.audit')" :current="request()->routeIs('laporan.audit')" wire:navigate>
+                            {{ __('Audit Trail') }}
+                        </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>
 
