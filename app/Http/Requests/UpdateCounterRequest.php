@@ -24,7 +24,7 @@ class UpdateCounterRequest extends FormRequest
         return [
             'queue_pool_id' => ['required', 'integer', 'exists:queue_pools,id'],
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:20'],
+            'code' => ['required', 'string', 'max:20', \Illuminate\Validation\Rule::unique('counters', 'code')->ignore($this->counter)],
             'is_active' => ['required', 'boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
         ];

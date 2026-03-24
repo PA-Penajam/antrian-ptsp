@@ -138,11 +138,22 @@
                 <flux:error name="queue_pool_id" />
             </flux:field>
 
-            <flux:field>
-                <flux:label>Urutan (Sort Order)</flux:label>
-                <flux:input type="number" name="sort_order" value="{{ old('sort_order', 0) }}" min="0" />
-                <flux:error name="sort_order" />
-            </flux:field>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <flux:field>
+                    <flux:label>Urutan (Sort Order)</flux:label>
+                    <flux:input type="number" name="sort_order" value="{{ old('sort_order', 0) }}" min="0" />
+                    <flux:error name="sort_order" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Status</flux:label>
+                    <flux:select name="is_active" required>
+                        <flux:select.option value="1" :selected="old('is_active', '1') == '1'">Aktif</flux:select.option>
+                        <flux:select.option value="0" :selected="old('is_active') == '0'">Nonaktif</flux:select.option>
+                    </flux:select>
+                    <flux:error name="is_active" />
+                </flux:field>
+            </div>
 
             <div class="flex justify-end gap-2 pt-2">
                 <flux:modal.close>
