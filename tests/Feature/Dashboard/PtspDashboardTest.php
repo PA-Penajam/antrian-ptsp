@@ -8,6 +8,9 @@ use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
 
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
+
 test('officer dashboard renders workstation modules and actions', function () {
     $user = User::factory()->create([
         'role' => UserRole::Officer->value,
@@ -44,7 +47,9 @@ test('officer dashboard renders workstation modules and actions', function () {
         'action' => 'ticket_completed',
     ]);
 
-    $response = $this->actingAs($user)->get(route('dashboard'));
+    actingAs($user);
+
+    $response = get(route('dashboard'));
 
     $response->assertOk()
         ->assertSee('Modul Panggilan Petugas')
@@ -86,8 +91,9 @@ test('monitor dashboard renders analytics summary', function () {
         'action' => 'ticket_completed',
     ]);
 
-    $this->actingAs($monitor)
-        ->get(route('dashboard'))
+    actingAs($monitor);
+
+    get(route('dashboard'))
         ->assertOk()
         ->assertSee('Ringkasan Monitoring')
         ->assertSee('Total Dilayani Hari Ini')
@@ -115,16 +121,18 @@ test('admin dashboard renders health widgets and shortcuts', function () {
         'status' => 'cancelled',
     ]);
 
-    $this->actingAs($admin)
-        ->get(route('dashboard'))
+    actingAs($admin);
+
+    get(route('dashboard'))
         ->assertOk()
         ->assertSee('Health Aplikasi')
         ->assertSee('Booking Berhasil')
         ->assertSee('Booking Gagal')
-        ->assertSee('Shortcut Manajemen')
+        ->assertSee('Akses Cepat')
         ->assertSee('/admin/layanan')
         ->assertSee('/admin/loket')
         ->assertSee('/admin/users')
-        ->assertSee('/admin/wilayah')
-        ->assertSee('/frontdesk/antrian');
+        ->assertSee('/admin/roles')
+        ->assertSee('/admin/izin-layanan')
+        ->assertSee('Distribusi per Layanan');
 });

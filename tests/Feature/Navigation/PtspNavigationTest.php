@@ -3,8 +3,11 @@
 use App\Enums\UserRole;
 use App\Models\User;
 
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
+
 test('public landing page exposes PTSP public links', function () {
-    $response = $this->get('/');
+    $response = get('/');
 
     $response->assertOk()
         ->assertSee('/antrian')
@@ -25,24 +28,27 @@ test('dashboard shows role-aware navigation links', function () {
         'email_verified_at' => now(),
     ]);
 
-    $this->actingAs($frontdesk)
-        ->get('/dashboard')
+    actingAs($frontdesk);
+
+    get('/dashboard')
         ->assertOk()
         ->assertSee('/frontdesk/antrian')
         ->assertSee('Modul Panggilan Petugas')
         ->assertDontSee('/admin/layanan');
 
-    $this->actingAs($monitor)
-        ->get('/dashboard')
+    actingAs($monitor);
+
+    get('/dashboard')
         ->assertOk()
         ->assertSee('/laporan/antrian')
         ->assertSee('Ringkasan Monitoring')
         ->assertDontSee('/admin/layanan');
 
-    $this->actingAs($admin)
-        ->get('/dashboard')
+    actingAs($admin);
+
+    get('/dashboard')
         ->assertOk()
         ->assertSee('/admin/layanan')
         ->assertSee('Health Aplikasi')
-        ->assertSee('Shortcut Manajemen');
+        ->assertSee('Akses Cepat');
 });
