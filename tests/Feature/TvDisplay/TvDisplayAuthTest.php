@@ -69,7 +69,7 @@ it('blocks unauthenticated access to tv-display tts endpoint', function () {
     $response->assertRedirect('/tv-display/login');
 });
 
-it('returns browser provider fallback when elevenlabs is not configured', function () {
+it('returns browser provider fallback when minimax is not configured', function () {
     $response = withSession([
         'tv_display_authenticated' => true,
         'tv_display_authenticated_at' => now()->timestamp,

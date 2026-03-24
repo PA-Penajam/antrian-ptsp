@@ -96,30 +96,4 @@ class UserManagementController extends Controller
         return redirect()->route('admin.users.index')
             ->with('status', 'User berhasil dihapus.');
     }
-
-    public function roles(): View
-    {
-        $roleCounts = User::query()
-            ->select('role')
-            ->selectRaw('COUNT(*) as total')
-            ->groupBy('role')
-            ->orderBy('role')
-            ->pluck('total', 'role');
-
-        return view('pages.admin.roles.index', [
-            'roleCounts' => $roleCounts,
-        ]);
-    }
-
-    public function servicePermissions(): View
-    {
-        $users = User::query()
-            ->with('services')
-            ->orderBy('name')
-            ->get();
-
-        return view('pages.admin.roles.permissions', [
-            'users' => $users,
-        ]);
-    }
 }

@@ -165,7 +165,7 @@
                             @endphp
                             
                             <button wire:click="selectService({{ $service->id }})"
-                                class="group relative cursor-pointer overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-0 text-left shadow-md transition-[transform,border-color,box-shadow] duration-100 ease-out hover:border-slate-300 hover:shadow-xl active:translate-y-px active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2">
+                                class="flex h-full flex-col group relative cursor-pointer overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-0 text-left shadow-md transition-[transform,border-color,box-shadow] duration-100 ease-out hover:border-slate-300 hover:shadow-xl active:translate-y-px active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2">
                                 
                                 {{-- Header Card dengan Gradient --}}
                                 <div class="relative h-28 bg-gradient-to-br {{ $color[0] }} p-6">
@@ -185,7 +185,7 @@
                                 </div>
                                 
                                 {{-- Content Area --}}
-                                <div class="p-6">
+                                <div class="flex flex-1 flex-col p-6">
                                     <div class="text-2xl font-bold text-slate-800 transition-colors group-hover:text-slate-900">
                                         {{ $service->name }}
                                     </div>
@@ -196,7 +196,7 @@
                                     @endif
                                     
                                     {{-- CTA Button --}}
-                                    <div class="mt-5 flex items-center justify-between">
+                                    <div class="mt-auto flex items-center justify-between pt-5">
                                         <div class="flex items-center gap-2 rounded-full {{ $color[1] }} px-4 py-2">
                                             <flux:icon.ticket class="size-4 {{ $color[2] }}" />
                                             <span class="text-sm font-semibold {{ $color[2] }}">Ambil Antrian</span>
@@ -245,9 +245,9 @@
                             <flux:icon.user class="size-5 text-white" />
                             <span class="ml-2 text-base font-semibold text-white">Langkah 2 dari 4</span>
                         </div>
-                        <flux:heading level="1" size="3xl" class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black text-transparent">
+                        <h1 class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black text-transparent text-center sm:text-left">
                             Isi Data Pengunjung
-                        </flux:heading>
+                        </h1>
                         
                         {{-- Selected Service Badge --}}
                         <div class="flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-50 to-blue-50 p-4">
@@ -279,36 +279,36 @@
                             <flux:error name="visitorName" />
                         </flux:field>
 
-                        <div class="grid gap-6 sm:grid-cols-2">
-                            <flux:field>
-                                <flux:label class="flex items-center gap-2 text-left text-lg font-medium text-slate-700">
-                                    <flux:icon.identification class="size-5 text-slate-400" />
-                                    NIK / No. Identitas
-                                </flux:label>
-                                <flux:input
-                                    wire:model="visitorIdentifier"
-                                    size="lg"
-                                    placeholder="Opsional"
-                                    class="mt-2 h-14 text-lg [&_[data-flux-control]]:h-14 [&_[data-flux-control]]:rounded-xl [&_[data-flux-control]]:border-2 [&_[data-flux-control]]:border-slate-200 [&_[data-flux-control]]:text-lg"
-                                />
-                                <flux:error name="visitorIdentifier" />
-                            </flux:field>
+                        <flux:field>
+                            <flux:label class="flex items-center gap-2 text-left text-lg font-medium text-slate-700">
+                                <flux:icon.identification class="size-5 text-slate-400" />
+                                NIK / No. Identitas
+                                <span class="rounded-full bg-rose-100 px-2 py-0.5 text-sm font-bold text-rose-600">Wajib</span>
+                            </flux:label>
+                            <flux:input
+                                wire:model="visitorIdentifier"
+                                size="lg"
+                                placeholder="Masukkan NIK/No. Identitas"
+                                class="mt-2 h-16 text-xl [&_[data-flux-control]]:h-16 [&_[data-flux-control]]:rounded-2xl [&_[data-flux-control]]:border-2 [&_[data-flux-control]]:border-slate-200 [&_[data-flux-control]]:text-xl"
+                            />
+                            <flux:error name="visitorIdentifier" />
+                        </flux:field>
 
-                            <flux:field>
-                                <flux:label class="flex items-center gap-2 text-left text-lg font-medium text-slate-700">
-                                    <flux:icon.phone class="size-5 text-slate-400" />
-                                    No. Telepon
-                                </flux:label>
-                                <flux:input
-                                    wire:model="visitorPhone"
-                                    size="lg"
-                                    placeholder="Opsional"
-                                    type="tel"
-                                    class="mt-2 h-14 text-lg [&_[data-flux-control]]:h-14 [&_[data-flux-control]]:rounded-xl [&_[data-flux-control]]:border-2 [&_[data-flux-control]]:border-slate-200 [&_[data-flux-control]]:text-lg"
-                                />
-                                <flux:error name="visitorPhone" />
-                            </flux:field>
-                        </div>
+                        <flux:field>
+                            <flux:label class="flex items-center gap-2 text-left text-lg font-medium text-slate-700">
+                                <flux:icon.phone class="size-5 text-slate-400" />
+                                No. Telepon
+                                <span class="rounded-full bg-rose-100 px-2 py-0.5 text-sm font-bold text-rose-600">Wajib</span>
+                            </flux:label>
+                            <flux:input
+                                wire:model="visitorPhone"
+                                size="lg"
+                                placeholder="Masukkan No. Telepon"
+                                type="tel"
+                                class="mt-2 h-16 text-xl [&_[data-flux-control]]:h-16 [&_[data-flux-control]]:rounded-2xl [&_[data-flux-control]]:border-2 [&_[data-flux-control]]:border-slate-200 [&_[data-flux-control]]:text-xl"
+                            />
+                            <flux:error name="visitorPhone" />
+                        </flux:field>
 
                         <flux:field>
                             <flux:label class="flex items-center gap-2 text-left text-lg font-medium text-slate-700">
@@ -323,9 +323,10 @@
                             @else
                                 <flux:select
                                     wire:model="visitorWilayahKode"
+                                    variant="combobox"
                                     size="lg"
                                     placeholder="Pilih kelurahan/desa"
-                                    class="mt-2 [&_[data-flux-control]]:h-14 [&_[data-flux-control]]:rounded-xl [&_[data-flux-control]]:border-2 [&_[data-flux-control]]:border-slate-200 [&_[data-flux-control]]:text-lg"
+                                    class="mt-2 [&_[data-flux-control]]:h-16 [&_[data-flux-control]]:rounded-2xl [&_[data-flux-control]]:border-2 [&_[data-flux-control]]:border-slate-200 [&_[data-flux-control]]:text-xl"
                                 >
                                     @foreach ($this->wilayahOptions as $wilayah)
                                         <flux:select.option value="{{ $wilayah->kode }}">
@@ -344,7 +345,7 @@
                         <flux:button wire:click="goBack" variant="outline" icon="arrow-left" class="h-16 flex-1 rounded-2xl border-2 border-slate-300 text-xl font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50">
                             Kembali
                         </flux:button>
-                        <flux:button wire:click="submitData" variant="primary" icon="arrow-right" iconTrailing class="h-16 flex-1 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 text-xl font-bold shadow-lg shadow-cyan-500/25 transition-shadow hover:shadow-xl hover:shadow-cyan-500/30" wire:loading.attr="disabled" wire:target="submitData">
+                        <flux:button wire:click="submitData" variant="primary" icon-trailing="arrow-right" class="h-16 flex-1 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 text-xl font-bold shadow-lg shadow-cyan-500/25 transition-shadow hover:shadow-xl hover:shadow-cyan-500/30" wire:loading.attr="disabled" wire:target="submitData">
                             <span wire:loading.remove wire:target="submitData">Lanjutkan</span>
                             <span wire:loading wire:target="submitData" class="inline-flex items-center gap-2">
                                 <svg class="h-6 w-6 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

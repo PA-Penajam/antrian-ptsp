@@ -58,44 +58,42 @@
                 <flux:button type="submit" icon="magnifying-glass">Cari</flux:button>
             </form>
 
-            <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
-                <flux:table>
-                    <flux:table.columns>
-                        <flux:table.column>Kode</flux:table.column>
-                        <flux:table.column>Kabupaten/Kota</flux:table.column>
-                        <flux:table.column class="text-right">Aksi</flux:table.column>
-                    </flux:table.columns>
-                    <flux:table.rows>
-                        @forelse ($kabupatenList as $kabupaten)
-                            <flux:table.row>
-                                <flux:table.cell>{{ $kabupaten->kode }}</flux:table.cell>
-                                <flux:table.cell>{{ $kabupaten->nama }}</flux:table.cell>
-                                <flux:table.cell class="text-right">
-                                    <form method="POST" action="{{ route('admin.wilayah.update') }}" class="inline">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="kabupaten_kode" value="{{ $kabupaten->kode }}">
-                                        <flux:button
-                                            type="submit"
-                                            size="sm"
-                                            variant="{{ $selectedKabupatenKode === $kabupaten->kode ? 'filled' : 'outline' }}"
-                                            icon="check"
-                                        >
-                                            {{ $selectedKabupatenKode === $kabupaten->kode ? 'Aktif' : 'Pilih' }}
-                                        </flux:button>
-                                    </form>
-                                </flux:table.cell>
-                            </flux:table.row>
-                        @empty
-                            <flux:table.row>
-                                <flux:table.cell colspan="3" class="text-center text-zinc-500">
-                                    Data kabupaten tidak ditemukan.
-                                </flux:table.cell>
-                            </flux:table.row>
-                        @endforelse
-                    </flux:table.rows>
-                </flux:table>
-            </div>
+            <flux:table>
+                <flux:table.columns>
+                    <flux:table.column>Kode</flux:table.column>
+                    <flux:table.column>Kabupaten/Kota</flux:table.column>
+                    <flux:table.column class="text-right">Aksi</flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
+                    @forelse ($kabupatenList as $kabupaten)
+                        <flux:table.row>
+                            <flux:table.cell>{{ $kabupaten->kode }}</flux:table.cell>
+                            <flux:table.cell>{{ $kabupaten->nama }}</flux:table.cell>
+                            <flux:table.cell class="text-right">
+                                <form method="POST" action="{{ route('admin.wilayah.update') }}" class="inline">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="kabupaten_kode" value="{{ $kabupaten->kode }}">
+                                    <flux:button
+                                        type="submit"
+                                        size="sm"
+                                        :variant="$selectedKabupatenKode === $kabupaten->kode ? 'filled' : 'outline'"
+                                        icon="check"
+                                    >
+                                        {{ $selectedKabupatenKode === $kabupaten->kode ? 'Aktif' : 'Pilih' }}
+                                    </flux:button>
+                                </form>
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @empty
+                        <flux:table.row>
+                            <flux:table.cell colspan="3" class="text-center text-zinc-500">
+                                Data kabupaten tidak ditemukan.
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @endforelse
+                </flux:table.rows>
+            </flux:table>
 
             <div>
                 {{ $kabupatenList->links() }}

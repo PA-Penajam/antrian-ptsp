@@ -1,5 +1,5 @@
 <x-layouts::app :title="__('Manajemen User')">
-    <div class="mx-auto w-full max-w-6xl space-y-6" x-data="{ tab: 'list', editUser: null }">
+    <div class="mx-auto w-full max-w-6xl space-y-6" x-data="{ tab: '{{ old('_method') !== 'PUT' && $errors->any() ? 'create' : 'list' }}' }">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div class="space-y-3">
                 <flux:badge color="violet" rounded>Admin Panel</flux:badge>
@@ -100,20 +100,9 @@
                                     </flux:table.cell>
                                     <flux:table.cell>
                                         <div class="flex items-center gap-2">
-                                            <flux:button
-                                                size="sm"
-                                                variant="filled"
-                                                icon="pencil"
-                                                x-on:click="editUser = {{ json_encode([
-                                                    'id' => $user->id,
-                                                    'name' => $user->name,
-                                                    'email' => $user->email,
-                                                    'role' => $user->role->value,
-                                                    'services' => $user->services->pluck('id')->toArray(),
-                                                ]) }}; $dispatch('open-modal', 'edit-user-modal')"
-                                            >
-                                                Edit
-                                            </flux:button>
+                                            <flux:modal.trigger name="edit-user-{{ $user->id }}">
+                                                <flux:button size="sm" variant="filled" icon="pencil">Edit</flux:button>
+                                            </flux:modal.trigger>
                                             <form
                                                 method="POST"
                                                 action="{{ route('admin.users.destroy', $user) }}"
@@ -158,13 +147,13 @@
                                 <flux:table.cell>{{ $user->name }}</flux:table.cell>
                                 <flux:table.cell>{{ $user->email }}</flux:table.cell>
                                 <flux:table.cell>
-                                    <form method="POST" action="{{ route('admin.users.update', $user) }}" class="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,10rem)_auto] xl:items-start">
+                                    <form method="POST" action="{{ route('admin.users.update', $user) }}" class="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,10rem)_auto] xl:items-start" x-data="{ role: '{{ $user->role?->value }}' }">
                                         @csrf
                                         @method('PUT')
                                         <input type="hidden" name="name" value="{{ $user->name }}">
                                         <input type="hidden" name="email" value="{{ $user->email }}">
 
-                                        <flux:select name="role" size="sm">
+                                        <flux:select name="role" size="sm" x-model="role">
                                             <flux:select.option value="admin" :selected="$user->role?->value === 'admin'">Admin</flux:select.option>
                                             <flux:select.option value="frontdesk" :selected="$user->role?->value === 'frontdesk'">Frontdesk</flux:select.option>
                                             <flux:select.option value="officer" :selected="$user->role?->value === 'officer'">Officer</flux:select.option>
@@ -173,7 +162,7 @@
 
                                         <flux:button type="submit" variant="filled" size="sm" class="xl:self-start">Update</flux:button>
 
-                                        <div class="xl:col-span-2">
+                                        <div class="xl:col-span-2" x-show="role === 'officer'" x-cloak>
                                             <flux:select
                                                 name="services[]"
                                                 variant="listbox"
@@ -220,7 +209,7 @@
                     </div>
                     <flux:heading size="lg">Tambah User Baru</flux:heading>
                 </div>
-                <form method="POST" action="{{ route('admin.users.store') }}" class="grid gap-4 md:grid-cols-2">
+                <form method="POST" action="{{ route('admin.users.store') }}" class="grid gap-4 md:grid-cols-2" x-data="{ role: '{{ old('role', 'admin') }}' }">
                     @csrf
                     <flux:field>
                         <flux:label>Nama</flux:label>
@@ -234,7 +223,7 @@
                     </flux:field>
                     <flux:field>
                         <flux:label>Role</flux:label>
-                        <flux:select name="role">
+                        <flux:select name="role" x-model="role">
                             <flux:select.option value="admin">Admin</flux:select.option>
                             <flux:select.option value="frontdesk">Frontdesk</flux:select.option>
                             <flux:select.option value="officer">Officer</flux:select.option>
@@ -247,7 +236,7 @@
                         <flux:input type="password" name="password" />
                         <flux:error name="password" />
                     </flux:field>
-                    <flux:field class="md:col-span-2">
+                    <flux:field class="md:col-span-2" x-show="role === 'officer'" x-cloak>
                         <flux:label>Izin Layanan</flux:label>
                         <flux:select
                             name="services[]"
@@ -270,44 +259,68 @@
             </flux:card>
         </div>
 
-        {{-- Edit Modal --}}
-        <flux:modal name="edit-user-modal" class="w-full max-w-lg">
-            <form x-bind:action="editUser ? '{{ route('admin.users.index') }}/' + editUser.id : '#'" method="POST" class="space-y-4">
-                @csrf
-                @method('PUT')
+        {{-- Per-User Edit Modals --}}
+        @foreach ($users as $user)
+            <flux:modal name="edit-user-{{ $user->id }}" class="w-full max-w-lg">
+                <form method="POST" action="{{ route('admin.users.update', $user) }}" class="space-y-4" x-data="{ role: '{{ $user->role?->value }}' }">
+                    @csrf
+                    @method('PUT')
 
-                <div class="flex items-center gap-3">
-                    <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
-                        <flux:icon.pencil-square class="size-5" />
+                    <div class="flex items-center gap-3">
+                        <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
+                            <flux:icon.pencil-square class="size-5" />
+                        </div>
+                        <flux:heading size="lg">Edit User: {{ $user->name }}</flux:heading>
                     </div>
-                    <flux:heading size="lg">Edit User</flux:heading>
-                </div>
 
-                <flux:field>
-                    <flux:label>Nama</flux:label>
-                    <flux:input name="name" x-bind:value="editUser?.name" required />
-                </flux:field>
+                    <flux:field>
+                        <flux:label>Nama</flux:label>
+                        <flux:input name="name" value="{{ $user->name }}" required />
+                    </flux:field>
 
-                <flux:field>
-                    <flux:label>Email</flux:label>
-                    <flux:input type="email" name="email" x-bind:value="editUser?.email" required />
-                </flux:field>
+                    <flux:field>
+                        <flux:label>Email</flux:label>
+                        <flux:input type="email" name="email" value="{{ $user->email }}" required />
+                    </flux:field>
 
-                <flux:field>
-                    <flux:label>Role</flux:label>
-                    <flux:select name="role" x-model="editUser?.role">
-                        <flux:select.option value="admin">Admin</flux:select.option>
-                        <flux:select.option value="frontdesk">Frontdesk</flux:select.option>
-                        <flux:select.option value="officer">Officer</flux:select.option>
-                        <flux:select.option value="monitor">Monitor</flux:select.option>
-                    </flux:select>
-                </flux:field>
+                    <flux:field>
+                        <flux:label>Role</flux:label>
+                        <flux:select name="role" x-model="role">
+                            <flux:select.option value="admin" :selected="$user->role?->value === 'admin'">Admin</flux:select.option>
+                            <flux:select.option value="frontdesk" :selected="$user->role?->value === 'frontdesk'">Frontdesk</flux:select.option>
+                            <flux:select.option value="officer" :selected="$user->role?->value === 'officer'">Officer</flux:select.option>
+                            <flux:select.option value="monitor" :selected="$user->role?->value === 'monitor'">Monitor</flux:select.option>
+                        </flux:select>
+                    </flux:field>
 
-                <div class="flex justify-end gap-2 pt-4">
-                    <flux:button type="button" variant="ghost" x-on:click="$dispatch('close-modal', 'edit-user-modal')">Batal</flux:button>
-                    <flux:button type="submit" variant="primary">Simpan Perubahan</flux:button>
-                </div>
-            </form>
-        </flux:modal>
+                    <flux:field x-show="role === 'officer'" x-cloak>
+                        <flux:label>Izin Layanan</flux:label>
+                        <flux:select
+                            name="services[]"
+                            variant="listbox"
+                            multiple
+                            searchable
+                            size="sm"
+                            selected-suffix="layanan"
+                            placeholder="Pilih izin layanan"
+                        >
+                            @foreach ($services as $service)
+                                <flux:select.option
+                                    value="{{ $service->id }}"
+                                    :selected="$user->services->contains('id', $service->id)"
+                                >
+                                    {{ $service->name }}
+                                </flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    </flux:field>
+
+                    <div class="flex justify-end gap-2 pt-4">
+                        <flux:button type="button" variant="ghost" x-on:click="$dispatch('close-modal', 'edit-user-{{ $user->id }}')">Batal</flux:button>
+                        <flux:button type="submit" variant="primary">Simpan Perubahan</flux:button>
+                    </div>
+                </form>
+            </flux:modal>
+        @endforeach
     </div>
 </x-layouts::app>

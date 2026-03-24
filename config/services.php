@@ -42,16 +42,15 @@ return [
         'device_id' => env('THERMAL_PRINTER_DEVICE_ID', 'local_printer'),
     ],
 
-    'elevenlabs' => [
-        'api_key' => env('ELEVENLABS_API_KEY'),
-        'voice_id' => env('ELEVENLABS_VOICE_ID'),
-        'model' => env('ELEVENLABS_MODEL', 'eleven_turbo_v2_5'),
-        'stability' => (float) env('ELEVENLABS_STABILITY', 0.45),
-        'similarity_boost' => (float) env('ELEVENLABS_SIMILARITY_BOOST', 0.8),
-        'style' => (float) env('ELEVENLABS_STYLE', 0.2),
-        'use_speaker_boost' => (bool) env('ELEVENLABS_USE_SPEAKER_BOOST', true),
-        'cache_disk' => env('ELEVENLABS_CACHE_DISK', 'public'),
-        'cache_prefix' => env('ELEVENLABS_CACHE_PREFIX', 'tts/elevenlabs'),
+    'minimax' => [
+        'api_key' => env('MINIMAX_API_KEY'),
+        'voice_id' => env('MINIMAX_VOICE_ID', 'Indonesian_GentleGirl'),
+        'model' => env('MINIMAX_MODEL', 'speech-2.8-hd'),
+        'speed' => (float) env('MINIMAX_SPEED', 1.0),
+        'vol' => (float) env('MINIMAX_VOL', 1.0),
+        'pitch' => (int) env('MINIMAX_PITCH', 0),
+        'cache_disk' => env('MINIMAX_CACHE_DISK', 'public'),
+        'cache_prefix' => env('MINIMAX_CACHE_PREFIX', 'tts/minimax'),
     ],
 
 ];

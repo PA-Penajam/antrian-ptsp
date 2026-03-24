@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Tts\ElevenLabsTtsService;
+use App\Services\Tts\MiniMaxTtsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -11,7 +11,7 @@ use Throwable;
 
 class TvDisplayTtsController extends Controller
 {
-    public function announcement(Request $request, ElevenLabsTtsService $ttsService): JsonResponse
+    public function announcement(Request $request, MiniMaxTtsService $ttsService): JsonResponse
     {
         $validated = $request->validate([
             'text' => ['required', 'string', 'max:200'],
@@ -32,18 +32,18 @@ class TvDisplayTtsController extends Controller
         }
 
         return response()->json([
-            'provider' => 'elevenlabs',
+            'provider' => 'minimax',
             'cache_key' => $announcement['cache_key'],
             'audio_url' => route('tv-display.tts.audio', ['cacheKey' => $announcement['cache_key']]),
         ]);
     }
 
-    public function audio(string $cacheKey, ElevenLabsTtsService $ttsService): StreamedResponse
+    public function audio(string $cacheKey, MiniMaxTtsService $ttsService): StreamedResponse
     {
         abort_unless(preg_match('/^[a-f0-9]{40}$/', $cacheKey) === 1, 404);
 
         $path = $ttsService->cachePathFromKey($cacheKey);
-        $disk = (string) config('services.elevenlabs.cache_disk', 'public');
+        $disk = (string) config('services.minimax.cache_disk', 'public');
 
         abort_unless(Storage::disk($disk)->exists($path), 404);
 

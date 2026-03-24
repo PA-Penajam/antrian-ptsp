@@ -182,3 +182,58 @@ test('empty state shown when no other users exist', function () {
     $response->assertOk()
         ->assertSee('Belum ada user selain Anda');
 });
+
+test('admin can create officer with services', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+
+    $pool = \App\Models\QueuePool::factory()->create(['code' => 'UMUM']);
+    $serviceA = \App\Models\Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
+
+    $response = $this->actingAs($admin)->post('/admin/users', [
+        'name' => 'Officer Dengan Layanan',
+        'email' => 'officerservices@example.com',
+        'role' => UserRole::Officer->value,
+        'password' => 'password123',
+        'services' => [$serviceA->id],
+    ]);
+
+    $response->assertRedirect('/admin/users');
+
+    $officer = User::where('email', 'officerservices@example.com')->first();
+    expect($officer->services)->toHaveCount(1)
+        ->and($officer->services->first()->id)->toBe($serviceA->id);
+});
+
+test('admin can update user to non-officer and detach services', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+
+    $pool = \App\Models\QueuePool::factory()->create(['code' => 'UMUM']);
+    $serviceA = \App\Models\Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
+
+    $officer = User::factory()->create([
+        'role' => UserRole::Officer->value,
+        'email_verified_at' => now(),
+    ]);
+
+    // Attach service initially
+    $officer->services()->attach($serviceA->id);
+
+    $response = $this->actingAs($admin)->put("/admin/users/{$officer->id}", [
+        'name' => $officer->name,
+        'email' => $officer->email,
+        'role' => UserRole::Monitor->value,
+        'services' => [$serviceA->id], // Intentionally send services even when monitor to test detaching
+    ]);
+
+    $response->assertRedirect('/admin/users');
+
+    $officer->refresh();
+    expect($officer->role)->toBe(UserRole::Monitor)
+        ->and($officer->services)->toBeEmpty();
+});

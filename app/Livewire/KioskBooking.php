@@ -127,8 +127,8 @@ class KioskBooking extends Component
     {
         $this->validate([
             'visitorName' => ['required', 'string', 'min:3', 'max:255'],
-            'visitorIdentifier' => ['nullable', 'string', 'max:50'],
-            'visitorPhone' => ['nullable', 'string', 'max:20'],
+            'visitorIdentifier' => ['required', 'string', 'max:50'],
+            'visitorPhone' => ['required', 'string', 'max:20'],
             'visitorWilayahKode' => ['required', 'string', $this->wilayahExistsRule()],
         ]);
 
@@ -141,11 +141,24 @@ class KioskBooking extends Component
         $this->step = 3;
     }
 
+    public function messages(): array
+    {
+        return [
+            'visitorName.required' => 'Nama lengkap wajib diisi.',
+            'visitorIdentifier.required' => 'NIK/No. Identitas wajib diisi.',
+            'visitorPhone.required' => 'No. Telepon wajib diisi.',
+            'visitorWilayahKode.required' => 'Pilihan kelurahan/desa wajib diisi.',
+            'selectedServiceId.required' => 'Anda harus memilih layanan terlebih dahulu.',
+        ];
+    }
+
     public function confirmBooking(CreateQueueTicket $createQueueTicket): void
     {
         $this->validate([
             'selectedServiceId' => ['required', 'integer', 'exists:services,id'],
             'visitorName' => ['required', 'string', 'min:3', 'max:255'],
+            'visitorIdentifier' => ['required', 'string', 'max:50'],
+            'visitorPhone' => ['required', 'string', 'max:20'],
             'visitorWilayahKode' => ['required', 'string', $this->wilayahExistsRule()],
         ]);
 
@@ -201,7 +214,7 @@ class KioskBooking extends Component
 
         $renderer = new SvgRenderer;
         $renderer->setSvgType(SvgRenderer::TYPE_SVG_INLINE);
-        $renderer->setForegroundColor([255, 255, 255]);
+        $renderer->setForegroundColor([0, 0, 0]);
 
         return $renderer->render($barcode, 250, 60);
     }
