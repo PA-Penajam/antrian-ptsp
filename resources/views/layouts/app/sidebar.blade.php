@@ -24,9 +24,6 @@
                     <flux:sidebar.item icon="magnifying-glass" href="/antrian/cek" :current="request()->is('antrian/cek')" wire:navigate>
                         {{ __('Cek Status Antrian') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="tv" href="/display" :current="request()->is('display')" wire:navigate>
-                        {{ __('Layar Display') }}
-                    </flux:sidebar.item>
                 </flux:sidebar.group>
                 @endguest
 
@@ -41,6 +38,9 @@
                 @endphp
 
                 <flux:sidebar.group :heading="__('Manajemen Internal')" expandable class="grid mt-4">
+                    <flux:sidebar.item icon="chart-pie" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                        {{ __('Dashboard') }}
+                    </flux:sidebar.item>
                     @if ($viewRole === \App\Enums\UserRole::Officer || $viewRole === \App\Enums\UserRole::Admin || (! $isAdmin && auth()->user()?->hasRole(\App\Enums\UserRole::Officer)))
                         <flux:sidebar.item icon="megaphone" :href="route('workstation')" :current="request()->routeIs('workstation')" wire:navigate>
                             {{ __('Workstation') }}
@@ -56,60 +56,53 @@
                             {{ __('Laporan') }}
                         </flux:sidebar.item>
                     @endif
-                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
-                        <flux:sidebar.group
-                            :heading="__('Master Data')"
-                            expandable
-                            :expanded="request()->is('admin/layanan') || request()->is('admin/loket')"
-                            class="grid"
-                        >
-                            <flux:sidebar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
-                                {{ __('Layanan') }}
-                            </flux:sidebar.item>
-                            <flux:sidebar.item icon="computer-desktop" href="/admin/loket" :current="request()->is('admin/loket')" wire:navigate>
-                                {{ __('Loket') }}
-                            </flux:sidebar.item>
-                        </flux:sidebar.group>
-                        <flux:sidebar.group
-                            :heading="__('Manajemen Pengguna')"
-                            expandable
-                            :expanded="request()->is('admin/users') || request()->is('admin/roles') || request()->is('admin/izin-layanan')"
-                            class="grid"
-                        >
-                            <flux:sidebar.item icon="users" href="/admin/users" :current="request()->is('admin/users')" wire:navigate>
-                                {{ __('Users') }}
-                            </flux:sidebar.item>
-                            <flux:sidebar.item icon="shield-check" href="/admin/roles" :current="request()->is('admin/roles')" wire:navigate>
-                                {{ __('Roles') }}
-                            </flux:sidebar.item>
-                            <flux:sidebar.item icon="key" href="/admin/izin-layanan" :current="request()->is('admin/izin-layanan')" wire:navigate>
-                                {{ __('Izin Layanan') }}
-                            </flux:sidebar.item>
-                        </flux:sidebar.group>
-                    @endif
                 </flux:sidebar.group>
-                @php($isAdminSectionRoute = request()->is('admin/*'))
+
                 @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
-                    <flux:sidebar.group :heading="__('Admin')" expandable class="grid mt-4">
-                        <flux:sidebar.item icon="chart-pie" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                            {{ __('Dashboard') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="clipboard-document-list" :href="route('admin.layanan.index')" :current="request()->routeIs('admin.layanan.*')" wire:navigate>
+                    <flux:sidebar.group
+                        :heading="__('Master Data')"
+                        expandable
+                        :expanded="request()->is('admin/layanan') || request()->is('admin/loket') || request()->is('admin/wilayah')"
+                        class="grid mt-4"
+                    >
+                        <flux:sidebar.item icon="clipboard-document-list" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
                             {{ __('Layanan') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="building-office" :href="route('admin.loket.index')" :current="request()->routeIs('admin.loket.*')" wire:navigate>
+                        <flux:sidebar.item icon="building-office" href="/admin/loket" :current="request()->is('admin/loket')" wire:navigate>
                             {{ __('Loket') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="users" :href="route('admin.users.index')" :current="request()->routeIs('admin.users.*')" wire:navigate>
-                            {{ __('Users') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="map" :href="route('admin.wilayah.index')" :current="request()->routeIs('admin.wilayah.*')" wire:navigate>
+                        <flux:sidebar.item icon="map" href="/admin/wilayah" :current="request()->is('admin/wilayah')" wire:navigate>
                             {{ __('Setting Wilayah') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="device-tablet" :href="route('kiosk.index')" :current="request()->routeIs('kiosk.*')" wire:navigate>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group
+                        :heading="__('Manajemen Pengguna')"
+                        expandable
+                        :expanded="request()->is('admin/users') || request()->is('admin/roles') || request()->is('admin/izin-layanan')"
+                        class="grid mt-4"
+                    >
+                        <flux:sidebar.item icon="users" href="/admin/users" :current="request()->is('admin/users')" wire:navigate>
+                            {{ __('Users') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="shield-check" href="/admin/roles" :current="request()->is('admin/roles')" wire:navigate>
+                            {{ __('Roles') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="key" href="/admin/izin-layanan" :current="request()->is('admin/izin-layanan')" wire:navigate>
+                            {{ __('Izin Layanan') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group
+                        :heading="__('Perangkat')"
+                        expandable
+                        :expanded="request()->is('kiosk*') || request()->is('tv-display*')"
+                        class="grid mt-4"
+                    >
+                        <flux:sidebar.item icon="device-tablet" href="/kiosk/login" :current="request()->is('kiosk*')" wire:navigate>
                             {{ __('Kiosk') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="tv" :href="route('tv-display.index')" :current="request()->routeIs('tv-display.*')" wire:navigate>
+                        <flux:sidebar.item icon="tv" href="/tv-display/login" :current="request()->is('tv-display*')" wire:navigate>
                             {{ __('TV Display') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>

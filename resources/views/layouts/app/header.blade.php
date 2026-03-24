@@ -16,9 +16,6 @@
                 <flux:navbar.item icon="magnifying-glass" href="/antrian/cek" :current="request()->is('antrian/cek')" wire:navigate>
                     {{ __('Cek Status') }}
                 </flux:navbar.item>
-                <flux:navbar.item icon="tv" href="/display" :current="request()->is('display')" wire:navigate>
-                    {{ __('Display') }}
-                </flux:navbar.item>
 
                 @auth
                     <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
@@ -74,9 +71,6 @@
                     <flux:sidebar.item icon="magnifying-glass" href="/antrian/cek" :current="request()->is('antrian/cek')" wire:navigate>
                         {{ __('Cek Status') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="tv" href="/display" :current="request()->is('display')" wire:navigate>
-                        {{ __('Display') }}
-                    </flux:sidebar.item>
                 </flux:sidebar.group>
 
                 @auth
@@ -98,28 +92,42 @@
                             {{ __('Laporan') }}
                         </flux:sidebar.item>
                     @endif
-                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
-                        <flux:sidebar.group heading="Master Data" expandable :expanded="request()->is('admin/layanan') || request()->is('admin/loket')">
-                            <flux:sidebar.item icon="cog-6-tooth" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
-                                {{ __('Layanan') }}
-                            </flux:sidebar.item>
-                            <flux:sidebar.item icon="computer-desktop" href="/admin/loket" :current="request()->is('admin/loket')" wire:navigate>
-                                {{ __('Loket') }}
-                            </flux:sidebar.item>
-                        </flux:sidebar.group>
-                        <flux:sidebar.group heading="Manajemen Pengguna" expandable :expanded="request()->is('admin/users') || request()->is('admin/roles') || request()->is('admin/izin-layanan')">
-                            <flux:sidebar.item icon="users" href="/admin/users" :current="request()->is('admin/users')" wire:navigate>
-                                {{ __('Users') }}
-                            </flux:sidebar.item>
-                            <flux:sidebar.item icon="shield-check" href="/admin/roles" :current="request()->is('admin/roles')" wire:navigate>
-                                {{ __('Roles') }}
-                            </flux:sidebar.item>
-                            <flux:sidebar.item icon="key" href="/admin/izin-layanan" :current="request()->is('admin/izin-layanan')" wire:navigate>
-                                {{ __('Izin Layanan') }}
-                            </flux:sidebar.item>
-                        </flux:sidebar.group>
-                    @endif
                 </flux:sidebar.group>
+
+                @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
+                    <flux:sidebar.group heading="Master Data" expandable :expanded="request()->is('admin/layanan') || request()->is('admin/loket') || request()->is('admin/wilayah')">
+                        <flux:sidebar.item icon="clipboard-document-list" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
+                            {{ __('Layanan') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="building-office" href="/admin/loket" :current="request()->is('admin/loket')" wire:navigate>
+                            {{ __('Loket') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="map" href="/admin/wilayah" :current="request()->is('admin/wilayah')" wire:navigate>
+                            {{ __('Setting Wilayah') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Manajemen Pengguna" expandable :expanded="request()->is('admin/users') || request()->is('admin/roles') || request()->is('admin/izin-layanan')">
+                        <flux:sidebar.item icon="users" href="/admin/users" :current="request()->is('admin/users')" wire:navigate>
+                            {{ __('Users') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="shield-check" href="/admin/roles" :current="request()->is('admin/roles')" wire:navigate>
+                            {{ __('Roles') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="key" href="/admin/izin-layanan" :current="request()->is('admin/izin-layanan')" wire:navigate>
+                            {{ __('Izin Layanan') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Perangkat" expandable :expanded="request()->is('kiosk*') || request()->is('tv-display*')">
+                        <flux:sidebar.item icon="device-tablet" href="/kiosk/login" :current="request()->is('kiosk*')" wire:navigate>
+                            {{ __('Kiosk') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="tv" href="/tv-display/login" :current="request()->is('tv-display*')" wire:navigate>
+                            {{ __('TV Display') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
                 @endauth
             </flux:sidebar.nav>
 
