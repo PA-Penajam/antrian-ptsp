@@ -13,7 +13,12 @@
                 </flux:breadcrumbs>
             </div>
             <div class="flex items-center gap-2">
-                <flux:badge size="sm" color="green">{{ $services->total() ?? $services->count() }} layanan</flux:badge>
+                <flux:badge size="sm" color="green" class="hidden sm:flex">{{ $services->total() ?? $services->count() }} layanan</flux:badge>
+                <flux:modal.trigger name="create-service">
+                    <flux:button variant="primary" icon="plus">
+                        Tambah Layanan Baru
+                    </flux:button>
+                </flux:modal.trigger>
             </div>
         </div>
 
@@ -28,73 +33,6 @@
                 {{ session('error') }}
             </flux:callout>
         @endif
-
-        <flux:card class="admin-card-elevated space-y-4 border-cyan-200 dark:border-cyan-800">
-            <div class="flex items-center gap-3">
-                <div class="admin-icon-box bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400">
-                    <flux:icon.plus-circle class="size-5" />
-                </div>
-                <flux:heading size="lg">Tambah Layanan Baru</flux:heading>
-            </div>
-            <form method="POST" action="{{ route('admin.layanan.store') }}" class="grid gap-4 md:grid-cols-2">
-                @csrf
-                <flux:field>
-                    <flux:label>Nama Layanan</flux:label>
-                    <flux:input name="name" value="{{ old('name') }}" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>Kode</flux:label>
-                    <flux:input name="code" value="{{ old('code') }}" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>Slug</flux:label>
-                    <flux:input name="slug" value="{{ old('slug') }}" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>Queue Pool</flux:label>
-                    <flux:select name="queue_pool_id">
-                        @foreach ($queuePools as $pool)
-                            <flux:select.option value="{{ $pool->id }}">{{ $pool->name }} ({{ $pool->code }})</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>Sort Order</flux:label>
-                    <flux:input type="number" name="sort_order" value="{{ old('sort_order', 0) }}" />
-                </flux:field>
-
-                <div class="grid gap-3 sm:grid-cols-3 md:col-span-2">
-                    <div>
-                        <input type="hidden" name="is_active" value="0">
-                        <flux:checkbox name="is_active" value="1" :checked="(bool) old('is_active', 1)" label="Aktif" />
-                    </div>
-                    <div>
-                        <input type="hidden" name="booking_enabled" value="0">
-                        <flux:checkbox name="booking_enabled" value="1" :checked="(bool) old('booking_enabled', 1)" label="Booking" />
-                    </div>
-                    <div>
-                        <input type="hidden" name="walk_in_enabled" value="0">
-                        <flux:checkbox name="walk_in_enabled" value="1" :checked="(bool) old('walk_in_enabled', 1)" label="Walk-in" />
-                    </div>
-                </div>
-
-                <flux:field class="md:col-span-2">
-                    <flux:label>Deskripsi</flux:label>
-                    <flux:textarea name="description">{{ old('description') }}</flux:textarea>
-                </flux:field>
-
-                <flux:field class="md:col-span-2">
-                    <flux:label>Persyaratan</flux:label>
-                    <flux:textarea name="requirements">{{ old('requirements') }}</flux:textarea>
-                </flux:field>
-
-                <flux:button type="submit" variant="primary" class="md:col-span-2">Simpan Layanan</flux:button>
-            </form>
-        </flux:card>
 
         <flux:card class="space-y-4">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -126,13 +64,17 @@
                 <flux:table.rows>
                     @forelse ($services as $service)
                         <flux:table.row>
-                            <flux:table.cell>{{ $service->name }}</flux:table.cell>
-                            <flux:table.cell>{{ $service->code }}</flux:table.cell>
+                            <flux:table.cell class="font-medium">{{ $service->name }}</flux:table.cell>
+                            <flux:table.cell>
+                                <flux:badge size="sm" color="zinc">{{ $service->code }}</flux:badge>
+                            </flux:table.cell>
                             <flux:table.cell>{{ $service->queuePool?->name ?? '-' }}</flux:table.cell>
                             <flux:table.cell>
-                                <flux:badge size="sm" :color="$service->is_active ? 'green' : 'zinc'">
-                                    {{ $service->is_active ? 'Aktif' : 'Nonaktif' }}
-                                </flux:badge>
+                                @if ($service->is_active)
+                                    <flux:badge size="sm" color="green" icon="check-circle">Aktif</flux:badge>
+                                @else
+                                    <flux:badge size="sm" color="zinc" icon="x-circle">Nonaktif</flux:badge>
+                                @endif
                             </flux:table.cell>
                             <flux:table.cell>
                                 <div class="flex flex-wrap gap-2">
@@ -146,18 +88,15 @@
                                             {{ $service->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                         </flux:button>
                                     </form>
-                                    <flux:button
-                                        size="sm"
-                                        variant="ghost"
-                                        x-data
-                                        x-on:click="$dispatch('open-modal', 'edit-service-{{ $service->id }}')"
-                                    >
-                                        Edit
-                                    </flux:button>
+                                    <flux:modal.trigger name="edit-service-{{ $service->id }}">
+                                        <flux:button size="sm" variant="filled" icon="pencil">
+                                            Edit
+                                        </flux:button>
+                                    </flux:modal.trigger>
                                     <form method="POST" action="{{ route('admin.layanan.destroy', $service) }}" class="inline" onsubmit="return confirm('Hapus layanan {{ $service->name }}?')">
                                         @csrf
                                         @method('DELETE')
-                                        <flux:button type="submit" size="sm" variant="danger">
+                                        <flux:button type="submit" size="sm" variant="danger" icon="trash">
                                             Hapus
                                         </flux:button>
                                     </form>
@@ -166,8 +105,12 @@
                         </flux:table.row>
                     @empty
                         <flux:table.row>
-                            <flux:table.cell colspan="5" class="text-center text-zinc-500">
-                                Belum ada layanan
+                            <flux:table.cell colspan="5">
+                                <div class="flex flex-col items-center justify-center py-8 text-center">
+                                    <flux:icon name="inbox" class="h-12 w-12 text-zinc-300 dark:text-zinc-600" />
+                                    <p class="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">Belum ada layanan</p>
+                                    <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Silakan tambah layanan baru menggunakan tombol di atas.</p>
+                                </div>
                             </flux:table.cell>
                         </flux:table.row>
                     @endforelse
@@ -182,83 +125,175 @@
         </flux:card>
     </div>
 
-    @foreach ($services as $service)
-        <flux:modal name="edit-service-{{ $service->id }}" class="w-full max-w-xl">
-            <form method="POST" action="{{ route('admin.layanan.update', $service) }}" class="space-y-4">
-                @csrf
-                @method('PUT')
-                <flux:heading>Edit Layanan: {{ $service->name }}</flux:heading>
+    {{-- Create Modal --}}
+    <flux:modal name="create-service" class="w-full max-w-2xl">
+        <form method="POST" action="{{ route('admin.layanan.store') }}" class="space-y-4">
+            @csrf
+            
+            <div class="flex items-center gap-3">
+                <div class="admin-icon-box bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400">
+                    <flux:icon.plus-circle class="size-5" />
+                </div>
+                <flux:heading size="lg">Tambah Layanan Baru</flux:heading>
+            </div>
 
+            <div class="grid gap-4 md:grid-cols-2">
                 <flux:field>
                     <flux:label>Nama Layanan</flux:label>
-                    <flux:input name="name" value="{{ $service->name }}" required />
+                    <flux:input name="name" value="{{ old('name') }}" required />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>Kode</flux:label>
-                    <flux:input name="code" value="{{ $service->code }}" required />
+                    <flux:input name="code" value="{{ old('code') }}" required />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>Slug</flux:label>
-                    <flux:input name="slug" value="{{ $service->slug }}" />
+                    <flux:label>Slug (Opsional)</flux:label>
+                    <flux:input name="slug" value="{{ old('slug') }}" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>Queue Pool</flux:label>
-                    <flux:select name="queue_pool_id">
+                    <flux:select name="queue_pool_id" required>
+                        <flux:select.option value="">Pilih Pool</flux:select.option>
                         @foreach ($queuePools as $pool)
-                            <flux:select.option value="{{ $pool->id }}" :selected="$pool->id === $service->queue_pool_id">
-                                {{ $pool->name }} ({{ $pool->code }})
-                            </flux:select.option>
+                            <flux:select.option value="{{ $pool->id }}">{{ $pool->name }} ({{ $pool->code }})</flux:select.option>
                         @endforeach
                     </flux:select>
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>Kode Huruf Antrian</flux:label>
-                    <flux:input name="letter_code" value="{{ $service->letter_code }}" maxlength="3" />
-                </flux:field>
-
-                <flux:field>
                     <flux:label>Sort Order</flux:label>
-                    <flux:input type="number" name="sort_order" value="{{ $service->sort_order }}" />
+                    <flux:input type="number" name="sort_order" value="{{ old('sort_order', 0) }}" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>Kuota Harian</flux:label>
-                    <flux:input type="number" name="daily_quota" value="{{ $service->daily_quota }}" />
+                    <flux:input type="number" name="daily_quota" value="{{ old('daily_quota') }}" placeholder="Kosongkan jika tak terbatas" />
                 </flux:field>
 
-                <div class="grid gap-3 sm:grid-cols-3">
+                <div class="grid gap-3 sm:grid-cols-3 md:col-span-2">
                     <div>
                         <input type="hidden" name="is_active" value="0">
-                        <flux:checkbox name="is_active" value="1" :checked="$service->is_active" label="Aktif" />
+                        <flux:checkbox name="is_active" value="1" :checked="(bool) old('is_active', 1)" label="Aktif" />
                     </div>
                     <div>
                         <input type="hidden" name="booking_enabled" value="0">
-                        <flux:checkbox name="booking_enabled" value="1" :checked="$service->booking_enabled" label="Booking" />
+                        <flux:checkbox name="booking_enabled" value="1" :checked="(bool) old('booking_enabled', 1)" label="Terima Booking" />
                     </div>
                     <div>
                         <input type="hidden" name="walk_in_enabled" value="0">
-                        <flux:checkbox name="walk_in_enabled" value="1" :checked="$service->walk_in_enabled" label="Walk-in" />
+                        <flux:checkbox name="walk_in_enabled" value="1" :checked="(bool) old('walk_in_enabled', 1)" label="Terima Walk-in" />
                     </div>
                 </div>
 
-                <flux:field>
+                <flux:field class="md:col-span-2">
                     <flux:label>Deskripsi</flux:label>
-                    <flux:textarea name="description">{{ $service->description }}</flux:textarea>
+                    <flux:textarea name="description" rows="2">{{ old('description') }}</flux:textarea>
                 </flux:field>
 
-                <flux:field>
-                    <flux:label>Persyaratan</flux:label>
-                    <flux:textarea name="requirements">{{ $service->requirements }}</flux:textarea>
+                <flux:field class="md:col-span-2">
+                    <flux:label>Persyaratan (Opsional)</flux:label>
+                    <flux:textarea name="requirements" rows="2">{{ old('requirements') }}</flux:textarea>
                 </flux:field>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <flux:modal.close>
+                    <flux:button type="button" variant="ghost">Batal</flux:button>
+                </flux:modal.close>
+                <flux:button type="submit" variant="primary">Tambah Layanan</flux:button>
+            </div>
+        </form>
+    </flux:modal>
+
+    {{-- Edit Modals --}}
+    @foreach ($services as $service)
+        <flux:modal name="edit-service-{{ $service->id }}" class="w-full max-w-2xl">
+            <form method="POST" action="{{ route('admin.layanan.update', $service) }}" class="space-y-4">
+                @csrf
+                @method('PUT')
+                
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
+                        <flux:icon.pencil-square class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Edit Layanan: {{ $service->name }}</flux:heading>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <flux:field>
+                        <flux:label>Nama Layanan</flux:label>
+                        <flux:input name="name" value="{{ $service->name }}" required />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Kode</flux:label>
+                        <flux:input name="code" value="{{ $service->code }}" required />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Slug</flux:label>
+                        <flux:input name="slug" value="{{ $service->slug }}" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Queue Pool</flux:label>
+                        <flux:select name="queue_pool_id" required>
+                            @foreach ($queuePools as $pool)
+                                <flux:select.option value="{{ $pool->id }}" :selected="$pool->id === $service->queue_pool_id">
+                                    {{ $pool->name }} ({{ $pool->code }})
+                                </flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Kode Huruf Antrian</flux:label>
+                        <flux:input name="letter_code" value="{{ $service->letter_code }}" maxlength="3" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Sort Order</flux:label>
+                        <flux:input type="number" name="sort_order" value="{{ $service->sort_order }}" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Kuota Harian</flux:label>
+                        <flux:input type="number" name="daily_quota" value="{{ $service->daily_quota }}" />
+                    </flux:field>
+
+                    <div class="grid gap-3 sm:grid-cols-3 md:col-span-2">
+                        <div>
+                            <input type="hidden" name="is_active" value="0">
+                            <flux:checkbox name="is_active" value="1" :checked="$service->is_active" label="Aktif" />
+                        </div>
+                        <div>
+                            <input type="hidden" name="booking_enabled" value="0">
+                            <flux:checkbox name="booking_enabled" value="1" :checked="$service->booking_enabled" label="Booking" />
+                        </div>
+                        <div>
+                            <input type="hidden" name="walk_in_enabled" value="0">
+                            <flux:checkbox name="walk_in_enabled" value="1" :checked="$service->walk_in_enabled" label="Walk-in" />
+                        </div>
+                    </div>
+
+                    <flux:field class="md:col-span-2">
+                        <flux:label>Deskripsi</flux:label>
+                        <flux:textarea name="description" rows="2">{{ $service->description }}</flux:textarea>
+                    </flux:field>
+
+                    <flux:field class="md:col-span-2">
+                        <flux:label>Persyaratan</flux:label>
+                        <flux:textarea name="requirements" rows="2">{{ $service->requirements }}</flux:textarea>
+                    </flux:field>
+                </div>
 
                 <div class="flex justify-end gap-2 pt-2">
-                    <flux:button type="button" variant="ghost" x-on:click="$dispatch('close-modal', 'edit-service-{{ $service->id }}')">
-                        Batal
-                    </flux:button>
+                    <flux:modal.close>
+                        <flux:button type="button" variant="ghost">Batal</flux:button>
+                    </flux:modal.close>
                     <flux:button type="submit" variant="primary">Simpan</flux:button>
                 </div>
             </form>
