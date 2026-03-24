@@ -1,9 +1,17 @@
 <div wire:poll.5s.keep-alive class="h-screen bg-slate-50 text-slate-900 overflow-hidden p-5"
      x-data="{
          connected: navigator.onLine,
+         audioUnlocked: false,
          videos: @js($videos),
          currentIndex: 0,
          get hasVideos() { return this.videos.length > 0 },
+         unlockAudio() {
+             if (this.audioUnlocked) return;
+             this.audioUnlocked = true;
+             // Play silent audio to unlock browser audio context
+             let dummy = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+             dummy.play().catch(e => console.log('Dummy audio play skipped'));
+         },
          playNext() {
              this.currentIndex = (this.currentIndex + 1) % this.videos.length;
              this.$nextTick(() => {
@@ -16,7 +24,31 @@
          }
      }"
      x-on:online.window="connected = true"
-     x-on:offline.window="connected = false">
+     x-on:offline.window="connected = false"
+     x-on:click.window="unlockAudio()"
+     x-on:keydown.window="unlockAudio()"
+     x-on:play-tts.window="
+         fetch('/tv-display/tts/announcement?text=' + encodeURIComponent($event.detail.text))
+             .then(res => res.json())
+             .then(data => {
+                 if (data.audio_url) {
+                     let audio = new Audio(data.audio_url);
+                     audio.play().catch(e => console.error('TTS Playback failed:', e));
+                 }
+             })
+             .catch(e => console.error('TTS Fetch failed:', e));
+     ">
+
+    {{-- Audio Unlock Overlay --}}
+    <div x-show="!audioUnlocked"
+         class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-white cursor-pointer"
+         x-transition.opacity.duration.500ms>
+        <div class="bg-blue-600 rounded-full p-6 mb-4 animate-bounce">
+            <flux:icon.speaker-wave class="w-12 h-12" />
+        </div>
+        <h2 class="text-4xl font-bold mb-2">Izin Suara Diperlukan</h2>
+        <p class="text-xl text-slate-300">Klik di mana saja pada layar ini untuk mengaktifkan fitur panggilan suara.</p>
+    </div>
 
     {{-- Connection Status Indicator --}}
     <div x-show="!connected"

@@ -16,13 +16,62 @@ use Livewire\Component;
 #[Title('Monitor Antrian')]
 class TvDisplay extends Component
 {
+    public ?string $lastAnnouncedCall = null;
+
     public function render(): View
     {
+        $currentCalls = $this->currentCalls();
+        $this->checkAndAnnounce($currentCalls);
+
         return view('livewire.tv-display', [
-            'currentCalls' => $this->currentCalls(),
+            'currentCalls' => $currentCalls,
             'recentCalls' => $this->recentCalls(),
             'videos' => $this->videos(),
         ]);
+    }
+
+    protected function checkAndAnnounce(Collection $currentCalls): void
+    {
+        $firstCall = $currentCalls->first();
+        if (! $firstCall) {
+            return;
+        }
+
+        $callIdentifier = $firstCall->id.'-'.($firstCall->called_at?->timestamp ?? 0);
+
+        if ($this->lastAnnouncedCall === null) {
+            $this->lastAnnouncedCall = $callIdentifier;
+
+            return;
+        }
+
+        if ($this->lastAnnouncedCall !== $callIdentifier) {
+            $this->lastAnnouncedCall = $callIdentifier;
+
+            $counterName = $firstCall->counter?->name ?? 'loket';
+            $phoneticTicket = $this->formatForTts($firstCall->ticket_number);
+
+            // MiniMax sangat sensitif terhadap format teks.
+            // Gunakan koma untuk jeda pendek, dan ejaan yang eksplisit untuk tiket.
+            $text = "Nomor antrian, {$phoneticTicket}. Silakan menuju, {$counterName}.";
+
+            $this->dispatch('play-tts', text: $text);
+        }
+    }
+
+    private function formatForTts(string $ticketNumber): string
+    {
+        // Untuk MiniMax: Pisahkan karakter dengan koma agar tidak dibaca sebagai singkatan aneh
+        $clean = preg_replace('/[^A-Za-z0-9]/', '', $ticketNumber);
+
+        $characters = str_split((string) $clean);
+
+        // Ganti angka 0 menjadi 'nol' dan gabungkan dengan koma untuk jeda antar karakter
+        $phonetic = array_map(function ($char) {
+            return $char === '0' ? 'nol' : $char;
+        }, $characters);
+
+        return implode(', ', $phonetic);
     }
 
     protected function currentCalls(): Collection

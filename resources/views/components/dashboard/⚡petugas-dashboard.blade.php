@@ -99,7 +99,6 @@ new class extends Component
                 $this->setFeedback('Tidak ada antrean menunggu yang sesuai layanan petugas.', 'amber');
             } else {
                 $this->setFeedback("Nomor {$ticket->ticket_number} dipanggil ke {$counter->name}.", 'blue');
-                $this->dispatch('petugas-tts', text: "Nomor antrian {$ticket->ticket_number}, silakan menuju {$counter->name}");
             }
         } catch (\Throwable $throwable) {
             $this->setFeedback($throwable->getMessage(), 'red');
@@ -122,7 +121,6 @@ new class extends Component
         try {
             app(RecallTicket::class)->handle($ticket, $counter, $this->currentUserId());
             $this->setFeedback("Nomor {$ticket->ticket_number} dipanggil ulang.", 'blue');
-            $this->dispatch('petugas-tts', text: "Panggilan ulang, nomor antrian {$ticket->ticket_number}, silakan menuju {$counter->name}");
         } catch (\Throwable $throwable) {
             $this->setFeedback($throwable->getMessage(), 'red');
         }
@@ -230,26 +228,32 @@ new class extends Component
         }
 
         $today = now()->toDateString();
+        $isAdmin = ($user->role?->value ?? $user->role) === 'admin';
         $allowedServiceIds = $user->services()->pluck('services.id');
-        if ($allowedServiceIds->isEmpty()) {
+
+        if (! $isAdmin && $allowedServiceIds->isEmpty()) {
             $this->resetBoardState();
             $this->setFeedback('Akun petugas belum memiliki layanan yang diizinkan.', 'amber');
 
             return;
         }
 
-        $availableCounters = Counter::query()
+        $countersQuery = Counter::query()
             ->with('queuePool:id,name')
             ->where('is_active', true)
-            ->whereIn('queue_pool_id', function ($query) use ($allowedServiceIds): void {
+            ->orderBy('sort_order')
+            ->orderBy('name');
+
+        if (! $isAdmin) {
+            $countersQuery->whereIn('queue_pool_id', function ($query) use ($allowedServiceIds): void {
                 $query->select('queue_pool_id')
                     ->from('services')
                     ->whereIn('id', $allowedServiceIds)
                     ->whereNotNull('queue_pool_id');
-            })
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get(['id', 'name', 'queue_pool_id']);
+            });
+        }
+
+        $availableCounters = $countersQuery->get(['id', 'name', 'queue_pool_id']);
 
         $this->counters = $availableCounters
             ->map(fn (Counter $counter): array => [
@@ -306,8 +310,11 @@ new class extends Component
 
         $queueQuery = QueueTicket::query()
             ->whereDate('service_date', $today)
-            ->where('queue_pool_id', $selectedCounter->queue_pool_id)
-            ->whereIn('service_id', $allowedServiceIds);
+            ->where('queue_pool_id', $selectedCounter->queue_pool_id);
+
+        if (! $isAdmin) {
+            $queueQuery->whereIn('service_id', $allowedServiceIds);
+        }
 
         $this->waitingCount = (clone $queueQuery)
             ->where('status', QueueStatus::Waiting)
@@ -676,51 +683,3 @@ new class extends Component
         </div>
     </flux:modal>
 </div>
-
-<script>
-    (() => {
-        if (window.petugasTtsInitialized) {
-            return;
-        }
-
-        window.petugasTtsInitialized = true;
-
-        const supportsSpeech = () => 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
-
-        const findIndonesianVoice = () => {
-            if (!supportsSpeech()) {
-                return null;
-            }
-
-            return window.speechSynthesis
-                .getVoices()
-                .find((voice) => voice.lang.toLowerCase().startsWith('id')) ?? null;
-        };
-
-        const speak = (text) => {
-            if (!supportsSpeech() || !text) {
-                return;
-            }
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            const voice = findIndonesianVoice();
-
-            utterance.lang = 'id-ID';
-            utterance.rate = 0.9;
-
-            if (voice) {
-                utterance.voice = voice;
-            }
-
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-        };
-
-        document.addEventListener('petugas-tts', (event) => {
-            const detail = event.detail ?? {};
-            const text = typeof detail.text === 'string' ? detail.text : '';
-
-            speak(text);
-        });
-    })();
-</script>
