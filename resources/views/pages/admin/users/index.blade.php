@@ -12,6 +12,14 @@
                     <flux:breadcrumbs.item>Users</flux:breadcrumbs.item>
                 </flux:breadcrumbs>
             </div>
+            
+            <div class="flex items-center gap-2">
+                <flux:modal.trigger name="create-user">
+                    <flux:button variant="primary" icon="plus">
+                        Tambah User Baru
+                    </flux:button>
+                </flux:modal.trigger>
+            </div>
         </div>
 
         @if (session('status'))
@@ -27,7 +35,7 @@
         @endif
 
         {{-- Tabs Navigation --}}
-        <div class="flex gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-800/50">
+        <div class="flex gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-800/50 max-w-fit">
             <button
                 type="button"
                 x-on:click="tab = 'list'"
@@ -45,15 +53,6 @@
             >
                 <flux:icon.shield-check class="size-4" />
                 Role & Izin
-            </button>
-            <button
-                type="button"
-                x-on:click="tab = 'create'"
-                :class="tab === 'create' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'"
-                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
-            >
-                <flux:icon.user-plus class="size-4" />
-                Tambah User
             </button>
         </div>
 
@@ -200,64 +199,73 @@
             </flux:card>
         </div>
 
-        {{-- Tab 3: Tambah User --}}
-        <div x-show="tab === 'create'" x-cloak>
-            <flux:card class="space-y-4">
+        {{-- Create User Modal --}}
+        <flux:modal name="create-user" class="w-full max-w-lg">
+            <form method="POST" action="{{ route('admin.users.store') }}" class="space-y-4" x-data="{ role: '{{ old('role', 'admin') }}' }">
+                @csrf
                 <div class="flex items-center gap-3">
                     <div class="admin-icon-box bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400">
                         <flux:icon.user-plus class="size-5" />
                     </div>
                     <flux:heading size="lg">Tambah User Baru</flux:heading>
                 </div>
-                <form method="POST" action="{{ route('admin.users.store') }}" class="grid gap-4 md:grid-cols-2" x-data="{ role: '{{ old('role', 'admin') }}' }">
-                    @csrf
-                    <flux:field>
-                        <flux:label>Nama</flux:label>
-                        <flux:input name="name" value="{{ old('name') }}" />
-                        <flux:error name="name" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Email</flux:label>
-                        <flux:input type="email" name="email" value="{{ old('email') }}" />
-                        <flux:error name="email" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Role</flux:label>
-                        <flux:select name="role" x-model="role">
-                            <flux:select.option value="admin">Admin</flux:select.option>
-                            <flux:select.option value="frontdesk">Frontdesk</flux:select.option>
-                            <flux:select.option value="officer">Officer</flux:select.option>
-                            <flux:select.option value="monitor">Monitor</flux:select.option>
-                        </flux:select>
-                        <flux:error name="role" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Password</flux:label>
-                        <flux:input type="password" name="password" />
-                        <flux:error name="password" />
-                    </flux:field>
-                    <flux:field class="md:col-span-2" x-show="role === 'officer'" x-cloak>
-                        <flux:label>Izin Layanan</flux:label>
-                        <flux:select
-                            name="services[]"
-                            variant="listbox"
-                            multiple
-                            searchable
-                            selected-suffix="layanan"
-                            placeholder="Pilih izin layanan"
-                        >
-                            @foreach ($services as $service)
-                                <flux:select.option value="{{ $service->id }}">
-                                    {{ $service->name }}
-                                </flux:select.option>
-                            @endforeach
-                        </flux:select>
-                        <flux:error name="services" />
-                    </flux:field>
-                    <flux:button type="submit" variant="primary" class="md:col-span-2">Simpan User</flux:button>
-                </form>
-            </flux:card>
-        </div>
+
+                <flux:field>
+                    <flux:label>Nama</flux:label>
+                    <flux:input name="name" value="{{ old('name') }}" />
+                    <flux:error name="name" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Email</flux:label>
+                    <flux:input type="email" name="email" value="{{ old('email') }}" />
+                    <flux:error name="email" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Role</flux:label>
+                    <flux:select name="role" x-model="role">
+                        <flux:select.option value="admin">Admin</flux:select.option>
+                        <flux:select.option value="frontdesk">Frontdesk</flux:select.option>
+                        <flux:select.option value="officer">Officer</flux:select.option>
+                        <flux:select.option value="monitor">Monitor</flux:select.option>
+                    </flux:select>
+                    <flux:error name="role" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Password</flux:label>
+                    <flux:input type="password" name="password" />
+                    <flux:error name="password" />
+                </flux:field>
+
+                <flux:field x-show="role === 'officer'" x-cloak>
+                    <flux:label>Izin Layanan</flux:label>
+                    <flux:select
+                        name="services[]"
+                        variant="listbox"
+                        multiple
+                        searchable
+                        selected-suffix="layanan"
+                        placeholder="Pilih izin layanan"
+                    >
+                        @foreach ($services as $service)
+                            <flux:select.option value="{{ $service->id }}">
+                                {{ $service->name }}
+                            </flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="services" />
+                </flux:field>
+
+                <div class="flex justify-end gap-2 pt-4">
+                    <flux:modal.close>
+                        <flux:button type="button" variant="ghost">Batal</flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="primary">Simpan User</flux:button>
+                </div>
+            </form>
+        </flux:modal>
 
         {{-- Per-User Edit Modals --}}
         @foreach ($users as $user)
@@ -316,7 +324,9 @@
                     </flux:field>
 
                     <div class="flex justify-end gap-2 pt-4">
-                        <flux:button type="button" variant="ghost" x-on:click="$dispatch('close-modal', 'edit-user-{{ $user->id }}')">Batal</flux:button>
+                        <flux:modal.close>
+                            <flux:button type="button" variant="ghost">Batal</flux:button>
+                        </flux:modal.close>
                         <flux:button type="submit" variant="primary">Simpan Perubahan</flux:button>
                     </div>
                 </form>
