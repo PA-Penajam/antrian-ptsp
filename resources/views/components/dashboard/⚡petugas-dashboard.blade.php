@@ -453,18 +453,21 @@ new class extends Component
 ?>
 
 <div class="space-y-6" wire:poll.10s.visible="refreshBoard">
-    <div class="flex items-center justify-between">
-        <div>
-            <flux:heading size="lg">Workstation Petugas</flux:heading>
-            <flux:text class="text-zinc-500">Pilih loket, panggil tiket berikutnya, lalu lanjutkan status layanan.</flux:text>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div class="space-y-3">
+            <flux:badge color="blue" rounded>Workstation</flux:badge>
+            <div>
+                <flux:heading size="xl" level="1">Workstation Petugas</flux:heading>
+                <flux:subheading class="mt-1">Pilih loket, panggil tiket berikutnya, lalu lanjutkan status layanan.</flux:subheading>
+            </div>
         </div>
         <div class="flex items-center gap-2">
             @if (! $fullScreen && $this->hasSelectedCounter)
-                <flux:button :href="route('officer.counter.show', ['counter' => $selectedCounterId])" variant="ghost" icon="arrows-pointing-out" size="sm">
-                    Mode Layar Loket
+                <flux:button :href="route('officer.counter.show', ['counter' => $selectedCounterId])" variant="ghost" icon="arrows-pointing-out">
+                    Mode Layar Penuh
                 </flux:button>
             @endif
-            <flux:badge color="blue">Refresh 10 detik</flux:badge>
+            <flux:badge color="zinc" icon="arrow-path">Auto-refresh 10s</flux:badge>
         </div>
     </div>
 
@@ -474,17 +477,17 @@ new class extends Component
         </flux:callout>
     @endif
 
-    <flux:card class="space-y-4">
+    <flux:card class="admin-card-elevated space-y-4">
         <div class="grid gap-4 lg:grid-cols-[minmax(0,20rem)_repeat(3,minmax(0,1fr))]">
             @if ($this->isCounterLocked)
-                <div class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-3">
+                <div class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
                     <flux:text class="text-xs uppercase tracking-wide text-zinc-400">Loket Aktif</flux:text>
-                    <flux:heading size="sm" class="text-white">{{ $this->selectedCounterName }}</flux:heading>
+                    <flux:heading size="md" class="mt-1 text-white">{{ $this->selectedCounterName }}</flux:heading>
                 </div>
             @else
                 <flux:field>
-                    <flux:label>Loket Aktif</flux:label>
-                    <flux:select wire:model.live="selectedCounterId">
+                    <flux:label>Pilih Loket Anda</flux:label>
+                    <flux:select wire:model.live="selectedCounterId" class="mt-1">
                         @if (count($counters) === 0)
                             <flux:select.option value="">Belum ada loket aktif</flux:select.option>
                         @else
@@ -498,29 +501,32 @@ new class extends Component
                 </flux:field>
             @endif
 
-            <div class="rounded-xl border border-zinc-200 bg-white/50 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
-                <flux:text class="text-xs uppercase tracking-wide text-zinc-500">Antrian Menunggu</flux:text>
-                <flux:heading size="lg">{{ $waitingCount }}</flux:heading>
+            <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800/50">
+                <flux:text class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Antrian Menunggu</flux:text>
+                <flux:heading size="2xl" class="mt-2">{{ $waitingCount }}</flux:heading>
             </div>
 
-            <div class="rounded-xl border border-zinc-200 bg-white/50 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
-                <flux:text class="text-xs uppercase tracking-wide text-zinc-500">Tiket Aktif</flux:text>
-                <flux:heading size="lg">{{ $activeTicket?->ticket_number ?? '-' }}</flux:heading>
+            <div class="rounded-xl border border-cyan-200 bg-cyan-50 p-4 shadow-sm dark:border-cyan-900/50 dark:bg-cyan-950/30">
+                <flux:text class="text-xs font-semibold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">Tiket Aktif</flux:text>
+                <flux:heading size="2xl" class="mt-2 text-cyan-900 dark:text-cyan-300">{{ $activeTicket?->ticket_number ?? '-' }}</flux:heading>
             </div>
 
-            <div class="rounded-xl border border-zinc-200 bg-white/50 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
-                <flux:text class="text-xs uppercase tracking-wide text-zinc-500">Layanan Aktif</flux:text>
-                <flux:heading size="sm">{{ $activeTicket?->service?->name ?? '-' }}</flux:heading>
+            <div class="flex flex-col justify-center rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800/50">
+                <flux:text class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Layanan Aktif</flux:text>
+                <flux:heading size="md" class="mt-1">{{ $activeTicket?->service?->name ?? 'Belum ada tiket' }}</flux:heading>
             </div>
         </div>
 
-        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <flux:separator variant="subtle" />
+
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 pt-2">
             <flux:button
                 variant="primary"
                 icon="megaphone"
                 wire:click="callNext"
                 :disabled="! $this->hasSelectedCounter"
                 wire:loading.attr="disabled"
+                class="w-full"
             >
                 Panggil Berikutnya
             </flux:button>
@@ -530,6 +536,7 @@ new class extends Component
                 wire:click="recall"
                 :disabled="! $this->hasActiveTicket"
                 wire:loading.attr="disabled"
+                class="w-full"
             >
                 Panggil Ulang
             </flux:button>
@@ -539,17 +546,20 @@ new class extends Component
                 x-on:click="$dispatch('open-modal', 'confirm-skip-ticket')"
                 :disabled="! $this->hasActiveTicket"
                 wire:loading.attr="disabled"
+                class="w-full text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
-                Lewati
+                Lewati (Skip)
             </flux:button>
             <flux:button
                 variant="filled"
+                color="emerald"
                 icon="check-circle"
                 wire:click="complete"
                 :disabled="! $this->hasActiveTicket"
                 wire:loading.attr="disabled"
+                class="w-full"
             >
-                Selesai
+                Selesai Dilayani
             </flux:button>
             <flux:button
                 variant="ghost"
@@ -557,17 +567,27 @@ new class extends Component
                 x-on:click="$dispatch('open-modal', 'confirm-cancel-ticket')"
                 :disabled="! $this->hasActiveTicket"
                 wire:loading.attr="disabled"
+                class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-950/30 dark:hover:text-red-400"
             >
-                Batalkan
+                Batalkan Tiket
             </flux:button>
         </div>
     </flux:card>
 
     <div class="grid gap-6 xl:grid-cols-3">
-        <flux:card class="space-y-3 xl:col-span-2">
-            <flux:heading size="lg">Antrean Menunggu Prioritas Panggil</flux:heading>
+        <flux:card class="admin-card-elevated space-y-4 xl:col-span-2">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="admin-icon-box bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
+                    <flux:icon.list-bullet class="size-5" />
+                </div>
+                <flux:heading size="lg">Antrean Menunggu Prioritas</flux:heading>
+            </div>
             @if (count($waitingTickets) === 0)
-                <flux:text class="text-zinc-500">Belum ada antrean menunggu untuk loket terpilih.</flux:text>
+                <div class="flex flex-col items-center justify-center py-8 text-center">
+                    <flux:icon name="inbox" class="h-10 w-10 text-zinc-300 dark:text-zinc-600" />
+                    <p class="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">Antrean kosong</p>
+                    <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Belum ada pengunjung yang menunggu di loket ini.</p>
+                </div>
             @else
                 <flux:table>
                     <flux:table.columns>
@@ -579,7 +599,9 @@ new class extends Component
                     <flux:table.rows>
                         @foreach ($waitingTickets as $ticket)
                             <flux:table.row>
-                                <flux:table.cell>{{ $ticket['ticket_number'] }}</flux:table.cell>
+                                <flux:table.cell>
+                                    <flux:badge size="sm" color="zinc" class="font-mono">{{ $ticket['ticket_number'] }}</flux:badge>
+                                </flux:table.cell>
                                 <flux:table.cell>{{ $ticket['sequence_number'] }}</flux:table.cell>
                                 <flux:table.cell>{{ $ticket['service_name'] }}</flux:table.cell>
                                 <flux:table.cell>{{ $ticket['visitor_name'] }}</flux:table.cell>
@@ -590,50 +612,64 @@ new class extends Component
             @endif
         </flux:card>
 
-        <flux:card class="space-y-3">
-            <flux:heading size="lg">Kinerja Hari Ini</flux:heading>
-            <div class="rounded-xl border border-green-200 bg-green-50 p-3 dark:border-green-900/60 dark:bg-green-950/30">
-                <flux:text class="text-xs uppercase tracking-wide text-green-700 dark:text-green-300">Selesai Dilayani</flux:text>
-                <flux:heading size="xl" class="text-green-700 dark:text-green-300">{{ $stats['served_today'] }}</flux:heading>
-            </div>
-            <div class="grid grid-cols-3 gap-2 text-sm">
-                <div class="rounded-lg border border-zinc-200 bg-white/50 p-2 text-center dark:border-zinc-700 dark:bg-zinc-900/50">
-                    <div class="text-zinc-500">Skip</div>
-                    <div class="font-semibold">{{ $stats['action_counts']['skipped'] }}</div>
+        <div class="space-y-6">
+            <flux:card class="admin-card-elevated space-y-4">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="admin-icon-box bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                        <flux:icon.chart-bar class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Kinerja Hari Ini</flux:heading>
                 </div>
-                <div class="rounded-lg border border-zinc-200 bg-white/50 p-2 text-center dark:border-zinc-700 dark:bg-zinc-900/50">
-                    <div class="text-zinc-500">Recall</div>
-                    <div class="font-semibold">{{ $stats['action_counts']['recalled'] }}</div>
+                
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30">
+                    <flux:text class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">Total Selesai Dilayani</flux:text>
+                    <flux:heading size="3xl" class="mt-1 text-emerald-800 dark:text-emerald-300">{{ $stats['served_today'] }}</flux:heading>
                 </div>
-                <div class="rounded-lg border border-zinc-200 bg-white/50 p-2 text-center dark:border-zinc-700 dark:bg-zinc-900/50">
-                    <div class="text-zinc-500">Selesai</div>
-                    <div class="font-semibold">{{ $stats['action_counts']['completed'] }}</div>
+                
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="rounded-xl border border-zinc-200 bg-white p-3 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-800/50">
+                        <div class="text-xs font-medium uppercase tracking-wide text-zinc-500">Dilewati (Skip)</div>
+                        <div class="mt-1 text-xl font-semibold text-zinc-700 dark:text-zinc-300">{{ $stats['action_counts']['skipped'] }}</div>
+                    </div>
+                    <div class="rounded-xl border border-zinc-200 bg-white p-3 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-800/50">
+                        <div class="text-xs font-medium uppercase tracking-wide text-zinc-500">Dipanggil Ulang</div>
+                        <div class="mt-1 text-xl font-semibold text-zinc-700 dark:text-zinc-300">{{ $stats['action_counts']['recalled'] }}</div>
+                    </div>
                 </div>
-            </div>
-        </flux:card>
-    </div>
+            </flux:card>
 
-    <flux:card class="space-y-3">
-        <flux:heading size="lg">Daftar Skip Layanan</flux:heading>
-        @if (count($skippedTickets) === 0)
-            <flux:text class="text-zinc-500">Belum ada tiket skip pada loket ini hari ini.</flux:text>
-        @else
-            <flux:table>
-                <flux:table.columns>
-                    <flux:table.column>Tiket</flux:table.column>
-                    <flux:table.column>Layanan</flux:table.column>
-                </flux:table.columns>
-                <flux:table.rows>
-                    @foreach ($skippedTickets as $ticket)
-                        <flux:table.row>
-                            <flux:table.cell>{{ $ticket['ticket_number'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $ticket['service_name'] }}</flux:table.cell>
-                        </flux:table.row>
-                    @endforeach
-                </flux:table.rows>
-            </flux:table>
-        @endif
-    </flux:card>
+            <flux:card class="admin-card-elevated space-y-4">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="admin-icon-box bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
+                        <flux:icon.forward class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Daftar Skip</flux:heading>
+                </div>
+                @if (count($skippedTickets) === 0)
+                    <div class="flex flex-col items-center justify-center py-6 text-center">
+                        <flux:text class="text-sm text-zinc-500">Belum ada tiket yang dilewati hari ini.</flux:text>
+                    </div>
+                @else
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column>Tiket</flux:table.column>
+                            <flux:table.column>Layanan</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @foreach ($skippedTickets as $ticket)
+                                <flux:table.row>
+                                    <flux:table.cell>
+                                        <flux:badge size="sm" color="amber" class="font-mono">{{ $ticket['ticket_number'] }}</flux:badge>
+                                    </flux:table.cell>
+                                    <flux:table.cell class="text-xs">{{ $ticket['service_name'] }}</flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                @endif
+            </flux:card>
+        </div>
+    </div>
 
     <flux:modal name="confirm-skip-ticket" class="w-full max-w-md">
         <div class="space-y-4">
