@@ -82,14 +82,11 @@
                         :expanded="request()->is('admin/users') || request()->is('admin/roles') || request()->is('admin/izin-layanan')"
                         class="grid mt-4"
                     >
-                        <flux:sidebar.item icon="users" href="/admin/users" :current="request()->is('admin/users')" wire:navigate>
+                        <flux:sidebar.item icon="users" href="/admin/users" :current="request()->is('admin/users') && request()->query('tab') !== 'roles'" wire:navigate>
                             {{ __('Users') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="shield-check" href="/admin/roles" :current="request()->is('admin/roles')" wire:navigate>
-                            {{ __('Roles') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="key" href="/admin/izin-layanan" :current="request()->is('admin/izin-layanan')" wire:navigate>
-                            {{ __('Izin Layanan') }}
+                        <flux:sidebar.item icon="shield-check" href="/admin/users?tab=roles" :current="request()->query('tab') === 'roles' || request()->is('admin/roles') || request()->is('admin/izin-layanan')" wire:navigate>
+                            {{ __('Role & Izin') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
 

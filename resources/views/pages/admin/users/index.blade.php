@@ -1,5 +1,5 @@
 <x-layouts::app :title="__('Manajemen User')">
-    <div class="mx-auto w-full max-w-6xl space-y-6" x-data="{ tab: '{{ old('_method') !== 'PUT' && $errors->any() ? 'create' : 'list' }}' }">
+    <div class="mx-auto w-full max-w-6xl space-y-6" x-data="{ tab: '{{ old('_method') !== 'PUT' && $errors->any() ? 'create' : $tab }}' }">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div class="space-y-3">
                 <flux:badge color="violet" rounded>Admin Panel</flux:badge>

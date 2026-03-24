@@ -9,13 +9,14 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class UserManagementController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $users = User::query()
             ->with('services')
@@ -27,6 +28,7 @@ class UserManagementController extends Controller
         return view('pages.admin.users.index', [
             'users' => $users,
             'services' => $services,
+            'tab' => $request->query('tab', 'list'),
         ]);
     }
 

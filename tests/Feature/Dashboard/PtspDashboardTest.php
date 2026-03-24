@@ -132,7 +132,6 @@ test('admin dashboard renders health widgets and shortcuts', function () {
         ->assertSee('/admin/layanan')
         ->assertSee('/admin/loket')
         ->assertSee('/admin/users')
-        ->assertSee('/admin/roles')
-        ->assertSee('/admin/izin-layanan')
+        ->assertSee('/admin/users?tab=roles')
         ->assertSee('Distribusi per Layanan');
 });

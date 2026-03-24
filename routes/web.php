@@ -77,8 +77,8 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(f
     Route::put('/admin/wilayah', [WilayahSettingController::class, 'update'])->name('admin.wilayah.update');
 
     // Admin - Roles & Permissions
-    Route::get('/admin/roles', fn () => redirect()->route('admin.users.index', [], 301));
-    Route::get('/admin/izin-layanan', fn () => redirect()->route('admin.users.index', [], 301));
+    Route::get('/admin/roles', fn () => redirect()->route('admin.users.index', ['tab' => 'roles'], 301));
+    Route::get('/admin/izin-layanan', fn () => redirect()->route('admin.users.index', ['tab' => 'roles'], 301));
 });
 
 // Kiosk routes (no auth - uses own password system)
