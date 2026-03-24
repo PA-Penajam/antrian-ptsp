@@ -40,6 +40,8 @@ class RecallTicket
             ]
         );
 
+        \App\Events\TicketCalled::dispatch($queueTicket->id);
+
         return $queueTicket->refresh();
     }
 }

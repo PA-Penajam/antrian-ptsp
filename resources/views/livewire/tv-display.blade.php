@@ -1,4 +1,4 @@
-<div wire:poll.5s.keep-alive class="h-screen bg-slate-50 text-slate-900 overflow-hidden p-5"
+<div class="h-screen bg-slate-50 text-slate-900 overflow-hidden p-5"
      x-data="{
          connected: navigator.onLine,
          audioUnlocked: false,

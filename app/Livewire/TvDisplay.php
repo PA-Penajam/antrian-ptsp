@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -17,6 +18,13 @@ use Livewire\Component;
 class TvDisplay extends Component
 {
     public ?string $lastAnnouncedCall = null;
+
+    #[On('echo:public-queue,TicketCalled')]
+    public function refreshQueue(): void
+    {
+        // This empty method simply triggers a Livewire re-render
+        // The render() method itself handles checkAndAnnounce() logic natively
+    }
 
     public function render(): View
     {
