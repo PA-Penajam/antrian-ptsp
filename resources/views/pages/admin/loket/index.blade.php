@@ -14,9 +14,11 @@
             </div>
             
             <div class="flex items-center gap-2">
-                <flux:button variant="primary" icon="plus" x-data x-on:click="$dispatch('open-modal', 'create-counter')">
-                    Tambah Loket Baru
-                </flux:button>
+                <flux:modal.trigger name="create-counter">
+                    <flux:button variant="primary" icon="plus">
+                        Tambah Loket Baru
+                    </flux:button>
+                </flux:modal.trigger>
             </div>
         </div>
 
@@ -68,10 +70,11 @@
                             </flux:table.cell>
                             <flux:table.cell>
                                 <div class="flex items-center gap-2">
-                                    <flux:button size="sm" variant="filled" icon="pencil"
-                                        x-data x-on:click="$dispatch('open-modal', 'edit-counter-{{ $counter->id }}')">
-                                        Edit
-                                    </flux:button>
+                                    <flux:modal.trigger name="edit-counter-{{ $counter->id }}">
+                                        <flux:button size="sm" variant="filled" icon="pencil">
+                                            Edit
+                                        </flux:button>
+                                    </flux:modal.trigger>
                                     <form method="POST" action="{{ route('admin.loket.destroy', $counter) }}" class="inline"
                                         onsubmit="return confirm('Yakin ingin menghapus loket {{ $counter->name }}?')">
                                         @csrf
@@ -142,9 +145,11 @@
             </flux:field>
 
             <div class="flex justify-end gap-2 pt-2">
-                <flux:button type="button" variant="ghost" x-on:click="$dispatch('close-modal', 'create-counter')">
-                    Batal
-                </flux:button>
+                <flux:modal.close>
+                    <flux:button type="button" variant="ghost">
+                        Batal
+                    </flux:button>
+                </flux:modal.close>
                 <flux:button type="submit" variant="primary">Tambah Loket</flux:button>
             </div>
         </form>
@@ -204,9 +209,11 @@
                 </flux:field>
 
                 <div class="flex justify-end gap-2 pt-2">
-                    <flux:button type="button" variant="ghost" x-on:click="$dispatch('close-modal', 'edit-counter-{{ $counter->id }}')">
-                        Batal
-                    </flux:button>
+                    <flux:modal.close>
+                        <flux:button type="button" variant="ghost">
+                            Batal
+                        </flux:button>
+                    </flux:modal.close>
                     <flux:button type="submit" variant="primary">Simpan</flux:button>
                 </div>
             </form>
