@@ -498,17 +498,17 @@ new class extends Component
                 </flux:field>
             @endif
 
-            <div class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+            <div class="rounded-xl border border-zinc-200 bg-white/50 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
                 <flux:text class="text-xs uppercase tracking-wide text-zinc-500">Antrian Menunggu</flux:text>
                 <flux:heading size="lg">{{ $waitingCount }}</flux:heading>
             </div>
 
-            <div class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+            <div class="rounded-xl border border-zinc-200 bg-white/50 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
                 <flux:text class="text-xs uppercase tracking-wide text-zinc-500">Tiket Aktif</flux:text>
                 <flux:heading size="lg">{{ $activeTicket?->ticket_number ?? '-' }}</flux:heading>
             </div>
 
-            <div class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+            <div class="rounded-xl border border-zinc-200 bg-white/50 p-3 dark:border-zinc-700 dark:bg-zinc-900/50">
                 <flux:text class="text-xs uppercase tracking-wide text-zinc-500">Layanan Aktif</flux:text>
                 <flux:heading size="sm">{{ $activeTicket?->service?->name ?? '-' }}</flux:heading>
             </div>
@@ -597,15 +597,15 @@ new class extends Component
                 <flux:heading size="xl" class="text-green-700 dark:text-green-300">{{ $stats['served_today'] }}</flux:heading>
             </div>
             <div class="grid grid-cols-3 gap-2 text-sm">
-                <div class="rounded-lg border border-zinc-200 p-2 text-center dark:border-zinc-700">
+                <div class="rounded-lg border border-zinc-200 bg-white/50 p-2 text-center dark:border-zinc-700 dark:bg-zinc-900/50">
                     <div class="text-zinc-500">Skip</div>
                     <div class="font-semibold">{{ $stats['action_counts']['skipped'] }}</div>
                 </div>
-                <div class="rounded-lg border border-zinc-200 p-2 text-center dark:border-zinc-700">
+                <div class="rounded-lg border border-zinc-200 bg-white/50 p-2 text-center dark:border-zinc-700 dark:bg-zinc-900/50">
                     <div class="text-zinc-500">Recall</div>
                     <div class="font-semibold">{{ $stats['action_counts']['recalled'] }}</div>
                 </div>
-                <div class="rounded-lg border border-zinc-200 p-2 text-center dark:border-zinc-700">
+                <div class="rounded-lg border border-zinc-200 bg-white/50 p-2 text-center dark:border-zinc-700 dark:bg-zinc-900/50">
                     <div class="text-zinc-500">Selesai</div>
                     <div class="font-semibold">{{ $stats['action_counts']['completed'] }}</div>
                 </div>
