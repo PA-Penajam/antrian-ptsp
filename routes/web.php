@@ -12,9 +12,14 @@ use App\Http\Controllers\PublicQueueController;
 use App\Http\Controllers\Report\QueueReportController;
 use App\Http\Controllers\TvDisplayController;
 use App\Http\Controllers\TvDisplayTtsController;
+use Flux\AssetManager;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicQueueController::class, 'index'])->name('home');
+Route::get('/flux/script', config('app.debug')
+    ? [AssetManager::class, 'fluxJs']
+    : [AssetManager::class, 'fluxMinJs']
+)->name('flux.script');
 Route::get('/antrian', [PublicQueueController::class, 'booking']);
 Route::post('/antrian', [PublicQueueController::class, 'storeBooking'])->middleware('throttle:10,1');
 Route::get('/antrian/cek', [PublicQueueController::class, 'lookup'])->name('queue.cek')->middleware('throttle:30,1');

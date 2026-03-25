@@ -5,8 +5,10 @@ namespace App\Providers;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureLivewireScriptRoute();
     }
 
     /**
@@ -46,5 +49,12 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    protected function configureLivewireScriptRoute(): void
+    {
+        Livewire::setScriptRoute(function ($handle, string $_defaultPath) {
+            return Route::get('/livewire/script', $handle);
+        });
     }
 }
