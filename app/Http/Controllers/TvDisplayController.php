@@ -54,6 +54,33 @@ class TvDisplayController extends Controller
         return view('pages.tv-display.index');
     }
 
+    public function showLoginLegacy(): View
+    {
+        return view('pages.tv-display.login-legacy');
+    }
+
+    public function loginLegacy(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        $hashedPassword = (string) config('kiosk.tv_display_password');
+
+        if (! $hashedPassword || ! Hash::check($request->input('password'), $hashedPassword)) {
+            return back()->withErrors([
+                'password' => 'Password salah.',
+            ]);
+        }
+
+        session([
+            ModuleSession::TvDisplayAuthenticated->value => true,
+            ModuleSession::TvDisplayAuthenticatedAt->value => now()->timestamp,
+        ]);
+
+        return redirect()->route('tv-display.legacy');
+    }
+
     public function legacy(): View
     {
         return view('pages.tv-display.legacy');

@@ -55,6 +55,33 @@ class KioskController extends Controller
         return view('pages.kiosk.index');
     }
 
+    public function showLoginLegacy(): View
+    {
+        return view('pages.kiosk.login-legacy');
+    }
+
+    public function loginLegacy(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        $hashedPassword = (string) config('kiosk.kiosk_password');
+
+        if (! $hashedPassword || ! Hash::check($request->input('password'), $hashedPassword)) {
+            return back()->withErrors([
+                'password' => 'Error: Password yang dimasukkan salah.',
+            ]);
+        }
+
+        session([
+            ModuleSession::KioskAuthenticated->value => true,
+            ModuleSession::KioskAuthenticatedAt->value => now()->timestamp,
+        ]);
+
+        return redirect()->route('kiosk.legacy');
+    }
+
     public function legacy(): View
     {
         $services = Service::active()

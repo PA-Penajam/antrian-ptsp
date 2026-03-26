@@ -26,7 +26,7 @@ class CheckModulePassword
         if (! $isAuthenticated || ! $authenticatedAt || (now()->timestamp - $authenticatedAt) >= $sessionLifetimeSeconds) {
             session()->forget([$sessionKey, $timestampKey]);
 
-            return redirect()->to('/'.$module.'/login');
+            return redirect()->to(self::resolveLoginUrl($module));
         }
 
         return $next($request);
@@ -35,11 +35,20 @@ class CheckModulePassword
     /**
      * Resolve session key autentikasi berdasarkan nama modul.
      */
+    private static function resolveLoginUrl(string $module): string
+    {
+        return match ($module) {
+            'kiosk-legacy' => '/kiosk-legacy/login',
+            'tv-legacy' => '/tv-legacy/login',
+            default => '/'.$module.'/login',
+        };
+    }
+
     private static function resolveSessionKey(string $module): string
     {
         return match ($module) {
-            'kiosk' => ModuleSession::KioskAuthenticated->value,
-            'tv-display' => ModuleSession::TvDisplayAuthenticated->value,
+            'kiosk', 'kiosk-legacy' => ModuleSession::KioskAuthenticated->value,
+            'tv-display', 'tv-legacy' => ModuleSession::TvDisplayAuthenticated->value,
             default => str_replace('-', '_', $module).'_authenticated',
         };
     }
@@ -50,8 +59,8 @@ class CheckModulePassword
     private static function resolveTimestampKey(string $module): string
     {
         return match ($module) {
-            'kiosk' => ModuleSession::KioskAuthenticatedAt->value,
-            'tv-display' => ModuleSession::TvDisplayAuthenticatedAt->value,
+            'kiosk', 'kiosk-legacy' => ModuleSession::KioskAuthenticatedAt->value,
+            'tv-display', 'tv-legacy' => ModuleSession::TvDisplayAuthenticatedAt->value,
             default => str_replace('-', '_', $module).'_authenticated_at',
         };
     }
