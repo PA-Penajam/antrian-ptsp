@@ -11,6 +11,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
@@ -91,13 +92,18 @@ class KioskController extends Controller
             ->get();
 
         $selectedKabupatenKode = AppSetting::getValue('wilayah.scope.kabupaten_kode');
-        $wilayahOptions = Wilayah::query()
-            ->whereRaw('LENGTH(kode) = 13')
-            ->when($selectedKabupatenKode, function ($query, $kode) {
-                return $query->where('kode', 'like', "{$kode}.%");
-            })
-            ->orderBy('nama')
-            ->get();
+
+        // Jika kabupaten belum dipilih, return collection kosong
+        // untuk mencegah loading semua desa/kelurahan di Indonesia
+        if ($selectedKabupatenKode === null) {
+            $wilayahOptions = collect();
+        } else {
+            $wilayahOptions = Wilayah::query()
+                ->whereRaw('LENGTH(kode) = 13')
+                ->where('kode', 'like', "{$selectedKabupatenKode}.%")
+                ->orderBy('nama')
+                ->get();
+        }
 
         return view('pages.kiosk.legacy', compact('services', 'wilayahOptions'));
     }
