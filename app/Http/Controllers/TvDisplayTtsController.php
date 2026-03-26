@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Services\Tts\MiniMaxTtsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class TvDisplayTtsController extends Controller
@@ -38,7 +38,7 @@ class TvDisplayTtsController extends Controller
         ]);
     }
 
-    public function audio(string $cacheKey, MiniMaxTtsService $ttsService): StreamedResponse
+    public function audio(string $cacheKey, MiniMaxTtsService $ttsService): Response
     {
         abort_unless(preg_match('/^[a-f0-9]{40}$/', $cacheKey) === 1, 404);
 
@@ -47,18 +47,15 @@ class TvDisplayTtsController extends Controller
 
         abort_unless(Storage::disk($disk)->exists($path), 404);
 
-        $stream = Storage::disk($disk)->readStream($path);
-        abort_unless($stream !== false, 404);
+        $content = Storage::disk($disk)->get($path);
+        abort_unless(is_string($content) && $content !== '', 404);
 
-        return response()->stream(function () use ($stream): void {
-            fpassthru($stream);
-
-            if (is_resource($stream)) {
-                fclose($stream);
-            }
-        }, 200, [
+        return response($content, 200, [
             'Content-Type' => 'audio/mpeg',
             'Cache-Control' => 'public, max-age=31536000, immutable',
+            'Content-Length' => (string) strlen($content),
+            'Accept-Ranges' => 'bytes',
+            'Content-Disposition' => 'inline; filename="announcement-'.$cacheKey.'.mp3"',
         ]);
     }
 }

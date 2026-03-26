@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Storage;
+
 use function Pest\Laravel\from;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
@@ -66,7 +68,7 @@ it('middleware module password tv-display blocks unauthenticated access', functi
 it('blocks unauthenticated access to tv-display tts endpoint', function () {
     $response = getJson(route('tv-display.tts.announcement', ['text' => 'Nomor A-001 ke Loket 1']));
 
-    $response->assertRedirect('/tv-display/login');
+    $response->assertRedirect('/tv-legacy/login');
 });
 
 it('returns browser provider fallback when minimax is not configured', function () {
@@ -79,4 +81,29 @@ it('returns browser provider fallback when minimax is not configured', function 
         ->assertJson([
             'provider' => 'browser',
         ]);
+});
+
+it('serves cached audio payload for authenticated tv legacy session', function () {
+    Storage::fake('public');
+
+    config([
+        'services.minimax.cache_disk' => 'public',
+        'services.minimax.cache_prefix' => 'tts/minimax',
+    ]);
+
+    $cacheKey = str_repeat('a', 40);
+    $audioPayload = 'ID3FAKE-AUDIO-PAYLOAD';
+    Storage::disk('public')->put('tts/minimax/'.$cacheKey.'.mp3', $audioPayload);
+
+    $response = withSession([
+        'tv_display_authenticated' => true,
+        'tv_display_authenticated_at' => now()->timestamp,
+    ])->get(route('tv-display.tts.audio', ['cacheKey' => $cacheKey]));
+
+    $response->assertOk()
+        ->assertHeader('Content-Type', 'audio/mpeg')
+        ->assertHeader('Accept-Ranges', 'bytes')
+        ->assertHeader('Content-Length', (string) strlen($audioPayload));
+
+    expect($response->getContent())->toBe($audioPayload);
 });

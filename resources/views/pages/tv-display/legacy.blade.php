@@ -359,6 +359,9 @@
     var fetchErrCount    = 0;
     var isPageVisible    = true;
     var fetchStateInterval = null;
+    var pendingAnnouncementText = '';
+    var currentAudioObjectUrl = null;
+    var playGuardTimer = null;
 
     $(document).ready(function () {
         updateClock();
@@ -373,9 +376,33 @@
             playCurrentVideo();
         });
 
+        audioPlayer.addEventListener('playing', function () {
+            clearPlayGuard();
+            pendingAnnouncementText = '';
+        });
+
         audioPlayer.addEventListener('ended', function () {
+            clearPlayGuard();
+            revokeAudioObjectUrl();
             tvPlayer.volume = 1;
         });
+
+        audioPlayer.addEventListener('error', function () {
+            clearPlayGuard();
+            revokeAudioObjectUrl();
+
+            if (pendingAnnouncementText !== '') {
+                var fallbackText = pendingAnnouncementText;
+                pendingAnnouncementText = '';
+                speakWithBrowserTts(fallbackText);
+                return;
+            }
+
+            tvPlayer.volume = 1;
+        });
+
+        document.addEventListener('click', unlockAudioIfNeeded, { once: true });
+        document.addEventListener('keydown', unlockAudioIfNeeded, { once: true });
 
         document.addEventListener('visibilitychange', function() {
             isPageVisible = !document.hidden;
@@ -405,6 +432,26 @@
         // Clear polling interval (will be restarted on resume)
         clearInterval(fetchStateInterval);
         fetchStateInterval = null;
+    }
+
+    function unlockAudioIfNeeded() {
+        var unlockAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+        unlockAudio.volume = 0;
+        unlockAudio.play().catch(function () {});
+    }
+
+    function clearPlayGuard() {
+        if (playGuardTimer) {
+            clearTimeout(playGuardTimer);
+            playGuardTimer = null;
+        }
+    }
+
+    function revokeAudioObjectUrl() {
+        if (currentAudioObjectUrl) {
+            URL.revokeObjectURL(currentAudioObjectUrl);
+            currentAudioObjectUrl = null;
+        }
     }
 
     function resumeOperations() {
@@ -487,9 +534,14 @@
             $('#noCallState').addClass('d-none');
             $('#activeCallState').removeClass('d-none');
             /* Re-trigger animasi masuk dengan replace elemen */
-            $('#activeTicketNumber').text(active.ticket_number)
-                .removeClass('call-animate').width()
-                .addClass('call-animate');
+            var activeTicketNumber = $('#activeTicketNumber');
+            activeTicketNumber.text(active.ticket_number).removeClass('call-animate');
+
+            if (activeTicketNumber.length > 0 && activeTicketNumber[0]) {
+                void activeTicketNumber[0].offsetWidth;
+            }
+
+            activeTicketNumber.addClass('call-animate');
             $('#activeCounterName').text(active.counter ? active.counter.name.toUpperCase() : 'LOKET');
             $('#activeServiceName').text(active.service ? active.service.name : '');
             /* Aktifkan pulse glow pada hero card */
@@ -614,6 +666,85 @@
         }
     }
 
+    function speakWithBrowserTts(text) {
+        clearPlayGuard();
+        revokeAudioObjectUrl();
+
+        if (!('speechSynthesis' in window)) {
+            tvPlayer.volume = 1;
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        var utterance = new SpeechSynthesisUtterance(text.replace(/,/g, ' '));
+        utterance.lang = 'id-ID';
+        utterance.rate = 0.95;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        utterance.onend = function () {
+            tvPlayer.volume = 1;
+        };
+        utterance.onerror = function () {
+            tvPlayer.volume = 1;
+        };
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function playMiniMaxAudio(audioUrl, fallbackText) {
+        fetch(audioUrl, {
+            method: 'GET',
+            credentials: 'same-origin',
+            cache: 'no-store'
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('AUDIO_HTTP_' + response.status);
+                }
+
+                return response.blob();
+            })
+            .then(function (audioBlob) {
+                if (!audioBlob || audioBlob.size <= 0) {
+                    throw new Error('AUDIO_EMPTY_BLOB');
+                }
+
+                var blobType = (audioBlob.type || '').toLowerCase();
+                if (blobType && blobType.indexOf('audio') === -1 && blobType.indexOf('octet-stream') === -1) {
+                    throw new Error('AUDIO_INVALID_BLOB_TYPE_' + blobType);
+                }
+
+                clearPlayGuard();
+                revokeAudioObjectUrl();
+
+                currentAudioObjectUrl = URL.createObjectURL(audioBlob);
+                audioPlayer.src = currentAudioObjectUrl;
+
+                playGuardTimer = setTimeout(function () {
+                    if (pendingAnnouncementText !== '') {
+                        var guardText = pendingAnnouncementText;
+                        pendingAnnouncementText = '';
+                        speakWithBrowserTts(guardText);
+                    }
+                }, 2500);
+
+                var playPromise = audioPlayer.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(function () {
+                        // Bersihkan src agar tidak memicu error event setelah blob dicabut
+                        audioPlayer.src = '';
+                        speakWithBrowserTts(fallbackText);
+                    });
+                }
+            })
+            .catch(function () {
+                // Fetch gagal — pastikan src bersih sebelum fallback ke browser TTS
+                audioPlayer.src = '';
+                speakWithBrowserTts(fallbackText);
+            });
+    }
+
     function playAnnouncer(call) {
         var loket    = call.counter ? call.counter.name : 'Loket';
         var ttsNomor = call.ticket_number
@@ -624,8 +755,33 @@
         var text = 'Nomor antrian, ' + ttsNomor + '. Silakan menuju, ' + loket + '.';
 
         tvPlayer.volume = 0.2;
-        audioPlayer.src = '{{ route("tv-display.tts.announcement") }}?text=' + encodeURIComponent(text);
-        audioPlayer.play().catch(function () { tvPlayer.volume = 1; });
+        pendingAnnouncementText = text;
+
+        $.ajax({
+            url: '{{ route("tv-display.tts.announcement") }}',
+            type: 'GET',
+            dataType: 'json',
+            timeout: 10000,
+            data: {
+                text: text,
+            },
+            success: function (response) {
+                if (response && response.provider === 'minimax' && response.audio_url) {
+                    playMiniMaxAudio(response.audio_url, text);
+
+                    return;
+                }
+
+                // Provider browser: clear pending agar error handler tidak double-trigger
+                pendingAnnouncementText = '';
+                speakWithBrowserTts(text);
+            },
+            error: function () {
+                // AJAX gagal (sesi habis, dll): clear pending sebelum fallback
+                pendingAnnouncementText = '';
+                speakWithBrowserTts(text);
+            }
+        });
     }
 </script>
 @endpush
