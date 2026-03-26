@@ -612,16 +612,30 @@
                         <label class="fs-3 fw-bold text-gray-700 mb-3 ms-2 text-uppercase d-block">
                             Asal Wilayah
                         </label>
-                        <select class="form-select kiosk-input"
-                                data-control="select2"
-                                name="visitor_wilayah_kode"
-                                id="visitor_wilayah_kode"
-                                required>
-                            <option value=""></option>
-                            @foreach($wilayahOptions as $wilayah)
-                                <option value="{{ $wilayah->kode }}">{{ $wilayah->nama }}</option>
-                            @endforeach
-                        </select>
+                        @if($wilayahOptions->isEmpty())
+                            <div class="alert alert-warning d-flex align-items-center p-5 mb-5">
+                                <i class="ki-duotone ki-information-5 fs-2hx text-warning me-4">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold text-gray-800">Kelurahan/desa belum tersedia</span>
+                                    <span class="text-gray-600">Pastikan admin sudah memilih kabupaten aktif di menu <strong>Setting → Wilayah</strong>.</span>
+                                </div>
+                            </div>
+                        @else
+                            <select class="form-select kiosk-input"
+                                    data-control="select2"
+                                    name="visitor_wilayah_kode"
+                                    id="visitor_wilayah_kode"
+                                    required>
+                                <option value=""></option>
+                                @foreach($wilayahOptions as $wilayah)
+                                    <option value="{{ $wilayah->kode }}">{{ $wilayah->nama }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
 
                     <div class="d-flex align-items-center justify-content-between gap-5">
