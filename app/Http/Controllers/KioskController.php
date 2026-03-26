@@ -2,7 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Queue\CreateQueueTicket;
 use App\Enums\ModuleSession;
+use App\Models\AppSetting;
+use App\Models\Service;
+use App\Models\Wilayah;
+use Carbon\CarbonImmutable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -47,5 +53,53 @@ class KioskController extends Controller
     public function index(): View
     {
         return view('pages.kiosk.index');
+    }
+
+    public function legacy(): View
+    {
+        $services = Service::active()
+            ->where('walk_in_enabled', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        $selectedKabupatenKode = AppSetting::getValue('wilayah.scope.kabupaten_kode');
+        $wilayahOptions = Wilayah::query()
+            ->whereRaw('LENGTH(kode) = 13')
+            ->when($selectedKabupatenKode, function ($query, $kode) {
+                return $query->where('kode', 'like', "{$kode}.%");
+            })
+            ->orderBy('nama')
+            ->get();
+
+        return view('pages.kiosk.legacy', compact('services', 'wilayahOptions'));
+    }
+
+    public function printLegacy(Request $request, CreateQueueTicket $createQueueTicket): JsonResponse
+    {
+        $validated = $request->validate([
+            'service_id' => ['required', 'integer', 'exists:services,id'],
+            'visitor_name' => ['required', 'string', 'min:3', 'max:255'],
+            'visitor_identifier' => ['required', 'string', 'max:50'],
+            'visitor_phone' => ['required', 'string', 'max:20'],
+            'visitor_wilayah_kode' => ['required', 'string', 'exists:wilayah,kode'],
+        ]);
+
+        $ticket = $createQueueTicket->handle([
+            'service_id' => $validated['service_id'],
+            'channel' => 'walk_in_kiosk',
+            'service_date' => CarbonImmutable::today(),
+            'visitor_name' => $validated['visitor_name'],
+            'visitor_identifier' => $validated['visitor_identifier'] ?: null,
+            'visitor_phone' => $validated['visitor_phone'] ?: null,
+            'visitor_wilayah_kode' => $validated['visitor_wilayah_kode'],
+            'notes' => null,
+            'created_by' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'ticket' => $ticket->toArray(),
+        ]);
     }
 }

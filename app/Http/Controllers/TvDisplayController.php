@@ -3,9 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ModuleSession;
+use App\Enums\QueueStatus;
+use App\Models\QueueTicket;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class TvDisplayController extends Controller
@@ -47,5 +52,65 @@ class TvDisplayController extends Controller
     public function index(): View
     {
         return view('pages.tv-display.index');
+    }
+
+    public function legacy(): View
+    {
+        return view('pages.tv-display.legacy');
+    }
+
+    public function apiState(): JsonResponse
+    {
+        try {
+            $currentCalls = QueueTicket::query()
+                ->with(['counter', 'service'])
+                ->where('status', QueueStatus::Called)
+                ->whereDate('service_date', today())
+                ->orderByDesc('called_at')
+                ->limit(6)
+                ->get();
+
+            $recentCalls = QueueTicket::query()
+                ->with(['counter', 'service'])
+                ->whereDate('service_date', today())
+                ->whereNotNull('called_at')
+                ->orderByDesc('called_at')
+                ->limit(4)
+                ->get();
+
+            $videos = Cache::remember('tv-display:videos', 60, function (): array {
+                $files = Storage::disk('public')->files('videos');
+                $allowed = ['mp4', 'webm', 'ogg'];
+
+                return collect($files)
+                    ->filter(fn (string $file): bool => in_array(
+                        strtolower(pathinfo($file, PATHINFO_EXTENSION)),
+                        $allowed,
+                        true,
+                    ))
+                    ->map(fn (string $file): string => asset('storage/'.$file))
+                    ->sort()
+                    ->values()
+                    ->all();
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'currentCalls' => $currentCalls->toArray(),
+                    'recentCalls' => $recentCalls->toArray(),
+                    'videos' => $videos,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'currentCalls' => [],
+                    'recentCalls' => [],
+                    'videos' => [],
+                ],
+            ]);
+        }
     }
 }

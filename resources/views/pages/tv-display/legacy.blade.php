@@ -1,0 +1,506 @@
+@extends('layouts.legacy')
+
+@section('full-screen', true)
+
+@push('styles')
+<style>
+    /* === TV DISPLAY — OPTIMIZED FOR 32" TV === */
+    body {
+        background-color: #0f172a;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .tv-root {
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        padding: 1.5rem;
+        gap: 1.1rem;
+        box-sizing: border-box;
+    }
+
+    /* === Header — biru navy cerah === */
+    .tv-header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%);
+        border-radius: 1.1rem;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid rgba(96,165,250,0.15);
+        box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+        flex-shrink: 0;
+    }
+
+    /* === Body === */
+    .tv-body {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        gap: 1.1rem;
+        min-height: 0;
+    }
+
+    /* Kolom Kiri: Video (62%) */
+    .tv-media-col {
+        width: 62%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tv-video-card {
+        background-color: #1e293b;
+        border-radius: 1.25rem;
+        overflow: hidden;
+        background-size: cover;
+        background-position: center;
+        flex: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .tv-video-card video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .tv-video-overlay {
+        position: relative;
+        z-index: 1;
+        padding: 2.5rem;
+        background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.4) 60%, transparent 100%);
+    }
+
+    /* Kolom Kanan: Antrian (38%) */
+    .tv-queue-col {
+        width: 38%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+    }
+
+    /* Hero Panel: gradient biru mencolok — mudah terbaca dari jauh */
+    .queue-hero {
+        background: linear-gradient(145deg, #1d4ed8 0%, #2563eb 50%, #1e40af 100%);
+        border-radius: 1.25rem;
+        padding: 1.75rem 2rem;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(37,99,235,0.4);
+        flex-shrink: 0;
+    }
+
+    .queue-hero .ticket-number {
+        font-size: clamp(5rem, 10vw, 9.5rem);
+        line-height: 0.9;
+        letter-spacing: -4px;
+        font-weight: 900;
+        color: #ffffff;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .queue-hero .no-call-state {
+        padding: 1.25rem 0;
+        color: rgba(255,255,255,0.4);
+    }
+
+    /* Recent Calls Panel */
+    .queue-recent {
+        background: #1e293b;
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid rgba(255,255,255,0.06);
+        overflow: hidden;
+    }
+
+    .recent-call-item {
+        background: rgba(255,255,255,0.05);
+        border-radius: 0.875rem;
+        padding: 0.9rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid rgba(255,255,255,0.07);
+        transition: opacity 0.5s ease;
+    }
+
+    /* Footer Marquee */
+    .tv-footer {
+        background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%);
+        border-radius: 999px;
+        padding: 0.9rem 2.5rem;
+        flex-shrink: 0;
+        border: 1px solid rgba(96,165,250,0.15);
+        overflow: hidden;
+    }
+
+    /* Marquee */
+    @keyframes tv-marquee {
+        0%   { transform: translateX(100vw); }
+        100% { transform: translateX(-100%); }
+    }
+
+    .marquee-text {
+        display: inline-block;
+        white-space: nowrap;
+        animation: tv-marquee 35s linear infinite;
+    }
+
+    /* Clock */
+    .tv-clock { font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+
+    /* === Animasi panggilan masuk === */
+    @keyframes callIn {
+        0%   { opacity: 0; transform: scale(0.75); }
+        60%  { transform: scale(1.06); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes slideUp {
+        0%   { opacity: 0; transform: translateY(18px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes heroPulse {
+        0%, 100% { box-shadow: 0 8px 32px rgba(37,99,235,0.4); }
+        50%       { box-shadow: 0 8px 48px rgba(37,99,235,0.75), 0 0 0 8px rgba(37,99,235,0.15); }
+    }
+
+    .call-animate    { animation: callIn 0.55s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .slide-up        { animation: slideUp 0.4s ease both; }
+    .hero-pulse-anim { animation: heroPulse 2s ease-in-out infinite; }
+
+    /* Recent call item animasi masuk */
+    .recent-call-item { animation: slideUp 0.35s ease both; }
+
+    /* Video placeholder saat tidak ada video */
+    .tv-video-placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    }
+</style>
+@endpush
+
+@section('content')
+<div class="tv-root">
+
+    {{-- ═══ HEADER ═══ --}}
+    <div class="tv-header">
+        <div class="d-flex align-items-center gap-5">
+            <div class="d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:56px;height:56px;background:rgba(255,255,255,0.06);border-radius:0.875rem;padding:8px;">
+                @if(config('institution.logo_path'))
+                    <img src="{{ Storage::url(config('institution.logo_path')) }}"
+                         alt="Logo"
+                         style="max-height:40px;max-width:40px;object-fit:contain;">
+                @else
+                    <img src="{{ asset('metronic-assets/media/logos/logo-papenajam.webp') }}"
+                         alt="Logo"
+                         style="max-height:40px;max-width:40px;object-fit:contain;">
+                @endif
+            </div>
+            <div>
+                <div class="text-white fw-boldest fs-1 mb-0" style="letter-spacing:-0.5px;line-height:1.2;">
+                    {{ config('institution.name') }}
+                </div>
+                <span class="fw-semibold fs-6 text-uppercase"
+                      style="color:rgba(255,255,255,0.7);letter-spacing:2px;">
+                    Sistem Antrian Digital
+                </span>
+            </div>
+        </div>
+
+        <div class="text-end">
+            <div class="text-white fw-boldest fs-3x mb-0 tv-clock" id="clockDisplay">00:00:00</div>
+            <div class="fw-semibold fs-6 text-uppercase mt-1" style="color:rgba(255,255,255,0.7);" id="dateDisplay">---</div>
+        </div>
+    </div>
+
+    {{-- ═══ BODY ═══ --}}
+    <div class="tv-body">
+
+        {{-- KIRI: Media Player --}}
+        <div class="tv-media-col">
+            <div class="tv-video-card">
+                <video id="tvPlayer" autoplay muted playsinline></video>
+
+                {{-- Placeholder tampil saat tidak ada video --}}
+                <div class="tv-video-placeholder" id="videoPlaceholder">
+                    <i class="ki-duotone ki-screen fs-5hx mb-6" style="color:rgba(255,255,255,0.12);">
+                        <span class="path1"></span><span class="path2"></span>
+                        <span class="path3"></span><span class="path4"></span>
+                    </i>
+                    <div class="fw-bold fs-3 text-uppercase" style="color:rgba(255,255,255,0.2);letter-spacing:2px;">
+                        Informasi Layanan
+                    </div>
+                </div>
+
+                <div class="tv-video-overlay">
+                    <span class="badge badge-light-primary fs-5 fw-bold px-5 py-2 rounded-pill mb-4 d-inline-block text-uppercase">
+                        Informasi Layanan
+                    </span>
+                    <div class="text-white fw-boldest fs-2x mb-1" style="letter-spacing:-0.5px;">
+                        {{ config('institution.name') }}
+                    </div>
+                    <div class="fw-semibold fs-4" style="color:rgba(255,255,255,0.5);">
+                        Budayakan Antre demi Kenyamanan Bersama
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- KANAN: Panel Antrian --}}
+        <div class="tv-queue-col">
+
+            {{-- Hero: Sedang Dipanggil --}}
+            <div class="queue-hero">
+                {{-- Header kartu — label + pulse LIVE badge --}}
+                <div class="d-flex align-items-center justify-content-between mb-5">
+                    <span class="fw-bold fs-6 text-uppercase" style="color:rgba(255,255,255,0.7);letter-spacing:2px;">
+                        Sedang Dipanggil
+                    </span>
+                    <div class="d-flex align-items-center gap-2 pulse pulse-success">
+                        <span class="pulse-ring border-2"></span>
+                        <span class="badge fs-7 fw-bold px-4 py-2 rounded-pill text-uppercase"
+                              style="background:rgba(255,255,255,0.2);color:#fff;">
+                            LIVE
+                        </span>
+                    </div>
+                </div>
+
+                {{-- State: tidak ada panggilan --}}
+                <div id="noCallState" class="no-call-state">
+                    <i class="ki-duotone ki-time fs-3hx mb-3 d-block" style="color:rgba(255,255,255,0.6);">
+                        <span class="path1"></span><span class="path2"></span>
+                    </i>
+                    <div class="fw-bold fs-3 text-uppercase" style="color:rgba(255,255,255,0.7);letter-spacing:1px;">
+                        Menunggu Panggilan
+                    </div>
+                </div>
+
+                {{-- State: ada panggilan --}}
+                <div id="activeCallState" class="d-none">
+                    <div class="ticket-number fw-boldest text-white call-animate" id="activeTicketNumber"></div>
+                    <div class="rounded-pill py-2 px-8 d-inline-block mb-3 slide-up"
+                         style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);">
+                        <span class="text-white fw-boldest fs-2hx" style="letter-spacing:-0.5px;" id="activeCounterName">
+                            LOKET
+                        </span>
+                    </div>
+                    <div class="fw-semibold fs-3 text-uppercase slide-up" style="color:rgba(255,255,255,0.7);" id="activeServiceName">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Recent Calls --}}
+            <div class="queue-recent">
+                <div class="fw-bold fs-5 text-uppercase mb-5"
+                     style="color:rgba(255,255,255,0.55);letter-spacing:2px;">
+                    Panggilan Terakhir
+                </div>
+                <div id="recentCallsContainer" class="d-flex flex-column gap-3">
+                    <div class="recent-call-item justify-content-center">
+                        <span class="fw-semibold fs-5" style="color:rgba(255,255,255,0.6);">
+                            Menunggu data antrian...
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    {{-- ═══ FOOTER MARQUEE ═══ --}}
+    <div class="tv-footer">
+        <div class="overflow-hidden">
+            <div class="marquee-text">
+                <span class="text-white fw-bold fs-2">
+                    &bull;&nbsp; Selamat Datang di {{ config('institution.name') }} &nbsp;&nbsp;&nbsp;
+                    &bull;&nbsp; Ambil Nomor Antrian pada Mesin Kiosk &nbsp;&nbsp;&nbsp;
+                    &bull;&nbsp; Pastikan Anda Membawa Persyaratan yang Diperlukan &nbsp;&nbsp;&nbsp;
+                    &bull;&nbsp; Harap Menunggu dengan Tertib &nbsp;&nbsp;&nbsp;
+                </span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<audio id="ttsAudio" style="display:none;"></audio>
+@endsection
+
+@push('scripts')
+<script>
+    var playlist         = [];
+    var currentVideoIdx  = 0;
+    var tvPlayer         = document.getElementById('tvPlayer');
+    var audioPlayer      = document.getElementById('ttsAudio');
+    var lastAnnouncedId  = null;
+    var fetchErrCount    = 0;
+
+    $(document).ready(function () {
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        fetchState();
+        setInterval(fetchState, 3000);
+
+        tvPlayer.addEventListener('ended', function () {
+            if (playlist.length === 0) { return; }
+            currentVideoIdx = (currentVideoIdx + 1) % playlist.length;
+            playCurrentVideo();
+        });
+
+        audioPlayer.addEventListener('ended', function () {
+            tvPlayer.volume = 1;
+        });
+    });
+
+    function updateClock() {
+        var now = new Date();
+        $('#clockDisplay').text(now.toLocaleTimeString('id-ID', { hour12: false }));
+        $('#dateDisplay').text(now.toLocaleDateString('id-ID', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        }));
+    }
+
+    function playCurrentVideo() {
+        if (playlist.length === 0) { return; }
+        tvPlayer.src = playlist[currentVideoIdx];
+        tvPlayer.play().catch(function () {
+            /* Autoplay diblokir browser — menunggu interaksi pengguna */
+        });
+    }
+
+    function fetchState() {
+        $.ajax({
+            url: '{{ route("tv-display.legacy.api") }}',
+            type: 'GET',
+            timeout: 5000,
+            success: function (response) {
+                fetchErrCount = 0;
+                if (response.success) { updateUI(response.data); }
+            },
+            error: function () {
+                fetchErrCount++;
+                if (fetchErrCount >= 5) {
+                    console.warn('TV Display: Koneksi ke server bermasalah (' + fetchErrCount + 'x gagal).');
+                }
+            }
+        });
+    }
+
+    function updateUI(data) {
+        /* Inisialisasi playlist video (hanya sekali) */
+        if (playlist.length === 0 && data.videos && data.videos.length > 0) {
+            playlist = data.videos;
+            playCurrentVideo();
+            $('#videoPlaceholder').hide();
+        }
+
+        /* Update panggilan aktif */
+        if (data.currentCalls && data.currentCalls.length > 0) {
+            var active = data.currentCalls[0];
+
+            $('#noCallState').addClass('d-none');
+            $('#activeCallState').removeClass('d-none');
+            /* Re-trigger animasi masuk dengan replace elemen */
+            $('#activeTicketNumber').text(active.ticket_number)
+                .removeClass('call-animate').width()
+                .addClass('call-animate');
+            $('#activeCounterName').text(active.counter ? active.counter.name.toUpperCase() : 'LOKET');
+            $('#activeServiceName').text(active.service ? active.service.name : '');
+            /* Aktifkan pulse glow pada hero card */
+            $('.queue-hero').addClass('hero-pulse-anim');
+
+            var callId = active.id + '-' + active.called_at;
+            if (lastAnnouncedId !== callId) {
+                lastAnnouncedId = callId;
+                playAnnouncer(active);
+            }
+        } else {
+            $('#noCallState').removeClass('d-none');
+            $('#activeCallState').addClass('d-none');
+            $('.queue-hero').removeClass('hero-pulse-anim');
+        }
+
+        /* Update daftar panggilan terakhir */
+        if (data.recentCalls && data.recentCalls.length > 0) {
+            var html = '';
+            var skip = (data.currentCalls && data.currentCalls.length > 0 &&
+                        data.recentCalls[0].id === data.currentCalls[0].id) ? 1 : 0;
+
+            for (var i = skip; i < data.recentCalls.length && i < skip + 4; i++) {
+                var call    = data.recentCalls[i];
+                var opacity = Math.max(0.25, 1 - ((i - skip) * 0.2));
+                html += renderRecentCallItem(call, opacity);
+            }
+
+            $('#recentCallsContainer').html(html || renderEmptyState());
+        } else {
+            $('#recentCallsContainer').html(renderEmptyState());
+        }
+    }
+
+    function renderRecentCallItem(call, opacity) {
+        var serviceName = call.service ? call.service.name : '';
+        var counterName = call.counter ? call.counter.name : '-';
+        var initial     = call.ticket_number.charAt(0);
+
+        return '<div class="recent-call-item" style="opacity:' + opacity + ';">' +
+            '<div class="d-flex align-items-center gap-4">' +
+                '<div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"' +
+                     ' style="width:46px;height:46px;background:rgba(96,165,250,0.25);">' +
+                    '<span class="fw-boldest fs-4" style="color:#93c5fd;">' + initial + '</span>' +
+                '</div>' +
+                '<div>' +
+                    '<div class="text-white fw-boldest fs-1 ls-n1" style="line-height:1.1;">' +
+                        call.ticket_number +
+                    '</div>' +
+                    '<div class="fw-semibold fs-6 text-uppercase" style="color:rgba(255,255,255,0.7);">' +
+                        serviceName +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="badge badge-light-primary fs-4 fw-boldest px-5 py-2 rounded-pill text-uppercase">' +
+                counterName +
+            '</div>' +
+        '</div>';
+    }
+
+    function renderEmptyState() {
+        return '<div class="recent-call-item justify-content-center">' +
+               '<span class="fw-semibold fs-4" style="color:rgba(255,255,255,0.18);">Belum ada panggilan</span>' +
+               '</div>';
+    }
+
+    function playAnnouncer(call) {
+        var loket    = call.counter ? call.counter.name : 'Loket';
+        var ttsNomor = call.ticket_number
+            .replace(/[^A-Za-z0-9]/g, '')
+            .split('')
+            .map(function (c) { return c === '0' ? 'nol' : c; })
+            .join(', ');
+        var text = 'Nomor antrian, ' + ttsNomor + '. Silakan menuju, ' + loket + '.';
+
+        tvPlayer.volume = 0.2;
+        audioPlayer.src = '{{ route("tv-display.tts.announcement") }}?text=' + encodeURIComponent(text);
+        audioPlayer.play().catch(function () { tvPlayer.volume = 1; });
+    }
+</script>
+@endpush
