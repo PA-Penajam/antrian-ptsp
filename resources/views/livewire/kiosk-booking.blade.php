@@ -6,7 +6,6 @@
         deviceId: '{{ config('services.thermal_printer.device_id', 'local_printer') }}',
         institutionName: '{{ config('institution.name') }}',
     })"
-    x-init="init()"
     x-on:print-ticket.window="printTicket($event.detail)"
     class="flex min-h-screen flex-col justify-between gap-6 p-4 sm:p-6 lg:p-8 {{ $fontSize === 'large' ? 'text-lg' : 'text-base' }}"
 >
@@ -476,9 +475,8 @@
             {{-- Step 4: Ticket Printed --}}
             @if ($step === 4 && $ticket)
                 <div wire:key="kiosk-step-4" class="mx-auto max-w-lg space-y-8"
-                    x-data="{ countdown: 30 }"
+                    x-data
                     x-init="
-                        setInterval(() => { countdown--; if(countdown <= 0) $wire.resetWizard(); }, 1000);
                         $dispatch('print-ticket', {
                             ticketNumber: '{{ $ticket->ticket_number }}',
                             serviceName: '{{ $ticket->service?->name }}',
@@ -555,7 +553,7 @@
                     </div>
 
                     {{-- Footer Actions --}}
-                    <div class="space-y-4">
+                    <div class="space-y-4" x-data="{ countdown: 30 }" x-init="setInterval(() => { countdown--; if(countdown <= 0) $wire.resetWizard(); }, 1000)">
                         <div class="flex items-center justify-center gap-2 rounded-2xl bg-slate-100 py-3 text-slate-600">
                             <flux:icon.clock class="size-5" />
                             <span class="text-base">
