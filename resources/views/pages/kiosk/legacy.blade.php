@@ -191,19 +191,20 @@
 
         @php
             $svcColors = ['svc-purple','svc-red','svc-green','svc-yellow','svc-info','svc-primary'];
+            // Font Awesome Solid — kompatibel Android 5 WebView
             $svcIcons  = [
-                'ki-document',
-                'ki-folder',
-                'ki-briefcase',
-                'ki-badge',
-                'ki-clipboard',
-                'ki-bill',
-                'ki-book',
-                'ki-key-square',
-                'ki-scan-barcode',
-                'ki-abstract-26',
-                'ki-category',
-                'ki-file-added',
+                'fa-solid fa-file-lines',
+                'fa-solid fa-folder-open',
+                'fa-solid fa-briefcase',
+                'fa-solid fa-id-card',
+                'fa-solid fa-clipboard',
+                'fa-solid fa-receipt',
+                'fa-solid fa-book',
+                'fa-solid fa-key',
+                'fa-solid fa-gavel',
+                'fa-solid fa-scale-balanced',
+                'fa-solid fa-stamp',
+                'fa-solid fa-barcode',
             ];
         @endphp
 
@@ -220,12 +221,8 @@
                                     {!! str_replace('<svg', '<svg style="width:90px;height:90px;" fill="white"', $service->icon_svg) !!}
                                 </div>
                             @else
-                                <i class="ki-duotone {{ $svcIcons[$idx % count($svcIcons)] }} text-white"
-                                   style="font-size:90px;">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                    <span class="path3"></span>
-                                </i>
+                                <i class="{{ $svcIcons[$idx % count($svcIcons)] }} text-white"
+                                   style="font-size:72px;"></i>
                             @endif
                         </div>
                         <h3 class="text-white fw-boldest fs-2 text-uppercase mb-4 lh-sm" style="letter-spacing:-0.5px;">
