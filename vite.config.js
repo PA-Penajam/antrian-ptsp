@@ -15,6 +15,7 @@ export default defineConfig({
                 'resources/js/tv-display.js',
                 'resources/css/kiosk.css',
                 'resources/js/kiosk.js',
+                'resources/js/thermal-printer.js',
             ],
             refresh: true,
         }),
@@ -23,7 +24,7 @@ export default defineConfig({
         host: true,
         cors: true,
         hmr: {
-            host: '192.168.9.11',
+            host: '127.0.0.1',
         },
         watch: {
             ignored: ['**/storage/framework/views/**'],
