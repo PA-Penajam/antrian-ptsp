@@ -382,6 +382,20 @@
         </div>
     </div>
 
+    {{-- Alert Overlay Fallback (pengganti Swal untuk Android lama) --}}
+    <div id="kioskAlertOverlay"
+         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:28px;padding:48px 40px;max-width:520px;width:90%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.4);">
+            <div style="font-size:52px;margin-bottom:16px;color:#f1416c;">&#9888;</div>
+            <h3 style="margin:0 0 12px;color:#181c32;font-size:1.5rem;font-weight:700;">Terjadi Kesalahan</h3>
+            <p id="kioskAlertMsg" style="color:#a1a5b7;font-size:1.1rem;margin-bottom:32px;"></p>
+            <button onclick="document.getElementById('kioskAlertOverlay').style.display='none';"
+                    style="background:#009ef7;color:#fff;border:none;padding:14px 40px;border-radius:999px;font-size:1.1rem;font-weight:700;cursor:pointer;">
+                Mengerti
+            </button>
+        </div>
+    </div>
+
     {{-- FOOTER --}}
     <div class="py-7 text-center flex-shrink-0">
         <span class="kiosk-footer-text fw-semibold fs-6 text-uppercase" style="letter-spacing:1px;">
@@ -437,14 +451,19 @@
                     }
                 },
                 error: function () {
-                    Swal.fire({
-                        title: 'Oops!',
-                        text: 'Maaf, terjadi kesalahan saat mencetak tiket. Silakan hubungi petugas.',
-                        icon: 'error',
-                        buttonsStyling: false,
-                        confirmButtonText: 'Mengerti',
-                        customClass: { confirmButton: 'btn btn-primary px-10' }
-                    });
+                    var msg = 'Maaf, terjadi kesalahan saat mencetak tiket. Silakan hubungi petugas.';
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Oops!',
+                            text: msg,
+                            icon: 'error',
+                            buttonsStyling: false,
+                            confirmButtonText: 'Mengerti',
+                            customClass: { confirmButton: 'btn btn-primary px-10' }
+                        });
+                    } else {
+                        showKioskAlert(msg);
+                    }
                 },
                 complete: function () {
                     $btn.find('.indicator-label').removeClass('d-none');
@@ -457,10 +476,18 @@
 
     function updateKioskClock() {
         var now = new Date();
-        $('#kioskClock').text(now.toLocaleTimeString('id-ID', { hour12: false }));
-        $('#kioskDate').text(now.toLocaleDateString('id-ID', {
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-        }));
+        var h = ('0' + now.getHours()).slice(-2);
+        var m = ('0' + now.getMinutes()).slice(-2);
+        var s = ('0' + now.getSeconds()).slice(-2);
+        $('#kioskClock').text(h + ':' + m + ':' + s);
+
+        var days   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        var months = ['Januari','Februari','Maret','April','Mei','Juni','Juli',
+                      'Agustus','September','Oktober','November','Desember'];
+        $('#kioskDate').text(
+            days[now.getDay()] + ', ' + now.getDate() + ' ' +
+            months[now.getMonth()] + ' ' + now.getFullYear()
+        );
     }
 
     function showBookingForm(id, name) {
@@ -507,6 +534,12 @@
         if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
     }
 
+    function showKioskAlert(msg) {
+        var el = document.getElementById('kioskAlertOverlay');
+        document.getElementById('kioskAlertMsg').innerText = msg;
+        el.style.display = 'flex';
+    }
+
     function initPrinter() {
         var printerEnabled = {{ config('services.thermal_printer.enabled') ? 'true' : 'false' }};
         if (!printerEnabled || typeof epson === 'undefined') { return; }
@@ -531,11 +564,15 @@
 
     function printTicket(ticketData) {
         if (!eposPrinter) { return; }
-        var institutionName = '{{ config('institution.name') }}';
+        var institutionName = {!! json_encode(config('institution.name')) !!};
+        var now = new Date();
+        var months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+        var dateStr = now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear() + ' ' +
+            ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
         eposPrinter.addTextAlign(eposPrinter.ALIGN_CENTER);
         eposPrinter.addTextSize(1, 1);
         eposPrinter.addText(institutionName + '\n');
-        eposPrinter.addText(new Date().toLocaleString('id-ID') + '\n\n');
+        eposPrinter.addText(dateStr + '\n\n');
         eposPrinter.addTextSize(2, 2);
         eposPrinter.addText((ticketData.service ? ticketData.service.name.toUpperCase() : 'LAYANAN') + '\n\n');
         eposPrinter.addTextSize(4, 4);
