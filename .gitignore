@@ -29,3 +29,4 @@ frontend-public/
 
 # Git worktrees
 .worktrees/
+/public/metronic-assets

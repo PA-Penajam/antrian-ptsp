@@ -67,26 +67,24 @@
 <body id="kt_body" class="bg-body">
     <!--begin::Root-->
     <div class="d-flex flex-column flex-root">
-        <!--begin::Page-->
-        <div class="page d-flex flex-row flex-column-fluid">
-            <!--begin::Wrapper-->
-            <div class="wrapper d-flex flex-column flex-row-fluid" id="kt_wrapper">
-                
-                @hasSection('full-screen')
-                    <!-- Full screen layout without containers -->
-                    @yield('content')
-                @else
+        @hasSection('full-screen')
+            <!-- Full screen layout without containers -->
+            @yield('content')
+        @else
+            <!--begin::Page-->
+            <div class="page d-flex flex-row flex-column-fluid">
+                <!--begin::Wrapper-->
+                <div class="wrapper d-flex flex-column flex-row-fluid" id="kt_wrapper">
                     <!--begin::Container-->
                     <div class="container-xxl d-flex flex-column flex-column-fluid pt-10 pb-10">
                         @yield('content')
                     </div>
                     <!--end::Container-->
-                @endif
-                
+                </div>
+                <!--end::Wrapper-->
             </div>
-            <!--end::Wrapper-->
-        </div>
-        <!--end::Page-->
+            <!--end::Page-->
+        @endif
     </div>
     <!--end::Root-->
 

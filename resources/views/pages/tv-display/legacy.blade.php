@@ -18,7 +18,6 @@
         display: flex;
         flex-direction: column;
         padding: 1.5rem;
-        gap: 1.1rem;
         box-sizing: border-box;
     }
 
@@ -27,6 +26,7 @@
         background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%);
         border-radius: 1.1rem;
         padding: 1rem 2rem;
+        margin-bottom: 1.1rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -40,7 +40,7 @@
         display: flex;
         flex-direction: row;
         flex: 1;
-        gap: 1.1rem;
+        margin-bottom: 1.1rem;
         min-height: 0;
     }
 
@@ -49,6 +49,8 @@
         width: 62%;
         display: flex;
         flex-direction: column;
+        box-sizing: border-box;
+        padding-right: 0.55rem;
     }
 
     .tv-video-card {
@@ -86,7 +88,8 @@
         width: 38%;
         display: flex;
         flex-direction: column;
-        gap: 1.1rem;
+        box-sizing: border-box;
+        padding-left: 0.55rem;
     }
 
     /* Hero Panel: gradient biru mencolok — mudah terbaca dari jauh */
@@ -95,11 +98,13 @@
         border-radius: 1.25rem;
         padding: 1.75rem 2rem;
         text-align: center;
+        margin-bottom: 1.1rem;
         box-shadow: 0 8px 32px rgba(37,99,235,0.4);
         flex-shrink: 0;
     }
 
     .queue-hero .ticket-number {
+        font-size: 8rem;
         font-size: clamp(5rem, 10vw, 9.5rem);
         line-height: 0.9;
         letter-spacing: -4px;
@@ -352,13 +357,15 @@
     var audioPlayer      = document.getElementById('ttsAudio');
     var lastAnnouncedId  = null;
     var fetchErrCount    = 0;
+    var isPageVisible    = true;
+    var fetchStateInterval = null;
 
     $(document).ready(function () {
         updateClock();
         setInterval(updateClock, 1000);
 
         fetchState();
-        setInterval(fetchState, 3000);
+        fetchStateInterval = setInterval(fetchState, 5000); // Mengurangi frekuensi polling dari 3000ms ke 5000ms.
 
         tvPlayer.addEventListener('ended', function () {
             if (playlist.length === 0) { return; }
@@ -369,7 +376,59 @@
         audioPlayer.addEventListener('ended', function () {
             tvPlayer.volume = 1;
         });
+
+        document.addEventListener('visibilitychange', function() {
+            isPageVisible = !document.hidden;
+
+            if (isPageVisible) {
+                // Page became visible - resume operations
+                resumeOperations();
+            } else {
+                // Page hidden - pause operations
+                pauseOperations();
+            }
+        });
     });
+
+    function pauseOperations() {
+        // Pause marquee animation
+        var marquee = document.querySelector('.marquee-text');
+        if (marquee) {
+            marquee.style.animationPlayState = 'paused';
+        }
+
+        // Pause video to save resources
+        if (tvPlayer && !tvPlayer.paused) {
+            tvPlayer.pause();
+        }
+
+        // Clear polling interval (will be restarted on resume)
+        clearInterval(fetchStateInterval);
+        fetchStateInterval = null;
+    }
+
+    function resumeOperations() {
+        // Resume marquee animation
+        var marquee = document.querySelector('.marquee-text');
+        if (marquee) {
+            marquee.style.animationPlayState = 'running';
+        }
+
+        // Resume video if playlist exists
+        if (tvPlayer && playlist.length > 0 && tvPlayer.paused) {
+            tvPlayer.play().catch(function() {
+                // Autoplay blocked, will try on next user interaction
+            });
+        }
+
+        // Immediate state refresh
+        fetchState();
+
+        // Restart polling interval
+        if (!fetchStateInterval) {
+            fetchStateInterval = setInterval(fetchState, 5000);
+        }
+    }
 
     function updateClock() {
         var now = new Date();
@@ -381,6 +440,14 @@
 
     function playCurrentVideo() {
         if (playlist.length === 0) { return; }
+
+        // Cleanup video sebelumnya untuk mencegah memory leak
+        if (tvPlayer.src) {
+            tvPlayer.pause();
+            tvPlayer.removeAttribute('src');
+            tvPlayer.load();
+        }
+
         tvPlayer.src = playlist[currentVideoIdx];
         tvPlayer.play().catch(function () {
             /* Autoplay diblokir browser — menunggu interaksi pengguna */
@@ -439,21 +506,19 @@
             $('.queue-hero').removeClass('hero-pulse-anim');
         }
 
-        /* Update daftar panggilan terakhir */
+        /* Update daftar panggilan terakhir dengan diff-based approach */
         if (data.recentCalls && data.recentCalls.length > 0) {
-            var html = '';
             var skip = (data.currentCalls && data.currentCalls.length > 0 &&
                         data.recentCalls[0].id === data.currentCalls[0].id) ? 1 : 0;
+            var callsToShow = [];
 
             for (var i = skip; i < data.recentCalls.length && i < skip + 4; i++) {
-                var call    = data.recentCalls[i];
-                var opacity = Math.max(0.25, 1 - ((i - skip) * 0.2));
-                html += renderRecentCallItem(call, opacity);
+                callsToShow.push(data.recentCalls[i]);
             }
 
-            $('#recentCallsContainer').html(html || renderEmptyState());
+            updateRecentCallsDOM(callsToShow);
         } else {
-            $('#recentCallsContainer').html(renderEmptyState());
+            updateRecentCallsDOM([]);
         }
     }
 
@@ -462,31 +527,91 @@
         var counterName = call.counter ? call.counter.name : '-';
         var initial     = call.ticket_number.charAt(0);
 
-        return '<div class="recent-call-item" style="opacity:' + opacity + ';">' +
+        return '<div class="recent-call-item" id="call-' + call.id + '" style="opacity:' + opacity + ';">' +
             '<div class="d-flex align-items-center gap-4">' +
                 '<div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"' +
                      ' style="width:46px;height:46px;background:rgba(96,165,250,0.25);">' +
                     '<span class="fw-boldest fs-4" style="color:#93c5fd;">' + initial + '</span>' +
                 '</div>' +
                 '<div>' +
-                    '<div class="text-white fw-boldest fs-1 ls-n1" style="line-height:1.1;">' +
+                    '<div class="ticket-number text-white fw-boldest fs-1 ls-n1" style="line-height:1.1;">' +
                         call.ticket_number +
                     '</div>' +
-                    '<div class="fw-semibold fs-6 text-uppercase" style="color:rgba(255,255,255,0.7);">' +
+                    '<div class="service-name fw-semibold fs-6 text-uppercase" style="color:rgba(255,255,255,0.7);">' +
                         serviceName +
                     '</div>' +
                 '</div>' +
             '</div>' +
-            '<div class="badge badge-light-primary fs-4 fw-boldest px-5 py-2 rounded-pill text-uppercase">' +
+            '<div class="counter-name badge badge-light-primary fs-4 fw-boldest px-5 py-2 rounded-pill text-uppercase">' +
                 counterName +
             '</div>' +
         '</div>';
     }
 
     function renderEmptyState() {
-        return '<div class="recent-call-item justify-content-center">' +
+        return '<div class="recent-call-item justify-content-center empty-state">' +
                '<span class="fw-semibold fs-4" style="color:rgba(255,255,255,0.18);">Belum ada panggilan</span>' +
                '</div>';
+    }
+
+    function updateRecentCallsDOM(newCalls) {
+        var container = document.getElementById('recentCallsContainer');
+        var existingItems = container.children;
+
+        if (newCalls.length === 0) {
+            if (existingItems.length !== 1 || !existingItems[0].classList.contains('empty-state')) {
+                container.innerHTML = renderEmptyState();
+            }
+            return;
+        }
+
+        newCalls.forEach(function (call, index) {
+            var opacity = Math.max(0.25, 1 - (index * 0.2));
+            var expectedId = 'call-' + call.id;
+            var existingItem = existingItems[index];
+
+            if (existingItem && existingItem.id === expectedId) {
+                var currentTicket = existingItem.querySelector('.ticket-number');
+                var currentService = existingItem.querySelector('.service-name');
+                var currentCounter = existingItem.querySelector('.counter-name');
+
+                var serviceName = call.service ? call.service.name : '';
+                var counterName = call.counter ? call.counter.name : '-';
+
+                var hasChanged = (
+                    (currentTicket && currentTicket.textContent.trim() !== call.ticket_number) ||
+                    (currentService && currentService.textContent.trim() !== serviceName) ||
+                    (currentCounter && currentCounter.textContent.trim() !== counterName)
+                );
+
+                if (hasChanged) {
+                    var newHtml = renderRecentCallItem(call, opacity);
+                    var tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = newHtml;
+
+                    var newElement = tempDiv.firstElementChild;
+                    newElement.id = expectedId;
+                    container.replaceChild(newElement, existingItem);
+                }
+            } else {
+                var html = renderRecentCallItem(call, opacity);
+                var wrapper = document.createElement('div');
+                wrapper.innerHTML = html;
+
+                var element = wrapper.firstElementChild;
+                element.id = expectedId;
+
+                if (existingItem) {
+                    container.replaceChild(element, existingItem);
+                } else {
+                    container.appendChild(element);
+                }
+            }
+        });
+
+        while (existingItems.length > newCalls.length) {
+            container.removeChild(existingItems[existingItems.length - 1]);
+        }
     }
 
     function playAnnouncer(call) {
