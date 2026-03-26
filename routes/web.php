@@ -93,6 +93,8 @@ Route::post('/kiosk/login', [KioskController::class, 'login'])->name('kiosk.auth
 Route::post('/kiosk/logout', [KioskController::class, 'logout'])->name('kiosk.logout');
 Route::middleware('module.password:kiosk')->group(function () {
     Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk.index');
+    Route::get('/kiosk-legacy', [KioskController::class, 'legacy'])->name('kiosk.legacy');
+    Route::post('/kiosk-legacy/print', [KioskController::class, 'printLegacy'])->name('kiosk.legacy.print');
 });
 
 // TV Display routes (no auth - uses own password system)
@@ -101,6 +103,8 @@ Route::post('/tv-display/login', [TvDisplayController::class, 'login'])->name('t
 Route::post('/tv-display/logout', [TvDisplayController::class, 'logout'])->name('tv-display.logout');
 Route::middleware('module.password:tv-display')->group(function () {
     Route::get('/tv-display', [TvDisplayController::class, 'index'])->name('tv-display.index');
+    Route::get('/tv-legacy', [TvDisplayController::class, 'legacy'])->name('tv-display.legacy');
+    Route::get('/tv-legacy/api/state', [TvDisplayController::class, 'apiState'])->name('tv-display.legacy.api');
     Route::get('/tv-display/tts/announcement', [TvDisplayTtsController::class, 'announcement'])->name('tv-display.tts.announcement');
     Route::get('/tv-display/tts/audio/{cacheKey}', [TvDisplayTtsController::class, 'audio'])->name('tv-display.tts.audio');
 });
