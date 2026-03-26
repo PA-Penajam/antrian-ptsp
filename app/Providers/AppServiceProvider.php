@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureLivewireScriptRoute();
+
+        // Force HTTPS di environment production (penting untuk Cloudflare Tunnel)
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 
     /**
