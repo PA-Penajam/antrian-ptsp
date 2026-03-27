@@ -918,7 +918,7 @@
         var message = 'Nomor antrian berhasil dibuat, tetapi tiket belum tercetak. Periksa koneksi printer kiosk.';
 
         if (failureCode === 'ERROR_TIMEOUT') {
-            message = 'Nomor antrian berhasil dibuat, tetapi printer kiosk tidak merespons. Periksa IP/port printer dan pastikan sertifikat HTTPS printer Epson sudah dipercaya di perangkat ini.';
+            message = 'Nomor antrian berhasil dibuat, tetapi printer kiosk tidak merespons. Pastikan printer menyala, terhubung ke jaringan, dan port 8008 (HTTP) aktif di pengaturan printer Epson.';
         } else if (failureCode === 'SDK_NOT_READY') {
             message = 'Nomor antrian berhasil dibuat, tetapi modul printer Epson belum termuat di browser kiosk.';
         }
