@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Queue\CheckPrinterConnectivity;
 use App\Actions\Queue\CreateQueueTicket;
 use App\Actions\Queue\PrintTicketToEposPrinter;
 use App\Enums\ModuleSession;
@@ -144,6 +145,28 @@ class KioskController extends Controller
                 'service' => ['name' => $ticket->service?->name],
             ],
             'printed' => $printed,
+        ]);
+    }
+
+    public function printerStatusLegacy(CheckPrinterConnectivity $checker): JsonResponse
+    {
+        $enabled = (bool) config('services.thermal_printer.enabled');
+        $result = $checker->handle();
+
+        if (! $enabled) {
+            $status = 'disabled';
+        } elseif ($result['connected']) {
+            $status = 'connected';
+        } else {
+            $status = 'disconnected';
+        }
+
+        return response()->json([
+            'status' => $status,
+            'ip' => (string) config('services.thermal_printer.ip'),
+            'port' => (int) config('services.thermal_printer.port'),
+            'checked_at' => now()->toIso8601String(),
+            'error' => $result['error'],
         ]);
     }
 }

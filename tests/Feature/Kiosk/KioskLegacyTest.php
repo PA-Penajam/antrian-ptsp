@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Queue\CheckPrinterConnectivity;
 use App\Actions\Queue\PrintTicketToEposPrinter;
 use App\Models\Service;
 use Illuminate\Support\Facades\DB;
@@ -113,4 +114,62 @@ it('printLegacy creates ticket even when printer fails', function () {
     $this->assertDatabaseHas('queue_tickets', [
         'visitor_name' => 'Budi Santoso',
     ]);
+});
+
+// ── Printer Status Endpoint ───────────────────────────────────────────────
+
+it('printer status endpoint requires kiosk session', function () {
+    $this->get(route('kiosk.legacy.printer-status'))
+        ->assertRedirect(route('kiosk.legacy.login'));
+});
+
+it('printer status returns json with required fields when connected', function () {
+    config([
+        'services.thermal_printer.enabled' => true,
+        'services.thermal_printer.ip' => '192.168.10.27',
+        'services.thermal_printer.port' => 8008,
+    ]);
+
+    $this->mock(CheckPrinterConnectivity::class, function (MockInterface $mock) {
+        $mock->shouldReceive('handle')->once()->andReturn(['connected' => true, 'error' => null]);
+    });
+
+    withSession(kioskLegacySession())
+        ->get(route('kiosk.legacy.printer-status'))
+        ->assertOk()
+        ->assertJsonStructure(['status', 'ip', 'port', 'checked_at', 'error'])
+        ->assertJson([
+            'status' => 'connected',
+            'ip' => '192.168.10.27',
+            'port' => 8008,
+            'error' => null,
+        ]);
+});
+
+it('printer status returns disconnected with error when connectivity check fails', function () {
+    config(['services.thermal_printer.enabled' => true]);
+
+    $this->mock(CheckPrinterConnectivity::class, function (MockInterface $mock) {
+        $mock->shouldReceive('handle')->once()->andReturn([
+            'connected' => false,
+            'error' => 'cURL error 28: Operation timed out',
+        ]);
+    });
+
+    withSession(kioskLegacySession())
+        ->get(route('kiosk.legacy.printer-status'))
+        ->assertOk()
+        ->assertJson([
+            'status' => 'disconnected',
+            'error' => 'cURL error 28: Operation timed out',
+        ]);
+});
+
+it('printer status returns disabled when thermal printer config is off', function () {
+    config(['services.thermal_printer.enabled' => false]);
+
+    withSession(kioskLegacySession())
+        ->get(route('kiosk.legacy.printer-status'))
+        ->assertOk()
+        ->assertJson(['status' => 'disabled']);
 });

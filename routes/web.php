@@ -101,6 +101,7 @@ Route::post('/kiosk-legacy/login', [KioskController::class, 'loginLegacy'])->nam
 Route::middleware('module.password:kiosk-legacy')->group(function () {
     Route::get('/kiosk-legacy', [KioskController::class, 'legacy'])->name('kiosk.legacy');
     Route::post('/kiosk-legacy/print', [KioskController::class, 'printLegacy'])->name('kiosk.legacy.print');
+    Route::get('/kiosk-legacy/printer-status', [KioskController::class, 'printerStatusLegacy'])->name('kiosk.legacy.printer-status');
 });
 
 // TV Display routes (no auth - uses own password system)
