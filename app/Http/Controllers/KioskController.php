@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Queue\CreateQueueTicket;
+use App\Actions\Queue\PrintTicketToEposPrinter;
 use App\Enums\ModuleSession;
 use App\Models\AppSetting;
 use App\Models\Service;
@@ -108,8 +109,11 @@ class KioskController extends Controller
         return view('pages.kiosk.legacy', compact('services', 'wilayahOptions'));
     }
 
-    public function printLegacy(Request $request, CreateQueueTicket $createQueueTicket): JsonResponse
-    {
+    public function printLegacy(
+        Request $request,
+        CreateQueueTicket $createQueueTicket,
+        PrintTicketToEposPrinter $printAction,
+    ): JsonResponse {
         $validated = $request->validate([
             'service_id' => ['required', 'integer', 'exists:services,id'],
             'visitor_name' => ['required', 'string', 'min:3', 'max:255'],
@@ -130,9 +134,13 @@ class KioskController extends Controller
             'created_by' => null,
         ]);
 
+        $ticket->load('service');
+        $printed = $printAction->handle($ticket);
+
         return response()->json([
             'success' => true,
             'ticket' => $ticket->toArray(),
+            'printed' => $printed,
         ]);
     }
 }
