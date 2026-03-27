@@ -751,22 +751,27 @@
 
 @push('scripts')
 <script>
-    var eposPrinter   = null;
-    var cdInterval    = null;
-    var cdSeconds     = 20;
-    var CD_TOTAL      = 20;
+    var eposPrinter = null;
+    var printerInitInProgress = false;
+    var printerInitCallbacks = [];
+    var cdInterval = null;
+    var cdSeconds = 20;
+    var CD_TOTAL = 20;
     var kioskAlertOverlay = document.getElementById('kioskAlertOverlay');
     var kioskAlertMsg = document.getElementById('kioskAlertMsg');
     var kioskLegacyConfig = document.getElementById('kioskLegacyConfig');
     var kioskPrintUrl = kioskLegacyConfig ? kioskLegacyConfig.dataset.printUrl : '';
     var kioskPrinterEnabled = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerEnabled === '1' : false;
     var kioskPrinterIp = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerIp : '127.0.0.1';
-    var kioskPrinterPort = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerPort : '8008';
+    var kioskPrinterPort = kioskLegacyConfig ? parseInt(kioskLegacyConfig.dataset.printerPort, 10) : 8008;
     var kioskPrinterDeviceId = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerDeviceId : 'local_printer';
     var kioskInstitutionName = kioskLegacyConfig ? kioskLegacyConfig.dataset.institutionName : '';
 
+    if (isNaN(kioskPrinterPort)) {
+        kioskPrinterPort = 8008;
+    }
+
     $(document).ready(function () {
-        initPrinter();
         updateKioskClock();
         setInterval(updateKioskClock, 1000);
 
@@ -900,80 +905,168 @@
         kioskAlertOverlay.style.display = 'flex';
     }
 
-    function initPrinter() {
-        if (!kioskPrinterEnabled || typeof epson === 'undefined') {
-            console.warn('[Printer] Printer tidak aktif atau SDK belum dimuat.');
+    function flushPrinterCallbacks(isReady, failureCode) {
+        var callbacks = printerInitCallbacks.slice();
+        printerInitCallbacks = [];
+
+        callbacks.forEach(function (callback) {
+            callback(isReady, failureCode || null);
+        });
+    }
+
+    function showPrinterWarning(failureCode) {
+        var message = 'Nomor antrian berhasil dibuat, tetapi tiket belum tercetak. Periksa koneksi printer kiosk.';
+
+        if (failureCode === 'ERROR_TIMEOUT') {
+            message = 'Nomor antrian berhasil dibuat, tetapi printer kiosk tidak merespons. Periksa IP/port printer dan pastikan sertifikat HTTPS printer Epson sudah dipercaya di perangkat ini.';
+        } else if (failureCode === 'SDK_NOT_READY') {
+            message = 'Nomor antrian berhasil dibuat, tetapi modul printer Epson belum termuat di browser kiosk.';
+        }
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Printer Tidak Tersedia',
+                text: message,
+                icon: 'warning',
+                buttonsStyling: false,
+                confirmButtonText: 'Mengerti',
+                customClass: { confirmButton: 'btn btn-primary px-10' }
+            });
+
             return;
         }
-        var ePosDevice = new epson.ePOSDevice();
-        ePosDevice.connect(
-            kioskPrinterIp,
-            kioskPrinterPort,
-            function (data) {
-                if (data === 'OK' || data === 'SSL_CONNECT_OK') {
-                    ePosDevice.createDevice(
-                        kioskPrinterDeviceId,
-                        ePosDevice.DEVICE_TYPE_PRINTER,
-                        { crypto: false, buffer: false },
-                        function (deviceObj, retcode) {
-                            if (retcode === 'OK') {
-                                eposPrinter = deviceObj;
-                                console.log('[Printer] Terhubung ke printer.');
-                            } else {
-                                console.error('[Printer] createDevice gagal:', retcode);
+
+        showKioskAlert(message);
+    }
+
+    function initPrinter(callback) {
+        if (typeof callback === 'function') {
+            printerInitCallbacks.push(callback);
+        }
+
+        if (!kioskPrinterEnabled) {
+            flushPrinterCallbacks(false, 'DISABLED');
+            return;
+        }
+
+        if (eposPrinter) {
+            flushPrinterCallbacks(true, 'OK');
+            return;
+        }
+
+        if (typeof epson === 'undefined' || typeof epson.ePOSDevice !== 'function') {
+            console.warn('[Printer] SDK Epson belum siap dimuat.');
+            flushPrinterCallbacks(false, 'SDK_NOT_READY');
+            return;
+        }
+
+        if (printerInitInProgress) {
+            return;
+        }
+
+        printerInitInProgress = true;
+
+        try {
+            var ePosDevice = new epson.ePOSDevice();
+
+            ePosDevice.connect(
+                kioskPrinterIp,
+                kioskPrinterPort,
+                function (data) {
+                    if (data === 'OK' || data === 'SSL_CONNECT_OK') {
+                        ePosDevice.createDevice(
+                            kioskPrinterDeviceId,
+                            ePosDevice.DEVICE_TYPE_PRINTER,
+                            { crypto: false, buffer: false },
+                            function (deviceObj, retcode) {
+                                printerInitInProgress = false;
+
+                                if (retcode === 'OK') {
+                                    eposPrinter = deviceObj;
+                                    console.log('[Printer] Terhubung ke printer.');
+                                    flushPrinterCallbacks(true, 'OK');
+                                } else {
+                                    console.warn('[Printer] createDevice gagal:', retcode);
+                                    flushPrinterCallbacks(false, retcode || 'CREATE_DEVICE_FAILED');
+                                }
                             }
-                        }
-                    );
-                } else {
-                    console.error('[Printer] Koneksi gagal:', data);
+                        );
+
+                        return;
+                    }
+
+                    printerInitInProgress = false;
+                    console.warn('[Printer] Koneksi gagal:', data);
+                    flushPrinterCallbacks(false, data || 'CONNECT_FAILED');
                 }
-            }
-        );
+            );
+        } catch (error) {
+            printerInitInProgress = false;
+            console.warn('[Printer] Inisialisasi gagal:', error);
+            flushPrinterCallbacks(false, 'INIT_EXCEPTION');
+        }
     }
 
     function doPrintTicket(ticketData) {
+        if (!eposPrinter) {
+            return false;
+        }
+
         var institutionName = kioskInstitutionName;
         var now = new Date();
         var months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
         var dateStr = now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear() + ' ' +
             ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
-        eposPrinter.addTextAlign(eposPrinter.ALIGN_CENTER);
-        eposPrinter.addTextSize(1, 1);
-        eposPrinter.addText(institutionName + '\n');
-        eposPrinter.addText(dateStr + '\n\n');
-        eposPrinter.addTextSize(2, 2);
-        eposPrinter.addText((ticketData.service ? ticketData.service.name.toUpperCase() : 'LAYANAN') + '\n\n');
-        eposPrinter.addTextSize(4, 4);
-        eposPrinter.addTextStyle(false, false, true, eposPrinter.COLOR_1);
-        eposPrinter.addText(ticketData.ticket_number + '\n');
-        eposPrinter.addTextStyle(false, false, false, eposPrinter.COLOR_1);
-        eposPrinter.addTextSize(1, 1);
-        eposPrinter.addText('\nNama: ' + (ticketData.visitor_name || '-') + '\n');
-        eposPrinter.addText('Harap tunggu di ruang tunggu.\n\n\n\n');
-        eposPrinter.addCut(eposPrinter.CUT_FEED);
-        eposPrinter.send();
+
+        try {
+            eposPrinter.addTextAlign(eposPrinter.ALIGN_CENTER);
+            eposPrinter.addTextSize(1, 1);
+            eposPrinter.addText(institutionName + '\n');
+            eposPrinter.addText(dateStr + '\n\n');
+            eposPrinter.addTextSize(2, 2);
+            eposPrinter.addText((ticketData.service ? ticketData.service.name.toUpperCase() : 'LAYANAN') + '\n\n');
+            eposPrinter.addTextSize(4, 4);
+            eposPrinter.addTextStyle(false, false, true, eposPrinter.COLOR_1);
+            eposPrinter.addText(ticketData.ticket_number + '\n');
+            eposPrinter.addTextStyle(false, false, false, eposPrinter.COLOR_1);
+            eposPrinter.addTextSize(1, 1);
+            eposPrinter.addText('\nNama: ' + (ticketData.visitor_name || '-') + '\n');
+            eposPrinter.addText('Harap tunggu di ruang tunggu.\n\n\n\n');
+            eposPrinter.addCut(eposPrinter.CUT_FEED);
+            eposPrinter.send();
+
+            return true;
+        } catch (error) {
+            eposPrinter = null;
+            console.warn('[Printer] Gagal mengirim data cetak:', error);
+
+            return false;
+        }
     }
 
     function printTicket(ticketData) {
-        if (!kioskPrinterEnabled) { return; }
-        if (eposPrinter) {
-            doPrintTicket(ticketData);
+        if (!kioskPrinterEnabled) {
             return;
         }
-        // Printer belum siap — tunggu hingga 3 detik lalu coba cetak
-        console.warn('[Printer] Belum terhubung, menunggu koneksi...');
-        var attempts = 0;
-        var interval = setInterval(function () {
-            attempts++;
-            if (eposPrinter) {
-                clearInterval(interval);
-                console.log('[Printer] Koneksi siap, mencetak tiket...');
-                doPrintTicket(ticketData);
-            } else if (attempts >= 6) {
-                clearInterval(interval);
-                console.error('[Printer] Printer tidak terhubung setelah 3 detik. Cetak dibatalkan.');
+
+        if (eposPrinter) {
+            if (!doPrintTicket(ticketData)) {
+                showPrinterWarning('SEND_FAILED');
             }
-        }, 500);
+
+            return;
+        }
+
+        initPrinter(function (isReady, failureCode) {
+            if (!isReady || !eposPrinter) {
+                showPrinterWarning(failureCode);
+                return;
+            }
+
+            if (!doPrintTicket(ticketData)) {
+                showPrinterWarning('SEND_FAILED');
+            }
+        });
     }
 </script>
 @endpush
