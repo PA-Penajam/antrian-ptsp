@@ -38,7 +38,7 @@ return [
     'thermal_printer' => [
         'enabled' => (bool) env('THERMAL_PRINTER_ENABLED', false),
         'ip' => env('THERMAL_PRINTER_IP', '192.168.1.100'),
-        'port' => (int) env('THERMAL_PRINTER_PORT', 8043),
+        'port' => (int) env('THERMAL_PRINTER_PORT', 8008),
         'device_id' => env('THERMAL_PRINTER_DEVICE_ID', 'local_printer'),
     ],
 
