@@ -454,11 +454,6 @@
 
 @section('content')
 <div id="kioskRoot" class="kiosk-root"
-     data-printer-enabled="{{ config('services.thermal_printer.enabled') ? '1' : '0' }}"
-     data-printer-ip="{{ e(config('services.thermal_printer.ip', '127.0.0.1')) }}"
-     data-printer-port="{{ e(config('services.thermal_printer.port', '8008')) }}"
-     data-printer-device-id="{{ e(config('services.thermal_printer.device_id', 'local_printer')) }}"
-     data-institution-name="{{ e(config('institution.name')) }}"
      style="background-image: url('/metronic-assets/media/auth/bg10.jpeg');">
 <div class="kiosk-overlay">
 
@@ -738,12 +733,7 @@
 
     <div id="kioskLegacyConfig"
          class="d-none"
-         data-print-url="{{ route('kiosk.legacy.print') }}"
-         data-printer-enabled="{{ config('services.thermal_printer.enabled') ? '1' : '0' }}"
-         data-printer-ip="{{ config('services.thermal_printer.ip', '127.0.0.1') }}"
-         data-printer-port="{{ config('services.thermal_printer.port', '8008') }}"
-         data-printer-device-id="{{ config('services.thermal_printer.device_id', 'local_printer') }}"
-         data-institution-name="{{ e(config('institution.name')) }}"></div>
+         data-print-url="{{ route('kiosk.legacy.print') }}"></div>
 
 </div>
 </div>
@@ -751,9 +741,6 @@
 
 @push('scripts')
 <script>
-    var eposPrinter = null;
-    var printerInitInProgress = false;
-    var printerInitCallbacks = [];
     var cdInterval = null;
     var cdSeconds = 20;
     var CD_TOTAL = 20;
@@ -761,15 +748,6 @@
     var kioskAlertMsg = document.getElementById('kioskAlertMsg');
     var kioskLegacyConfig = document.getElementById('kioskLegacyConfig');
     var kioskPrintUrl = kioskLegacyConfig ? kioskLegacyConfig.dataset.printUrl : '';
-    var kioskPrinterEnabled = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerEnabled === '1' : false;
-    var kioskPrinterIp = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerIp : '127.0.0.1';
-    var kioskPrinterPort = kioskLegacyConfig ? parseInt(kioskLegacyConfig.dataset.printerPort, 10) : 8008;
-    var kioskPrinterDeviceId = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerDeviceId : 'local_printer';
-    var kioskInstitutionName = kioskLegacyConfig ? kioskLegacyConfig.dataset.institutionName : '';
-
-    if (isNaN(kioskPrinterPort)) {
-        kioskPrinterPort = 8008;
-    }
 
     $(document).ready(function () {
         updateKioskClock();
@@ -802,7 +780,20 @@
                             res.ticket.service ? res.ticket.service.name.toUpperCase() : ''
                         );
                         switchScreen('screenSuccess');
-                        printTicket(res.ticket);
+                        if (!res.printed) {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    title: 'Printer Tidak Tersedia',
+                                    text: 'Nomor antrian berhasil dibuat, tetapi tiket belum tercetak. Periksa koneksi printer kiosk.',
+                                    icon: 'warning',
+                                    buttonsStyling: false,
+                                    confirmButtonText: 'Mengerti',
+                                    customClass: { confirmButton: 'btn btn-primary px-10' }
+                                });
+                            } else {
+                                showKioskAlert('Nomor antrian berhasil dibuat, tetapi tiket belum tercetak. Periksa koneksi printer kiosk.');
+                            }
+                        }
                         startCountdown();
                     }
                 },
@@ -905,168 +896,5 @@
         kioskAlertOverlay.style.display = 'flex';
     }
 
-    function flushPrinterCallbacks(isReady, failureCode) {
-        var callbacks = printerInitCallbacks.slice();
-        printerInitCallbacks = [];
-
-        callbacks.forEach(function (callback) {
-            callback(isReady, failureCode || null);
-        });
-    }
-
-    function showPrinterWarning(failureCode) {
-        var message = 'Nomor antrian berhasil dibuat, tetapi tiket belum tercetak. Periksa koneksi printer kiosk.';
-
-        if (failureCode === 'ERROR_TIMEOUT') {
-            message = 'Nomor antrian berhasil dibuat, tetapi printer kiosk tidak merespons. Pastikan printer menyala, terhubung ke jaringan, dan port 8008 (HTTP) aktif di pengaturan printer Epson.';
-        } else if (failureCode === 'SDK_NOT_READY') {
-            message = 'Nomor antrian berhasil dibuat, tetapi modul printer Epson belum termuat di browser kiosk.';
-        }
-
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Printer Tidak Tersedia',
-                text: message,
-                icon: 'warning',
-                buttonsStyling: false,
-                confirmButtonText: 'Mengerti',
-                customClass: { confirmButton: 'btn btn-primary px-10' }
-            });
-
-            return;
-        }
-
-        showKioskAlert(message);
-    }
-
-    function initPrinter(callback) {
-        if (typeof callback === 'function') {
-            printerInitCallbacks.push(callback);
-        }
-
-        if (!kioskPrinterEnabled) {
-            flushPrinterCallbacks(false, 'DISABLED');
-            return;
-        }
-
-        if (eposPrinter) {
-            flushPrinterCallbacks(true, 'OK');
-            return;
-        }
-
-        if (typeof epson === 'undefined' || typeof epson.ePOSDevice !== 'function') {
-            console.warn('[Printer] SDK Epson belum siap dimuat.');
-            flushPrinterCallbacks(false, 'SDK_NOT_READY');
-            return;
-        }
-
-        if (printerInitInProgress) {
-            return;
-        }
-
-        printerInitInProgress = true;
-
-        try {
-            var ePosDevice = new epson.ePOSDevice();
-
-            ePosDevice.connect(
-                kioskPrinterIp,
-                kioskPrinterPort,
-                function (data) {
-                    if (data === 'OK' || data === 'SSL_CONNECT_OK') {
-                        ePosDevice.createDevice(
-                            kioskPrinterDeviceId,
-                            ePosDevice.DEVICE_TYPE_PRINTER,
-                            { crypto: false, buffer: false },
-                            function (deviceObj, retcode) {
-                                printerInitInProgress = false;
-
-                                if (retcode === 'OK') {
-                                    eposPrinter = deviceObj;
-                                    console.log('[Printer] Terhubung ke printer.');
-                                    flushPrinterCallbacks(true, 'OK');
-                                } else {
-                                    console.warn('[Printer] createDevice gagal:', retcode);
-                                    flushPrinterCallbacks(false, retcode || 'CREATE_DEVICE_FAILED');
-                                }
-                            }
-                        );
-
-                        return;
-                    }
-
-                    printerInitInProgress = false;
-                    console.warn('[Printer] Koneksi gagal:', data);
-                    flushPrinterCallbacks(false, data || 'CONNECT_FAILED');
-                }
-            );
-        } catch (error) {
-            printerInitInProgress = false;
-            console.warn('[Printer] Inisialisasi gagal:', error);
-            flushPrinterCallbacks(false, 'INIT_EXCEPTION');
-        }
-    }
-
-    function doPrintTicket(ticketData) {
-        if (!eposPrinter) {
-            return false;
-        }
-
-        var institutionName = kioskInstitutionName;
-        var now = new Date();
-        var months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
-        var dateStr = now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear() + ' ' +
-            ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
-
-        try {
-            eposPrinter.addTextAlign(eposPrinter.ALIGN_CENTER);
-            eposPrinter.addTextSize(1, 1);
-            eposPrinter.addText(institutionName + '\n');
-            eposPrinter.addText(dateStr + '\n\n');
-            eposPrinter.addTextSize(2, 2);
-            eposPrinter.addText((ticketData.service ? ticketData.service.name.toUpperCase() : 'LAYANAN') + '\n\n');
-            eposPrinter.addTextSize(4, 4);
-            eposPrinter.addTextStyle(false, false, true, eposPrinter.COLOR_1);
-            eposPrinter.addText(ticketData.ticket_number + '\n');
-            eposPrinter.addTextStyle(false, false, false, eposPrinter.COLOR_1);
-            eposPrinter.addTextSize(1, 1);
-            eposPrinter.addText('\nNama: ' + (ticketData.visitor_name || '-') + '\n');
-            eposPrinter.addText('Harap tunggu di ruang tunggu.\n\n\n\n');
-            eposPrinter.addCut(eposPrinter.CUT_FEED);
-            eposPrinter.send();
-
-            return true;
-        } catch (error) {
-            eposPrinter = null;
-            console.warn('[Printer] Gagal mengirim data cetak:', error);
-
-            return false;
-        }
-    }
-
-    function printTicket(ticketData) {
-        if (!kioskPrinterEnabled) {
-            return;
-        }
-
-        if (eposPrinter) {
-            if (!doPrintTicket(ticketData)) {
-                showPrinterWarning('SEND_FAILED');
-            }
-
-            return;
-        }
-
-        initPrinter(function (isReady, failureCode) {
-            if (!isReady || !eposPrinter) {
-                showPrinterWarning(failureCode);
-                return;
-            }
-
-            if (!doPrintTicket(ticketData)) {
-                showPrinterWarning('SEND_FAILED');
-            }
-        });
-    }
 </script>
 @endpush

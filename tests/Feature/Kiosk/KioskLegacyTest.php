@@ -26,11 +26,11 @@ it('renders kiosk legacy page when authenticated', function () {
 
     $response->assertOk()
         ->assertSee('SILAKAN PILIH LAYANAN')
-        ->assertSee('function printTicket(ticketData)')
-        ->assertSee('function initPrinter(callback)', false);
+        ->assertDontSee('function printTicket(ticketData)', false)
+        ->assertDontSee('function initPrinter(callback)', false);
 });
 
-it('does not auto connect the legacy printer on page load', function () {
+it('renders kiosk legacy page without browser-side printer code', function () {
     Service::factory()->create([
         'is_active' => true,
         'walk_in_enabled' => true,
@@ -40,9 +40,10 @@ it('does not auto connect the legacy printer on page load', function () {
         ->get(route('kiosk.legacy'));
 
     $response->assertOk()
-        ->assertDontSee('initPrinter();', false)
-        ->assertSee('var printerInitInProgress = false;', false)
-        ->assertSee('showPrinterWarning(failureCode);', false);
+        ->assertDontSee('initPrinter', false)
+        ->assertDontSee('eposPrinter', false)
+        ->assertDontSee('printerInitInProgress', false)
+        ->assertSee('res.printed', false);
 });
 
 function kioskLegacyPostData(int $serviceId, string $wilayahKode): array

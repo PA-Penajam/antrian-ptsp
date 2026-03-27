@@ -92,11 +92,6 @@
     <script src="{{ asset('metronic-assets/plugins/global/plugins.bundle.js') }}"></script>
     <script src="{{ asset('metronic-assets/js/scripts.bundle.js') }}"></script>
 
-    {{-- Epson ePOS SDK untuk thermal printing --}}
-    @if (config('services.thermal_printer.enabled'))
-        <script src="{{ asset('vendor/epson/epos-2.27.0.js') }}"></script>
-    @endif
-
     <script>
         // Setup CSRF token for jQuery AJAX
         $.ajaxSetup({
