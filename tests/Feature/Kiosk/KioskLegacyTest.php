@@ -173,3 +173,17 @@ it('printer status returns disabled when thermal printer config is off', functio
         ->assertOk()
         ->assertJson(['status' => 'disabled']);
 });
+
+// ── Status Bar View ───────────────────────────────────────────────────────
+
+it('renders printer status bar with polling js in legacy page', function () {
+    Service::factory()->create(['is_active' => true, 'walk_in_enabled' => true]);
+
+    withSession(kioskLegacySession())
+        ->get(route('kiosk.legacy'))
+        ->assertOk()
+        ->assertSee('printerStatusBar', false)
+        ->assertSee('checkPrinterStatus', false)
+        ->assertSee('showPrinterFlash', false)
+        ->assertSee('printer-status', false);
+});

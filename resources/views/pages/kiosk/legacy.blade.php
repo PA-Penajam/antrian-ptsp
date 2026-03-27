@@ -449,6 +449,72 @@
             font-size: 0.9rem !important;
         }
     }
+
+    /* ═══ PRINTER STATUS BAR ═══ */
+    .printer-status-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 7px 20px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        cursor: pointer;
+        user-select: none;
+        flex-shrink: 0;
+        transition: filter 0.15s;
+    }
+    .printer-status-bar:hover  { filter: brightness(1.2); }
+    .printer-status-bar:active { filter: brightness(0.85); }
+    .printer-status-bar.bar-checking { background: rgba(213,216,61,0.10); color: #c8cb30; }
+    .printer-status-bar.bar-ok       { background: rgba(53,210,154,0.10); color: #35D29A; }
+    .printer-status-bar.bar-err      { background: rgba(249,102,110,0.13); color: #F9666E; }
+
+    .printer-status-bar .ps-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .printer-status-bar.bar-checking .ps-dot { background: #c8cb30; animation: psDotY 0.9s infinite; }
+    .printer-status-bar.bar-ok       .ps-dot { background: #35D29A; animation: psDotG 2s infinite; }
+    .printer-status-bar.bar-err      .ps-dot { background: #F9666E; }
+
+    @keyframes psDotG { 0%,100%{box-shadow:0 0 0 0 rgba(53,210,154,0.5)} 50%{box-shadow:0 0 0 5px rgba(53,210,154,0)} }
+    @keyframes psDotY { 0%,100%{box-shadow:0 0 0 0 rgba(213,216,61,0.5)} 50%{box-shadow:0 0 0 5px rgba(213,216,61,0)} }
+
+    .ps-tap-hint { font-size: 8px; font-weight: 500; opacity: 0.32; margin-left: 4px; }
+
+    .printer-flash {
+        position: fixed;
+        bottom: 46px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(18,18,38,0.97);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-size: 10px;
+        color: #fff;
+        white-space: nowrap;
+        z-index: 9998;
+        display: none;
+        min-width: 260px;
+        pointer-events: none;
+    }
+    .printer-flash .pf-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+    .printer-flash .pf-row:last-child { margin-bottom: 0; }
+    .printer-flash .pf-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.4; min-width: 72px; }
+    .printer-flash .pf-val   { font-weight: 600; font-size: 10px; }
+    .printer-flash .pf-val.ok   { color: #35D29A; }
+    .printer-flash .pf-val.warn { color: #c8cb30; }
+    .printer-flash .pf-val.err  { color: #F9666E; }
+    .printer-flash .pf-hr  { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 5px 0; }
+    .printer-flash .pf-hint { font-size: 8.5px; color: rgba(255,165,90,0.85); }
 </style>
 @endpush
 
@@ -724,6 +790,14 @@
         </div>
     </div>
 
+    {{-- PRINTER STATUS BAR --}}
+    <div id="printerFlash" class="printer-flash"></div>
+    <div id="printerStatusBar" class="printer-status-bar bar-checking" onclick="showPrinterFlash()">
+        <span class="ps-dot"></span>
+        <span id="printerLabel">MEMERIKSA KONEKSI PRINTER...</span>
+        <span class="ps-tap-hint">ketuk untuk detail</span>
+    </div>
+
     {{-- FOOTER --}}
     <div class="py-7 text-center flex-shrink-0">
         <span class="kiosk-footer-text fw-semibold fs-6 text-uppercase" style="letter-spacing:1px;">
@@ -733,7 +807,8 @@
 
     <div id="kioskLegacyConfig"
          class="d-none"
-         data-print-url="{{ route('kiosk.legacy.print') }}"></div>
+         data-print-url="{{ route('kiosk.legacy.print') }}"
+         data-status-url="{{ route('kiosk.legacy.printer-status') }}"></div>
 
 </div>
 </div>
@@ -741,6 +816,10 @@
 
 @push('scripts')
 <script>
+    var printerLastData    = null;
+    var printerNextCheckAt = null;
+    var printerCurrentState = 'checking';
+    var printerFlashTimer  = null;
     var cdInterval = null;
     var cdSeconds = 20;
     var CD_TOTAL = 20;
@@ -748,10 +827,16 @@
     var kioskAlertMsg = document.getElementById('kioskAlertMsg');
     var kioskLegacyConfig = document.getElementById('kioskLegacyConfig');
     var kioskPrintUrl = kioskLegacyConfig ? kioskLegacyConfig.dataset.printUrl : '';
+    var kioskStatusUrl = kioskLegacyConfig ? kioskLegacyConfig.dataset.statusUrl : '';
 
     $(document).ready(function () {
         updateKioskClock();
         setInterval(updateKioskClock, 1000);
+
+        if (kioskStatusUrl) {
+            checkPrinterStatus();
+            setInterval(checkPrinterStatus, 30000);
+        }
 
         if ($.fn.select2) {
             $('#visitor_wilayah_kode').select2({
@@ -820,6 +905,103 @@
             });
         });
     });
+
+    function escPrinterHtml(str) {
+        var d = document.createElement('div');
+        d.appendChild(document.createTextNode(String(str || '')));
+        return d.innerHTML;
+    }
+
+    function checkPrinterStatus() {
+        setPrinterBar('checking');
+        printerNextCheckAt = Date.now() + 30000;
+
+        $.ajax({
+            url: kioskStatusUrl,
+            type: 'GET',
+            success: function (data) {
+                printerLastData = data;
+                printerLastData._checkedAt = new Date();
+                setPrinterBar(data.status === 'connected' ? 'connected' : 'offline');
+            },
+            error: function () {
+                printerLastData = null;
+                setPrinterBar('offline');
+            }
+        });
+    }
+
+    function setPrinterBar(state) {
+        printerCurrentState = state;
+        var bar   = document.getElementById('printerStatusBar');
+        var label = document.getElementById('printerLabel');
+        if (!bar || !label) { return; }
+
+        bar.className = 'printer-status-bar';
+        if (state === 'checking') {
+            bar.classList.add('bar-checking');
+            label.textContent = 'MEMERIKSA KONEKSI PRINTER...';
+        } else if (state === 'connected') {
+            bar.classList.add('bar-ok');
+            label.textContent = 'PRINTER SIAP CETAK';
+        } else {
+            bar.classList.add('bar-err');
+            var isDisabled = printerLastData && printerLastData.status === 'disabled';
+            label.textContent = isDisabled ? 'PRINTER TIDAK AKTIF' : 'PRINTER TIDAK MERESPONS';
+        }
+    }
+
+    function showPrinterFlash() {
+        var flash = document.getElementById('printerFlash');
+        if (!flash) { return; }
+
+        var d = printerLastData;
+        var html = '';
+
+        if (printerCurrentState === 'checking' || !d) {
+            var addr = d ? escPrinterHtml(d.ip + ':' + d.port) : '---';
+            html = '<div class="pf-row"><span class="pf-label">Status</span><span class="pf-val warn">Memeriksa...</span></div>' +
+                   '<div class="pf-row"><span class="pf-label">Alamat</span><span class="pf-val">' + addr + '</span></div>' +
+                   '<div class="pf-row"><span class="pf-label">Timeout</span><span class="pf-val">5 detik</span></div>';
+        } else {
+            var addr      = escPrinterHtml(d.ip + ':' + d.port);
+            var checkedAt = d._checkedAt ? formatPrinterTime(d._checkedAt) : '-';
+            var secsAgo   = d._checkedAt ? Math.round((Date.now() - d._checkedAt.getTime()) / 1000) : 0;
+            var secsLeft  = printerNextCheckAt ? Math.max(0, Math.round((printerNextCheckAt - Date.now()) / 1000)) : '-';
+
+            if (d.status === 'connected') {
+                html = '<div class="pf-row"><span class="pf-label">Status</span><span class="pf-val ok">Terhubung</span></div>' +
+                       '<div class="pf-row"><span class="pf-label">Alamat</span><span class="pf-val">' + addr + '</span></div>' +
+                       '<div class="pf-row"><span class="pf-label">Terakhir cek</span><span class="pf-val">' + escPrinterHtml(checkedAt) + ' (' + secsAgo + 's lalu)</span></div>' +
+                       '<div class="pf-row"><span class="pf-label">Cek berikut</span><span class="pf-val">±' + secsLeft + ' detik lagi</span></div>';
+            } else {
+                var errRow  = d.error ? '<div class="pf-row"><span class="pf-label">Penyebab</span><span class="pf-val err">' + escPrinterHtml(d.error) + '</span></div>' : '';
+                var hint    = d.status !== 'disabled'
+                    ? '<hr class="pf-hr"><div class="pf-hint">Tiket tetap dibuat · Hubungi petugas untuk cetak manual</div>'
+                    : '';
+                var statVal = d.status === 'disabled' ? 'Tidak aktif' : 'Tidak terhubung';
+                html = '<div class="pf-row"><span class="pf-label">Status</span><span class="pf-val err">' + statVal + '</span></div>' +
+                       '<div class="pf-row"><span class="pf-label">Alamat</span><span class="pf-val">' + addr + '</span></div>' +
+                       errRow +
+                       '<div class="pf-row"><span class="pf-label">Terakhir cek</span><span class="pf-val">' + escPrinterHtml(checkedAt) + ' (' + secsAgo + 's lalu)</span></div>' +
+                       hint;
+            }
+        }
+
+        flash.innerHTML = html;
+        flash.style.display = 'block';
+
+        clearTimeout(printerFlashTimer);
+        printerFlashTimer = setTimeout(function () {
+            flash.style.display = 'none';
+        }, 3500);
+    }
+
+    function formatPrinterTime(date) {
+        return ('0' + date.getHours()).slice(-2) + ':' +
+               ('0' + date.getMinutes()).slice(-2) + ':' +
+               ('0' + date.getSeconds()).slice(-2);
+    }
 
     function updateKioskClock() {
         var now = new Date();
