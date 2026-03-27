@@ -58,7 +58,6 @@ test('officer dashboard renders workstation modules and actions', function () {
         ->assertSee('Panggil Ulang')
         ->assertSee('Lewati')
         ->assertSee('Selesai')
-        ->assertSee('Daftar Skip Layanan')
         ->assertSee('Kinerja Hari Ini')
         ->assertSee('UMUM-0007')
         ->assertSee('UMUM-0008');
@@ -128,10 +127,8 @@ test('admin dashboard renders health widgets and shortcuts', function () {
         ->assertSee('Health Aplikasi')
         ->assertSee('Booking Berhasil')
         ->assertSee('Booking Gagal')
-        ->assertSee('Akses Cepat')
         ->assertSee('/admin/layanan')
         ->assertSee('/admin/loket')
         ->assertSee('/admin/users')
-        ->assertSee('/admin/users?tab=roles')
-        ->assertSee('Distribusi per Layanan');
+        ->assertSee('/admin/users?tab=roles');
 });

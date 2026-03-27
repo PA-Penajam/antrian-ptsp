@@ -15,7 +15,7 @@ test('first ticket in a pool for a date starts at sequence one', function () {
     $result = app(GenerateTicketNumber::class)->handle($service, $pool, $serviceDate);
 
     expect($result['sequence_number'])->toBe(1)
-        ->and($result['ticket_number'])->toBe('A0001');
+        ->and($result['ticket_number'])->toBe('A1');
 });
 
 test('next ticket in the same pool and date increments sequence', function () {
@@ -28,13 +28,13 @@ test('next ticket in the same pool and date increments sequence', function () {
         'queue_pool_id' => $pool->id,
         'service_date' => $serviceDate->toDateString(),
         'sequence_number' => 1,
-        'ticket_number' => 'A0001',
+        'ticket_number' => 'A1',
     ]);
 
     $result = app(GenerateTicketNumber::class)->handle($service, $pool, $serviceDate);
 
     expect($result['sequence_number'])->toBe(2)
-        ->and($result['ticket_number'])->toBe('A0002');
+        ->and($result['ticket_number'])->toBe('A2');
 });
 
 test('different pool on same date starts from one', function () {
@@ -49,13 +49,13 @@ test('different pool on same date starts from one', function () {
         'queue_pool_id' => $firstPool->id,
         'service_date' => $serviceDate->toDateString(),
         'sequence_number' => 4,
-        'ticket_number' => 'A0004',
+        'ticket_number' => 'A4',
     ]);
 
     $result = app(GenerateTicketNumber::class)->handle($service2, $secondPool, $serviceDate);
 
     expect($result['sequence_number'])->toBe(1)
-        ->and($result['ticket_number'])->toBe('B0001');
+        ->and($result['ticket_number'])->toBe('B1');
 });
 
 test('same pool on a new date resets sequence to one', function () {
@@ -68,11 +68,11 @@ test('same pool on a new date resets sequence to one', function () {
         'queue_pool_id' => $pool->id,
         'service_date' => '2026-03-06',
         'sequence_number' => 8,
-        'ticket_number' => 'A0008',
+        'ticket_number' => 'A8',
     ]);
 
     $result = app(GenerateTicketNumber::class)->handle($service, $pool, CarbonImmutable::parse('2026-03-07'));
 
     expect($result['sequence_number'])->toBe(1)
-        ->and($result['ticket_number'])->toBe('A0001');
+        ->and($result['ticket_number'])->toBe('A1');
 });

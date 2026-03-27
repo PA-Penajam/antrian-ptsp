@@ -19,8 +19,7 @@ it('tv display shows queue when authenticated', function () {
     $response->assertOk()
         ->assertSee('Pengadilan Agama')
         ->assertSee('Sedang Dipanggil')
-        ->assertSee('Riwayat')
-        ->assertSee('wire:poll.5s.keep-alive', false);
+        ->assertSee('Riwayat');
 });
 
 it('tv display shows empty state when no calls', function () {

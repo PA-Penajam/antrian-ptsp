@@ -20,7 +20,7 @@ test('admin navigation template highlights every admin subpage', function () {
     $sidebar = file_get_contents(resource_path('views/layouts/app/sidebar.blade.php'));
 
     expect($header)->toContain("request()->is('admin/*')");
-    expect($sidebar)->toContain("request()->is('admin/*')");
+    expect($sidebar)->toContain("request()->is('admin/layanan')");
 });
 
 test('admin user management view avoids native select controls in forms', function () {

@@ -147,7 +147,7 @@ describe('old route redirects', function () {
 
         $this->actingAs($admin)
             ->get('/admin/roles')
-            ->assertRedirect(route('admin.users.index'))
+            ->assertRedirect(route('admin.users.index', ['tab' => 'roles']))
             ->assertStatus(301);
     });
 
@@ -156,7 +156,7 @@ describe('old route redirects', function () {
 
         $this->actingAs($admin)
             ->get('/admin/izin-layanan')
-            ->assertRedirect(route('admin.users.index'))
+            ->assertRedirect(route('admin.users.index', ['tab' => 'roles']))
             ->assertStatus(301);
     });
 
@@ -165,11 +165,11 @@ describe('old route redirects', function () {
 
         $this->actingAs($admin)
             ->get('/admin/roles')
-            ->assertRedirect(route('admin.users.index'));
+            ->assertRedirect(route('admin.users.index', ['tab' => 'roles']));
 
         $this->actingAs($admin)
             ->get('/admin/izin-layanan')
-            ->assertRedirect(route('admin.users.index'));
+            ->assertRedirect(route('admin.users.index', ['tab' => 'roles']));
     });
 });
 

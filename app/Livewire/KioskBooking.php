@@ -127,8 +127,8 @@ class KioskBooking extends Component
     {
         $this->validate([
             'visitorName' => ['required', 'string', 'min:3', 'max:255'],
-            'visitorIdentifier' => ['required', 'string', 'max:50'],
-            'visitorPhone' => ['required', 'string', 'max:20'],
+            'visitorIdentifier' => ['nullable', 'string', 'max:50'],
+            'visitorPhone' => ['nullable', 'string', 'max:20'],
             'visitorWilayahKode' => ['required', 'string', $this->wilayahExistsRule()],
         ]);
 
@@ -157,8 +157,8 @@ class KioskBooking extends Component
         $this->validate([
             'selectedServiceId' => ['required', 'integer', 'exists:services,id'],
             'visitorName' => ['required', 'string', 'min:3', 'max:255'],
-            'visitorIdentifier' => ['required', 'string', 'max:50'],
-            'visitorPhone' => ['required', 'string', 'max:20'],
+            'visitorIdentifier' => ['nullable', 'string', 'max:50'],
+            'visitorPhone' => ['nullable', 'string', 'max:20'],
             'visitorWilayahKode' => ['required', 'string', $this->wilayahExistsRule()],
         ]);
 

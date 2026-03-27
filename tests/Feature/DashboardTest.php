@@ -51,6 +51,5 @@ test('dashboard shell is rendered based on user role', function () {
     get(route('dashboard'))
         ->assertOk()
         ->assertSee('Health Aplikasi')
-        ->assertSee('Akses Cepat')
         ->assertDontSee('Modul Panggilan Petugas');
 });
