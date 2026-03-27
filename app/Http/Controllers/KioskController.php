@@ -139,7 +139,10 @@ class KioskController extends Controller
 
         return response()->json([
             'success' => true,
-            'ticket' => $ticket->toArray(),
+            'ticket' => [
+                'ticket_number' => $ticket->ticket_number,
+                'service' => ['name' => $ticket->service?->name],
+            ],
             'printed' => $printed,
         ]);
     }

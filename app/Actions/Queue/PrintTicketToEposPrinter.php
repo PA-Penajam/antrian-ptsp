@@ -20,7 +20,8 @@ class PrintTicketToEposPrinter
         $url = "http://{$ip}:{$port}/cgi-bin/epos/service.cgi?devid={$deviceId}&timeout=10000";
 
         try {
-            $response = Http::withHeaders(['SOAPAction' => '""'])
+            $response = Http::timeout(12)
+                ->withHeaders(['SOAPAction' => '""'])
                 ->withBody($this->buildXml($ticket), 'text/xml; charset=utf-8')
                 ->post($url);
 
