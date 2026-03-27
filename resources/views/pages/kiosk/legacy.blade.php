@@ -901,8 +901,10 @@
     }
 
     function initPrinter() {
-        var printerEnabled = kioskPrinterEnabled;
-        if (!printerEnabled || typeof epson === 'undefined') { return; }
+        if (!kioskPrinterEnabled || typeof epson === 'undefined') {
+            console.warn('[Printer] Printer tidak aktif atau SDK belum dimuat.');
+            return;
+        }
         var ePosDevice = new epson.ePOSDevice();
         ePosDevice.connect(
             kioskPrinterIp,
@@ -914,16 +916,22 @@
                         ePosDevice.DEVICE_TYPE_PRINTER,
                         { crypto: false, buffer: false },
                         function (deviceObj, retcode) {
-                            if (retcode === 'OK') { eposPrinter = deviceObj; }
+                            if (retcode === 'OK') {
+                                eposPrinter = deviceObj;
+                                console.log('[Printer] Terhubung ke printer.');
+                            } else {
+                                console.error('[Printer] createDevice gagal:', retcode);
+                            }
                         }
                     );
+                } else {
+                    console.error('[Printer] Koneksi gagal:', data);
                 }
             }
         );
     }
 
-    function printTicket(ticketData) {
-        if (!eposPrinter) { return; }
+    function doPrintTicket(ticketData) {
         var institutionName = kioskInstitutionName;
         var now = new Date();
         var months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
@@ -944,6 +952,28 @@
         eposPrinter.addText('Harap tunggu di ruang tunggu.\n\n\n\n');
         eposPrinter.addCut(eposPrinter.CUT_FEED);
         eposPrinter.send();
+    }
+
+    function printTicket(ticketData) {
+        if (!kioskPrinterEnabled) { return; }
+        if (eposPrinter) {
+            doPrintTicket(ticketData);
+            return;
+        }
+        // Printer belum siap — tunggu hingga 3 detik lalu coba cetak
+        console.warn('[Printer] Belum terhubung, menunggu koneksi...');
+        var attempts = 0;
+        var interval = setInterval(function () {
+            attempts++;
+            if (eposPrinter) {
+                clearInterval(interval);
+                console.log('[Printer] Koneksi siap, mencetak tiket...');
+                doPrintTicket(ticketData);
+            } else if (attempts >= 6) {
+                clearInterval(interval);
+                console.error('[Printer] Printer tidak terhubung setelah 3 detik. Cetak dibatalkan.');
+            }
+        }, 500);
     }
 </script>
 @endpush
