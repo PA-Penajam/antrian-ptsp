@@ -20,7 +20,7 @@ class GenerateTicketNumber
             ->max('sequence_number');
 
         $nextSequence = ((int) $maxSequence) + 1;
-        $ticketNumber = sprintf('%s%04d', $service->letter_code, $nextSequence);
+        $ticketNumber = $service->letter_code.$nextSequence;
 
         return [
             'sequence_number' => $nextSequence,
