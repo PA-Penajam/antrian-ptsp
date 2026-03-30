@@ -117,7 +117,7 @@
         inset: 0;
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
         display: block;
     }
 
@@ -391,6 +391,11 @@
 
 </div>
 
+{{-- Debug bar TTS — tampil di pojok kiri bawah --}}
+<div id="ttsDebugBar" style="position:fixed;bottom:0;left:0;z-index:9998;background:rgba(0,0,0,0.92);color:#00ff88;font-family:monospace;font-size:11px;padding:8px 12px;display:none;max-width:360px;line-height:1.6;">
+    <div id="ttsDebugContent"></div>
+</div>
+
 {{-- Overlay aktivasi suara — diperlukan untuk memenuhi Autoplay Policy browser --}}
 <div id="soundOverlay" class="sound-overlay">
     <i class="ki-duotone ki-speaker sound-overlay-icon">
@@ -417,6 +422,24 @@
     var pendingAnnouncementText = '';
     var currentAudioObjectUrl = null;
     var playGuardTimer = null;
+    var ttsDebugEnabled = true;
+
+    function ttsDebug(msg) {
+        if (!ttsDebugEnabled) { return; }
+        console.log('[TTS] ' + msg);
+        var bar = document.getElementById('ttsDebugBar');
+        var content = document.getElementById('ttsDebugContent');
+        if (bar && content) {
+            var now = new Date().toLocaleTimeString('id-ID', {hour12: false});
+            content.textContent = '[' + now + '] ' + msg;
+            bar.style.display = 'block';
+        }
+    }
+
+    function ttsDebugHide() {
+        var bar = document.getElementById('ttsDebugBar');
+        if (bar) { bar.style.display = 'none'; }
+    }
 
     $(document).ready(function () {
         updateClock();
@@ -434,17 +457,20 @@
         audioPlayer.addEventListener('playing', function () {
             clearPlayGuard();
             pendingAnnouncementText = '';
+            ttsDebug('audioPlayer: PLAYING event');
         });
 
         audioPlayer.addEventListener('ended', function () {
             clearPlayGuard();
             revokeAudioObjectUrl();
             tvPlayer.volume = 1;
+            ttsDebug('audioPlayer: ENDED event');
         });
 
         audioPlayer.addEventListener('error', function () {
             clearPlayGuard();
             revokeAudioObjectUrl();
+            ttsDebug('audioPlayer: ERROR - ' + (audioPlayer.error ? audioPlayer.error.message : 'unknown'));
 
             if (pendingAnnouncementText !== '') {
                 var fallbackText = pendingAnnouncementText;
@@ -761,9 +787,11 @@
 
         if (!('speechSynthesis' in window)) {
             console.warn('TV Display: speechSynthesis tidak tersedia di browser ini. Fallback TTS dilewati.');
+            ttsDebug('Browser TTS: speechSynthesis TIDAK ADA di browser ini');
             tvPlayer.volume = 1;
             return;
         }
+        ttsDebug('Browser TTS: speak - ' + text.substring(0, 40));
 
         window.speechSynthesis.cancel();
 
@@ -783,6 +811,7 @@
     }
 
     function playMiniMaxAudio(audioUrl, fallbackText) {
+        ttsDebug('MiniMax: fetch audio - ' + audioUrl.substring(0, 60));
         fetch(audioUrl, {
             method: 'GET',
             credentials: 'same-origin',
@@ -790,18 +819,22 @@
         })
             .then(function (response) {
                 if (!response.ok) {
+                    ttsDebug('MiniMax HTTP ERROR: ' + response.status);
                     throw new Error('AUDIO_HTTP_' + response.status);
                 }
-
+                ttsDebug('MiniMax: response OK, fetching blob...');
                 return response.blob();
             })
             .then(function (audioBlob) {
                 if (!audioBlob || audioBlob.size <= 0) {
+                    ttsDebug('MiniMax: blob kosong!');
                     throw new Error('AUDIO_EMPTY_BLOB');
                 }
+                ttsDebug('MiniMax: blob size = ' + (audioBlob.size / 1024).toFixed(1) + ' KB');
 
                 var blobType = (audioBlob.type || '').toLowerCase();
                 if (blobType && blobType.indexOf('audio') === -1 && blobType.indexOf('octet-stream') === -1) {
+                    ttsDebug('MiniMax: blob type SALAH: ' + blobType);
                     throw new Error('AUDIO_INVALID_BLOB_TYPE_' + blobType);
                 }
 
@@ -812,6 +845,7 @@
                 audioPlayer.src = currentAudioObjectUrl;
 
                 playGuardTimer = setTimeout(function () {
+                    ttsDebug('MiniMax: GUARD timeout - fallback browser TTS');
                     if (pendingAnnouncementText !== '') {
                         var guardText = pendingAnnouncementText;
                         pendingAnnouncementText = '';
@@ -819,17 +853,22 @@
                     }
                 }, 2500);
 
+                ttsDebug('MiniMax: playing audio...');
                 var playPromise = audioPlayer.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(function () {
-                        // Bersihkan src agar tidak memicu error event setelah blob dicabut
-                        audioPlayer.src = '';
-                        speakWithBrowserTts(fallbackText);
-                    });
+                    playPromise
+                        .then(function () {
+                            ttsDebug('MiniMax: PLAYING (playing event)');
+                        })
+                        .catch(function (e) {
+                            ttsDebug('MiniMax play() CATCH: ' + e.message);
+                            audioPlayer.src = '';
+                            speakWithBrowserTts(fallbackText);
+                        });
                 }
             })
-            .catch(function () {
-                // Fetch gagal — pastikan src bersih sebelum fallback ke browser TTS
+            .catch(function (e) {
+                ttsDebug('MiniMax CATCH: ' + e.message + ' - fallback browser TTS');
                 audioPlayer.src = '';
                 speakWithBrowserTts(fallbackText);
             });
@@ -844,6 +883,9 @@
             .join(', ');
         var text = 'Nomor antrian, ' + ttsNomor + '. Silakan menuju, ' + loket + '.';
 
+        ttsDebug('PANGGIL: ' + text);
+        ttsDebug('soundActivated: ' + soundActivated + ' | audioPlayer.volume: ' + audioPlayer.volume);
+
         tvPlayer.volume = 0.2;
         pendingAnnouncementText = text;
 
@@ -856,18 +898,17 @@
                 text: text,
             },
             success: function (response) {
+                ttsDebug('AJAX OK | provider: ' + (response ? response.provider : 'null'));
                 if (response && response.provider === 'minimax' && response.audio_url) {
                     playMiniMaxAudio(response.audio_url, text);
-
                     return;
                 }
-
-                // Provider browser: clear pending agar error handler tidak double-trigger
+                ttsDebug('FALLBACK: browser TTS (provider: ' + (response ? response.provider : 'null') + ')');
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(text);
             },
-            error: function () {
-                // AJAX gagal (sesi habis, dll): clear pending sebelum fallback
+            error: function (xhr, status, err) {
+                ttsDebug('AJAX ERROR: ' + status + ' - ' + err);
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(text);
             }
