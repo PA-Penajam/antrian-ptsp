@@ -865,7 +865,7 @@
                     return;
                 }
 
-                ttsDebug('MiniMax[' + mySeq + ']: playing audio... src=' + (audioPlayer.src ? 'ADA' : 'KOSONG'));
+                ttsDebug('MiniMax[' + mySeq + ']: playing audio... src=' + (audioPlayer.src ? 'ADA' : 'KOSONG') + ' | blob=' + (audioBlob ? audioBlob.size + 'B/' + audioBlob.type : 'null'));
                 var playPromise = audioPlayer.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
                     playPromise
@@ -875,7 +875,7 @@
                         })
                         .catch(function (e) {
                             if (mySeq !== ttsSeq) { return; }
-                            ttsDebug('MiniMax[' + mySeq + '] play() CATCH: ' + e.message + ' | src=' + (audioPlayer.src ? 'ADA' : 'KOSONG'));
+                            ttsDebug('MiniMax[' + mySeq + '] play() CATCH: ' + e.message + ' | src=' + (audioPlayer.src ? 'ADA' : 'KOSONG') + ' | err=' + (audioPlayer.error ? audioPlayer.error.code + ':' + audioPlayer.error.message : 'null'));
                             audioPlayer.src = '';
                             audioPlayer.load();
                             pendingAnnouncementText = '';
