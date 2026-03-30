@@ -853,17 +853,19 @@
                     }
                 }, 2500);
 
-                ttsDebug('MiniMax: playing audio...');
+                ttsDebug('MiniMax: playing audio... src=' + (audioPlayer.src ? 'ADA' : 'KOSONG'));
                 var playPromise = audioPlayer.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
                     playPromise
                         .then(function () {
-                            ttsDebug('MiniMax: PLAYING (playing event)');
+                            ttsDebug('MiniMax: PLAYING (promise resolved)');
                         })
                         .catch(function (e) {
-                            ttsDebug('MiniMax play() CATCH: ' + e.message);
+                            ttsDebug('MiniMax play() CATCH: ' + e.message + ' | src=' + (audioPlayer.src ? 'ADA' : 'KOSONG'));
+                            // Jangan panggil speakWithBrowserTts di sini — hanya cleanup
                             audioPlayer.src = '';
-                            speakWithBrowserTts(fallbackText);
+                            audioPlayer.load();
+                            pendingAnnouncementText = '';
                         });
                 }
             })
@@ -885,6 +887,13 @@
 
         ttsDebug('PANGGIL: ' + text);
         ttsDebug('soundActivated: ' + soundActivated + ' | audioPlayer.volume: ' + audioPlayer.volume);
+
+        // Bersihkan state audio lama sebelum mulai announcement baru
+        clearPlayGuard();
+        revokeAudioObjectUrl();
+        audioPlayer.pause();
+        audioPlayer.removeAttribute('src');
+        audioPlayer.load();
 
         tvPlayer.volume = 0.2;
         pendingAnnouncementText = text;
