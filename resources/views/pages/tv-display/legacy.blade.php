@@ -856,15 +856,18 @@
                     var AudioCtx = window.AudioContext || window.webkitAudioContext;
                     var ctx = new AudioCtx();
 
+                    // Perbesar guard timer: minimum 2x durasi TTS預估 (5-6s text = ~5-6s audio)
                     playGuardTimer = setTimeout(function () {
                         if (mySeq !== ttsSeq) { return; }
                         ttsDebug('MiniMax[' + mySeq + ']: GUARD timeout - fallback browser TTS');
+                        try { window._currentAudioSource.stop(); } catch (e) {}
+                        if (window._currentAudioContext && window._currentAudioContext.state !== 'closed') { window._currentAudioContext.close(); }
                         if (pendingAnnouncementText !== '') {
                             var guardText = pendingAnnouncementText;
                             pendingAnnouncementText = '';
                             speakWithBrowserTts(guardText);
                         }
-                    }, 3000);
+                    }, 10000);
 
                     ctx.decodeAudioData(audioBuffer)
                         .then(function (decodedBuffer) {
@@ -915,8 +918,8 @@
         source.onended = function () {
             clearPlayGuard();
             revokeAudioObjectUrl();
-            tvPlayer.volume = 1;
             if (ctx.state !== 'closed') { ctx.close(); }
+            tvPlayer.volume = 1;
             ttsDebug('MiniMax[' + mySeq + ']: AudioContext PLAY ENDED');
         };
 
@@ -924,7 +927,6 @@
             clearPlayGuard();
             ttsDebug('MiniMax[' + mySeq + ']: AudioContext source ERROR: ' + (e.message || 'unknown'));
             if (ctx.state !== 'closed') { ctx.close(); }
-            tvPlayer.volume = 1;
             speakWithBrowserTts(fallbackText);
         };
 
@@ -939,7 +941,7 @@
             var pending = window._pendingFallbackText || '';
             window._pendingFallbackText = null;
             if (pending) { speakWithBrowserTts(pending); }
-        }, 4000);
+        }, 10000);
 
         ttsDebug('MiniMax[' + mySeq + ']: AudioContext playing... duration=' + buffer.duration.toFixed(2) + 's');
         source.start(0);
@@ -956,7 +958,7 @@
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(guardText);
             }
-        }, 3000);
+        }, 10000);
 
         if (mySeq !== ttsSeq) {
             ttsDebug('MiniMax[' + mySeq + ']: ABORT - sequence changed');
@@ -1001,6 +1003,17 @@
         // Bersihkan state audio lama sebelum mulai announcement baru
         clearPlayGuard();
         revokeAudioObjectUrl();
+        
+        // Stop the current playing AudioContext if any
+        if (window._currentAudioSource) {
+            try { window._currentAudioSource.stop(); } catch(e) {}
+            window._currentAudioSource = null;
+        }
+        if (window._currentAudioContext && window._currentAudioContext.state !== 'closed') {
+            try { window._currentAudioContext.close(); } catch(e) {}
+            window._currentAudioContext = null;
+        }
+
         audioPlayer.pause();
         audioPlayer.removeAttribute('src');
         audioPlayer.load();
@@ -1017,6 +1030,10 @@
                 text: text,
             },
             success: function (response) {
+                if (mySeq !== ttsSeq) {
+                    ttsDebug('AJAX OK - but sequence changed ' + mySeq + ' !== ' + ttsSeq + ', aborting');
+                    return;
+                }
                 ttsDebug('AJAX OK | provider: ' + (response ? response.provider : 'null'));
                 if (response && response.provider === 'minimax' && response.audio_url) {
                     playMiniMaxAudio(response.audio_url, text);
