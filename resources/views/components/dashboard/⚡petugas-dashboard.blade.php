@@ -5,6 +5,7 @@ use App\Actions\Queue\CancelTicket;
 use App\Actions\Queue\CompleteTicket;
 use App\Actions\Queue\RecallTicket;
 use App\Actions\Queue\SkipTicket;
+use App\Actions\Queue\RestoreSkippedTicket;
 use App\Enums\QueueStatus;
 use App\Models\Counter;
 use App\Models\QueueTicket;
@@ -142,6 +143,34 @@ new class extends Component
         try {
             app(SkipTicket::class)->handle($ticket, $counter, $this->currentUserId());
             $this->setFeedback("Nomor {$ticket->ticket_number} dilewati.", 'amber');
+        } catch (\Throwable $throwable) {
+            $this->setFeedback($throwable->getMessage(), 'red');
+        }
+
+        $this->refreshBoard();
+    }
+
+    public function restoreSkipped(int $ticketId): void
+    {
+        $counter = $this->resolveSelectedCounter();
+
+        if (! $counter) {
+            $this->setFeedback('Pilih loket aktif terlebih dahulu.', 'amber');
+
+            return;
+        }
+
+        $ticket = QueueTicket::query()->find($ticketId);
+
+        if (! $ticket) {
+            $this->setFeedback('Tiket tidak ditemukan.', 'amber');
+
+            return;
+        }
+
+        try {
+            app(RestoreSkippedTicket::class)->handle($ticket, $counter, $this->currentUserId());
+            $this->setFeedback("Nomor {$ticket->ticket_number} dipanggil ulang.", 'blue');
         } catch (\Throwable $throwable) {
             $this->setFeedback($throwable->getMessage(), 'red');
         }
@@ -654,6 +683,7 @@ new class extends Component
                         <flux:table.columns>
                             <flux:table.column>Tiket</flux:table.column>
                             <flux:table.column>Layanan</flux:table.column>
+                            <flux:table.column />
                         </flux:table.columns>
                         <flux:table.rows>
                             @foreach ($skippedTickets as $ticket)
@@ -662,6 +692,17 @@ new class extends Component
                                         <flux:badge size="sm" color="amber" class="font-mono">{{ $ticket['ticket_number'] }}</flux:badge>
                                     </flux:table.cell>
                                     <flux:table.cell class="text-xs">{{ $ticket['service_name'] }}</flux:table.cell>
+                                    <flux:table.cell>
+                                        <flux:button 
+                                            variant="subtle" 
+                                            size="sm" 
+                                            icon="speaker-wave" 
+                                            wire:click="restoreSkipped({{ $ticket['id'] }})"
+                                            wire:loading.attr="disabled"
+                                            class="h-6 w-8! px-0 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 dark:text-cyan-400 dark:hover:text-cyan-300 dark:hover:bg-cyan-900/50"
+                                            aria-label="Panggil Ulang"
+                                        />
+                                    </flux:table.cell>
                                 </flux:table.row>
                             @endforeach
                         </flux:table.rows>
