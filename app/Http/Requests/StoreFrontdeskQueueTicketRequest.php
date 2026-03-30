@@ -30,6 +30,7 @@ class StoreFrontdeskQueueTicketRequest extends FormRequest
             'visitor_name' => ['required', 'string', 'max:255'],
             'visitor_identifier' => ['nullable', 'string', 'max:64'],
             'visitor_phone' => ['nullable', 'string', 'max:30'],
+            'visit_purpose' => ['nullable', 'string', 'in:pendaftaran,informasi_pengaduan,produk_hukum,ecourt'],
             'notes' => ['nullable', 'string'],
         ];
     }

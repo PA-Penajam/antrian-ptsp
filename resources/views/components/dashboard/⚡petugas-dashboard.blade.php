@@ -7,6 +7,7 @@ use App\Actions\Queue\RecallTicket;
 use App\Actions\Queue\SkipTicket;
 use App\Enums\QueueStatus;
 use App\Models\Counter;
+use App\Models\CounterSession;
 use App\Models\QueueTicket;
 use App\Models\User;
 use App\Support\Dashboard\PetugasStats;
@@ -21,6 +22,8 @@ new class extends Component
     public bool $fullScreen = false;
 
     public ?int $selectedCounterId = null;
+
+    public ?string $sessionAssignmentType = null;
 
     public ?QueueTicket $activeTicket = null;
 
@@ -70,11 +73,47 @@ new class extends Component
     {
         $this->lockedCounterId = $counterId;
         $this->fullScreen = $fullScreen;
+
+        $user = $this->currentUser();
+        if ($user instanceof User && $this->lockedCounterId === null) {
+            $activeSession = CounterSession::query()
+                ->where('user_id', $user->id)
+                ->where('status', 'open')
+                ->whereDate('opened_at', today())
+                ->first();
+
+            if ($activeSession) {
+                $this->selectedCounterId = $activeSession->counter_id;
+                $this->sessionAssignmentType = $activeSession->assigned_by ? 'admin' : 'self';
+            }
+        }
+
         $this->syncBoard($petugasStats);
     }
 
     public function updatedSelectedCounterId(): void
     {
+        $user = $this->currentUser();
+        if ($user instanceof User && $this->lockedCounterId === null && $this->selectedCounterId !== null) {
+            CounterSession::query()
+                ->where('user_id', $user->id)
+                ->where('status', 'open')
+                ->update([
+                    'status' => 'closed',
+                    'closed_at' => now(),
+                ]);
+
+            CounterSession::query()->create([
+                'counter_id' => $this->selectedCounterId,
+                'user_id' => $user->id,
+                'assigned_by' => null,
+                'opened_at' => now(),
+                'status' => 'open',
+            ]);
+
+            $this->sessionAssignmentType = 'self';
+        }
+
         $this->refreshBoard();
     }
 
@@ -486,7 +525,14 @@ new class extends Component
                 </div>
             @else
                 <flux:field>
-                    <flux:label>Pilih Loket Anda</flux:label>
+                    <div class="flex items-center gap-2">
+                        <flux:label>Pilih Loket Anda</flux:label>
+                        @if ($sessionAssignmentType === 'admin')
+                            <flux:badge size="sm" color="violet">Ditunjuk Admin</flux:badge>
+                        @elseif ($sessionAssignmentType === 'self')
+                            <flux:badge size="sm" color="emerald">Dipilih Sendiri</flux:badge>
+                        @endif
+                    </div>
                     <flux:select wire:model.live="selectedCounterId" class="mt-1">
                         @if (count($counters) === 0)
                             <flux:select.option value="">Belum ada loket aktif</flux:select.option>

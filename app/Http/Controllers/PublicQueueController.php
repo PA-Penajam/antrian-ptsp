@@ -47,6 +47,7 @@ class PublicQueueController extends Controller
             'visitor_name' => $validated['visitor_name'],
             'visitor_identifier' => $validated['visitor_identifier'] ?? null,
             'visitor_phone' => $validated['visitor_phone'] ?? null,
+            'visit_purpose' => $validated['visit_purpose'] ?? null,
             'notes' => $validated['notes'] ?? null,
             'created_by' => null,
         ]);

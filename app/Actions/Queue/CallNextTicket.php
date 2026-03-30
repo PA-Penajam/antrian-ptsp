@@ -67,6 +67,7 @@ class CallNextTicket
                     'to_status' => QueueStatus::Called->value,
                     'service_id' => $queueTicket->service_id,
                     'queue_pool_id' => $queueTicket->queue_pool_id,
+                    'visit_purpose' => $queueTicket->visit_purpose,
                 ]
             );
 

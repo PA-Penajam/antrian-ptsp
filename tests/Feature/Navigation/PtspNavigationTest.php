@@ -50,5 +50,5 @@ test('dashboard shows role-aware navigation links', function () {
         ->assertOk()
         ->assertSee('/admin/layanan')
         ->assertSee('Health Aplikasi')
-        ->assertSee('Akses Cepat');
+        ->assertSee('Shortcut Manajemen');
 });

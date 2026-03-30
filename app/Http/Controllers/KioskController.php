@@ -91,6 +91,9 @@ class KioskController extends Controller
             ->orderBy('name')
             ->get();
 
+        $umumService = $services->firstWhere('code', 'UMUM');
+        $umumServiceId = $umumService?->id;
+
         $selectedKabupatenKode = AppSetting::getValue('wilayah.scope.kabupaten_kode');
 
         // Jika kabupaten belum dipilih, return collection kosong
@@ -105,7 +108,7 @@ class KioskController extends Controller
                 ->get();
         }
 
-        return view('pages.kiosk.legacy', compact('services', 'wilayahOptions'));
+        return view('pages.kiosk.legacy', compact('services', 'wilayahOptions', 'umumServiceId'));
     }
 
     public function printLegacy(Request $request, CreateQueueTicket $createQueueTicket): JsonResponse
@@ -116,6 +119,7 @@ class KioskController extends Controller
             'visitor_identifier' => ['required', 'string', 'max:50'],
             'visitor_phone' => ['required', 'string', 'max:20'],
             'visitor_wilayah_kode' => ['required', 'string', 'exists:wilayah,kode'],
+            'visit_purpose' => ['nullable', 'string', 'in:pendaftaran,informasi_pengaduan,produk_hukum,ecourt'],
         ]);
 
         $ticket = $createQueueTicket->handle([
@@ -126,6 +130,7 @@ class KioskController extends Controller
             'visitor_identifier' => $validated['visitor_identifier'] ?: null,
             'visitor_phone' => $validated['visitor_phone'] ?: null,
             'visitor_wilayah_kode' => $validated['visitor_wilayah_kode'],
+            'visit_purpose' => $validated['visit_purpose'] ?? null,
             'notes' => null,
             'created_by' => null,
         ]);

@@ -20,7 +20,7 @@ it('tv display shows queue when authenticated', function () {
         ->assertSee('Pengadilan Agama')
         ->assertSee('Sedang Dipanggil')
         ->assertSee('Riwayat')
-        ->assertSee('wire:poll.5s.keep-alive', false);
+        ->assertSee('echo:public-queue,TicketCalled', false);
 });
 
 it('tv display shows empty state when no calls', function () {

@@ -17,6 +17,7 @@ class Counter extends Model
         'name',
         'code',
         'is_active',
+        'is_fixed',
         'sort_order',
     ];
 
@@ -24,6 +25,7 @@ class Counter extends Model
     {
         return [
             'is_active' => 'boolean',
+            'is_fixed' => 'boolean',
             'sort_order' => 'integer',
         ];
     }

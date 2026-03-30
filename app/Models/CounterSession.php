@@ -14,6 +14,7 @@ class CounterSession extends Model
     protected $fillable = [
         'counter_id',
         'user_id',
+        'assigned_by',
         'opened_at',
         'closed_at',
         'status',
@@ -35,5 +36,10 @@ class CounterSession extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function assigner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_by');
     }
 }

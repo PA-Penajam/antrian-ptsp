@@ -30,10 +30,14 @@ class FrontdeskQueueController extends Controller
             $checkedInTicket = QueueTicket::query()->find((int) $checkedInTicketId);
         }
 
+        $services = Service::active()->get();
+        $umumService = $services->firstWhere('code', 'UMUM');
+
         return view('pages.frontdesk.antrian', [
             'ticket' => $createdTicket,
             'checkedInTicket' => $checkedInTicket,
-            'services' => Service::active()->get(),
+            'services' => $services,
+            'umumServiceId' => $umumService?->id,
         ]);
     }
 
@@ -48,6 +52,7 @@ class FrontdeskQueueController extends Controller
             'visitor_name' => $validated['visitor_name'],
             'visitor_identifier' => $validated['visitor_identifier'] ?? null,
             'visitor_phone' => $validated['visitor_phone'] ?? null,
+            'visit_purpose' => $validated['visit_purpose'] ?? null,
             'notes' => $validated['notes'] ?? null,
             'created_by' => $request->user()?->id,
         ]);
