@@ -844,7 +844,11 @@
                 clearPlayGuard();
                 revokeAudioObjectUrl();
 
-                currentAudioObjectUrl = URL.createObjectURL(audioBlob);
+                // Paksa set MIME type ke audio/mpeg karena response.blob() tidak selalu
+                // preserve Content-Type dari server (banyak browser set ke application/octet-stream).
+                // Browser pakai Blob.type (bukan response header) untuk decode blob: URL.
+                var typedBlob = new Blob([audioBlob], { type: 'audio/mpeg' });
+                currentAudioObjectUrl = URL.createObjectURL(typedBlob);
                 audioPlayer.src = currentAudioObjectUrl;
 
                 playGuardTimer = setTimeout(function () {
@@ -865,7 +869,7 @@
                     return;
                 }
 
-                ttsDebug('MiniMax[' + mySeq + ']: playing audio... src=' + (audioPlayer.src ? 'ADA' : 'KOSONG') + ' | blob=' + (audioBlob ? audioBlob.size + 'B/' + audioBlob.type : 'null'));
+                ttsDebug('MiniMax[' + mySeq + ']: playing audio... src=' + (audioPlayer.src ? 'ADA' : 'KOSONG') + ' | blob size=' + (audioBlob ? (audioBlob.size / 1024).toFixed(1) + 'KB' : 'null') + ' | blob.type=' + (audioBlob ? audioBlob.type : 'null') + ' | typedBlob.type=audio/mpeg');
                 var playPromise = audioPlayer.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
                     playPromise
