@@ -94,8 +94,7 @@ class MiniMaxTtsService
                 'voice_setting' => $this->voiceSetting($voiceId),
                 'audio_setting' => [
                     'sample_rate' => 32000,
-                    'bitrate' => 128000,
-                    'format' => 'mp3',
+                    'format' => 'wav',
                     'channel' => 1,
                 ],
             ]);
