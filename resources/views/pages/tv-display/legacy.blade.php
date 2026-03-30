@@ -825,67 +825,72 @@
                     ttsDebug('MiniMax HTTP ERROR: ' + response.status);
                     throw new Error('AUDIO_HTTP_' + response.status);
                 }
-                ttsDebug('MiniMax[' + mySeq + ']: response OK, fetching blob...');
-                return response.blob();
+                ttsDebug('MiniMax[' + mySeq + ']: response OK, fetching arrayBuffer...');
+                ttsDebug('MiniMax[' + mySeq + ']: Content-Type header = ' + response.headers.get('Content-Type'));
+                return response.arrayBuffer();
             })
-            .then(function (audioBlob) {
-                if (!audioBlob || audioBlob.size <= 0) {
-                    ttsDebug('MiniMax[' + mySeq + ']: blob kosong!');
-                    throw new Error('AUDIO_EMPTY_BLOB');
+            .then(function (audioBuffer) {
+                if (!audioBuffer || audioBuffer.byteLength <= 0) {
+                    ttsDebug('MiniMax[' + mySeq + ']: arrayBuffer kosong!');
+                    throw new Error('AUDIO_EMPTY_BUFFER');
                 }
-                ttsDebug('MiniMax[' + mySeq + ']: blob size = ' + (audioBlob.size / 1024).toFixed(1) + ' KB');
+                ttsDebug('MiniMax[' + mySeq + ']: buffer size = ' + (audioBuffer.byteLength / 1024).toFixed(1) + ' KB');
 
-                var blobType = (audioBlob.type || '').toLowerCase();
-                if (blobType && blobType.indexOf('audio') === -1 && blobType.indexOf('octet-stream') === -1) {
-                    ttsDebug('MiniMax[' + mySeq + ']: blob type SALAH: ' + blobType);
-                    throw new Error('AUDIO_INVALID_BLOB_TYPE_' + blobType);
+                // Cek header binary untuk verify MP3 format
+                var headerView = new DataView(audioBuffer, 0, Math.min(16, audioBuffer.byteLength));
+                var headerHex = [];
+                for (var hi = 0; hi < headerView.byteLength; hi++) {
+                    headerHex.push(headerView.getUint8(hi).toString(16).padStart(2, '0'));
                 }
+                ttsDebug('MiniMax[' + mySeq + ']: audio header hex = ' + headerHex.join(' '));
+                // Validasi: MP3 harus mulai dengan FF (MPEG sync) atau 49 44 33 (ID3 tag)
+                var firstByte = headerView.getUint8(0);
+                var isValidMp3Header = (firstByte === 0xFF) || (headerHex[0] === '49' && headerHex[1] === '44' && headerHex[2] === '33');
+                ttsDebug('MiniMax[' + mySeq + ']: MP3 header valid = ' + isValidMp3Header + ' (firstByte=0x' + firstByte.toString(16) + ')');
 
                 clearPlayGuard();
                 revokeAudioObjectUrl();
 
-                // Paksa set MIME type ke audio/mpeg karena response.blob() tidak selalu
-                // preserve Content-Type dari server (banyak browser set ke application/octet-stream).
-                // Browser pakai Blob.type (bukan response header) untuk decode blob: URL.
-                var typedBlob = new Blob([audioBlob], { type: 'audio/mpeg' });
-                currentAudioObjectUrl = URL.createObjectURL(typedBlob);
-                audioPlayer.src = currentAudioObjectUrl;
+                // Gunakan Web Audio API untuk decode dan play — lebih robust dari <audio> element
+                if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    var ctx = new AudioCtx();
 
-                playGuardTimer = setTimeout(function () {
-                    if (mySeq !== ttsSeq) { return; }
-                    ttsDebug('MiniMax[' + mySeq + ']: GUARD timeout - fallback browser TTS');
-                    if (pendingAnnouncementText !== '') {
-                        var guardText = pendingAnnouncementText;
-                        pendingAnnouncementText = '';
-                        speakWithBrowserTts(guardText);
-                    }
-                }, 2500);
-
-                // Abort jika sequence sudah berubah (panggilan baru sudah masuk)
-                if (mySeq !== ttsSeq) {
-                    ttsDebug('MiniMax[' + mySeq + ']: ABORT - sequence changed to ' + ttsSeq);
-                    audioPlayer.src = '';
-                    audioPlayer.load();
-                    return;
-                }
-
-                ttsDebug('MiniMax[' + mySeq + ']: playing audio... src=' + (audioPlayer.src ? 'ADA' : 'KOSONG') + ' | blob size=' + (audioBlob ? (audioBlob.size / 1024).toFixed(1) + 'KB' : 'null') + ' | blob.type=' + (audioBlob ? audioBlob.type : 'null') + ' | typedBlob.type=audio/mpeg');
-                var playPromise = audioPlayer.play();
-                if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise
-                        .then(function () {
-                            if (mySeq !== ttsSeq) { return; }
-                            ttsDebug('MiniMax[' + mySeq + ']: PLAYING (promise resolved)');
-                        })
-                        .catch(function (e) {
-                            if (mySeq !== ttsSeq) { return; }
-                            ttsDebug('MiniMax[' + mySeq + '] play() CATCH: ' + e.message + ' | err=' + (audioPlayer.error ? audioPlayer.error.code + ':' + audioPlayer.error.message : 'null'));
-                            ttsDebug('MiniMax[' + mySeq + ']: FALLBACK ke browser TTS');
-                            audioPlayer.src = '';
-                            audioPlayer.load();
+                    playGuardTimer = setTimeout(function () {
+                        if (mySeq !== ttsSeq) { return; }
+                        ttsDebug('MiniMax[' + mySeq + ']: GUARD timeout - fallback browser TTS');
+                        if (pendingAnnouncementText !== '') {
+                            var guardText = pendingAnnouncementText;
                             pendingAnnouncementText = '';
-                            speakWithBrowserTts(fallbackText);
+                            speakWithBrowserTts(guardText);
+                        }
+                    }, 3000);
+
+                    ctx.decodeAudioData(audioBuffer)
+                        .then(function (decodedBuffer) {
+                            if (mySeq !== ttsSeq) {
+                                ttsDebug('MiniMax[' + mySeq + ']: ABORT - sequence changed');
+                                ctx.close();
+                                return;
+                            }
+                            ttsDebug('MiniMax[' + mySeq + ']: AudioContext decode SUCCESS, duration=' + decodedBuffer.duration.toFixed(2) + 's, sampleRate=' + decodedBuffer.sampleRate + 'Hz');
+                            playAudioBufferWithContext(ctx, decodedBuffer, fallbackText, mySeq);
+                        })
+                        .catch(function (decodeErr) {
+                            ttsDebug('MiniMax[' + mySeq + ']: AudioContext decode GAGAL: ' + decodeErr.message + ' - coba fallback audio element');
+                            // Fallback ke audio element
+                            var typedBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+                            var blobUrl = URL.createObjectURL(typedBlob);
+                            currentAudioObjectUrl = blobUrl;
+                            playWithAudioElement(blobUrl, fallbackText, mySeq);
                         });
+                } else {
+                    // Tidak ada AudioContext — langsung pakai audio element
+                    ttsDebug('MiniMax[' + mySeq + ']: AudioContext tidak tersedia, pakai audio element');
+                    var typedBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+                    var blobUrl = URL.createObjectURL(typedBlob);
+                    currentAudioObjectUrl = blobUrl;
+                    playWithAudioElement(blobUrl, fallbackText, mySeq);
                 }
             })
             .catch(function (e) {
@@ -894,6 +899,90 @@
                 audioPlayer.src = '';
                 speakWithBrowserTts(fallbackText);
             });
+    }
+
+    function playAudioBufferWithContext(ctx, buffer, fallbackText, mySeq) {
+        clearPlayGuard();
+
+        var source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+
+        // Simpan reference untuk cleanup
+        window._currentAudioSource = source;
+        window._currentAudioContext = ctx;
+
+        source.onended = function () {
+            clearPlayGuard();
+            revokeAudioObjectUrl();
+            tvPlayer.volume = 1;
+            if (ctx.state !== 'closed') { ctx.close(); }
+            ttsDebug('MiniMax[' + mySeq + ']: AudioContext PLAY ENDED');
+        };
+
+        source.onerror = function (e) {
+            clearPlayGuard();
+            ttsDebug('MiniMax[' + mySeq + ']: AudioContext source ERROR: ' + (e.message || 'unknown'));
+            if (ctx.state !== 'closed') { ctx.close(); }
+            tvPlayer.volume = 1;
+            speakWithBrowserTts(fallbackText);
+        };
+
+        // Simpan text agar bisa di-fallback saat guard timeout
+        window._pendingFallbackText = fallbackText;
+
+        playGuardTimer = setTimeout(function () {
+            if (mySeq !== ttsSeq) { return; }
+            ttsDebug('MiniMax[' + mySeq + ']: GUARD timeout - fallback browser TTS');
+            try { source.stop(); } catch (e) {}
+            if (ctx.state !== 'closed') { ctx.close(); }
+            var pending = window._pendingFallbackText || '';
+            window._pendingFallbackText = null;
+            if (pending) { speakWithBrowserTts(pending); }
+        }, 4000);
+
+        ttsDebug('MiniMax[' + mySeq + ']: AudioContext playing... duration=' + buffer.duration.toFixed(2) + 's');
+        source.start(0);
+    }
+
+    function playWithAudioElement(blobUrl, fallbackText, mySeq) {
+        audioPlayer.src = blobUrl;
+
+        playGuardTimer = setTimeout(function () {
+            if (mySeq !== ttsSeq) { return; }
+            ttsDebug('MiniMax[' + mySeq + ']: GUARD timeout audio element - fallback browser TTS');
+            if (pendingAnnouncementText !== '') {
+                var guardText = pendingAnnouncementText;
+                pendingAnnouncementText = '';
+                speakWithBrowserTts(guardText);
+            }
+        }, 3000);
+
+        if (mySeq !== ttsSeq) {
+            ttsDebug('MiniMax[' + mySeq + ']: ABORT - sequence changed');
+            audioPlayer.src = '';
+            audioPlayer.load();
+            return;
+        }
+
+        ttsDebug('MiniMax[' + mySeq + ']: audio element play... src=' + (audioPlayer.src ? 'ADA' : 'KOSONG'));
+        var playPromise = audioPlayer.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise
+                .then(function () {
+                    if (mySeq !== ttsSeq) { return; }
+                    ttsDebug('MiniMax[' + mySeq + ']: PLAYING (promise resolved)');
+                })
+                .catch(function (e) {
+                    if (mySeq !== ttsSeq) { return; }
+                    ttsDebug('MiniMax[' + mySeq + '] play() CATCH: ' + e.message + ' | err=' + (audioPlayer.error ? audioPlayer.error.code + ':' + audioPlayer.error.message : 'null'));
+                    ttsDebug('MiniMax[' + mySeq + ']: FALLBACK ke browser TTS');
+                    audioPlayer.src = '';
+                    audioPlayer.load();
+                    pendingAnnouncementText = '';
+                    speakWithBrowserTts(fallbackText);
+                });
+        }
     }
 
     function playAnnouncer(call) {
