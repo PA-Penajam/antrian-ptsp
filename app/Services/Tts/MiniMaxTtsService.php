@@ -93,7 +93,7 @@ class MiniMaxTtsService
                 'language_boost' => (string) config('services.minimax.language_boost', 'auto'),
                 'voice_setting' => $this->voiceSetting($voiceId),
                 'audio_setting' => [
-                    'sample_rate' => 32000,
+                    'sample_rate' => 16000,
                     'format' => 'wav',
                     'channel' => 1,
                 ],

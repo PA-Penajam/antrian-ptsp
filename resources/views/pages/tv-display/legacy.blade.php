@@ -875,10 +875,12 @@
                         })
                         .catch(function (e) {
                             if (mySeq !== ttsSeq) { return; }
-                            ttsDebug('MiniMax[' + mySeq + '] play() CATCH: ' + e.message + ' | src=' + (audioPlayer.src ? 'ADA' : 'KOSONG') + ' | err=' + (audioPlayer.error ? audioPlayer.error.code + ':' + audioPlayer.error.message : 'null'));
+                            ttsDebug('MiniMax[' + mySeq + '] play() CATCH: ' + e.message + ' | err=' + (audioPlayer.error ? audioPlayer.error.code + ':' + audioPlayer.error.message : 'null'));
+                            ttsDebug('MiniMax[' + mySeq + ']: FALLBACK ke browser TTS');
                             audioPlayer.src = '';
                             audioPlayer.load();
                             pendingAnnouncementText = '';
+                            speakWithBrowserTts(fallbackText);
                         });
                 }
             })
