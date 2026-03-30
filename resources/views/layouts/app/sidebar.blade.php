@@ -18,10 +18,10 @@
             <flux:sidebar.nav>
                 @guest
                 <flux:sidebar.group :heading="__('Layanan Publik')" class="grid">
-                    <flux:sidebar.item icon="ticket" href="/antrian" :current="request()->is('antrian')" wire:navigate>
+                    <flux:sidebar.item icon="ticket" href="/antrian" :current="request()->is('antrian')" wire:navigate.hover>
                         {{ __('Ambil Antrian') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="magnifying-glass" href="/antrian/cek" :current="request()->is('antrian/cek')" wire:navigate>
+                    <flux:sidebar.item icon="magnifying-glass" href="/antrian/cek" :current="request()->is('antrian/cek')" wire:navigate.hover>
                         {{ __('Cek Status Antrian') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
@@ -38,24 +38,24 @@
                 @endphp
 
                 <flux:sidebar.group :heading="__('Manajemen Internal')" expandable class="grid mt-4">
-                    <flux:sidebar.item icon="chart-pie" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                    <flux:sidebar.item icon="chart-pie" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate.hover>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
                     @if ($viewRole === \App\Enums\UserRole::Officer || $viewRole === \App\Enums\UserRole::Admin || (! $isAdmin && auth()->user()?->hasRole(\App\Enums\UserRole::Officer)))
-                        <flux:sidebar.item icon="megaphone" :href="route('workstation')" :current="request()->routeIs('workstation')" wire:navigate>
+                        <flux:sidebar.item icon="megaphone" :href="route('workstation')" :current="request()->routeIs('workstation')" wire:navigate.hover>
                             {{ __('Workstation') }}
                         </flux:sidebar.item>
                     @endif
                     @if ($viewRole === \App\Enums\UserRole::Frontdesk || $viewRole === \App\Enums\UserRole::Admin || (! $isAdmin && auth()->user()?->hasRole(\App\Enums\UserRole::Frontdesk)))
-                        <flux:sidebar.item icon="users" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate>
+                        <flux:sidebar.item icon="users" href="/frontdesk/antrian" :current="request()->is('frontdesk/antrian')" wire:navigate.hover>
                             {{ __('Frontdesk') }}
                         </flux:sidebar.item>
                     @endif
                     @if ($viewRole === \App\Enums\UserRole::Monitor || $viewRole === \App\Enums\UserRole::Admin || (! $isAdmin && auth()->user()?->hasRole(\App\Enums\UserRole::Monitor)))
-                        <flux:sidebar.item icon="chart-bar" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate>
+                        <flux:sidebar.item icon="chart-bar" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate.hover>
                             {{ __('Laporan') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="clock" :href="route('laporan.audit')" :current="request()->routeIs('laporan.audit')" wire:navigate>
+                        <flux:sidebar.item icon="clock" :href="route('laporan.audit')" :current="request()->routeIs('laporan.audit')" wire:navigate.hover>
                             {{ __('Audit Trail') }}
                         </flux:sidebar.item>
                     @endif
@@ -68,13 +68,13 @@
                         :expanded="request()->is('admin/layanan') || request()->is('admin/loket') || request()->is('admin/wilayah')"
                         class="grid mt-4"
                     >
-                        <flux:sidebar.item icon="clipboard-document-list" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate>
+                        <flux:sidebar.item icon="clipboard-document-list" href="/admin/layanan" :current="request()->is('admin/layanan')" wire:navigate.hover>
                             {{ __('Layanan') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="building-office" href="/admin/loket" :current="request()->is('admin/loket')" wire:navigate>
+                        <flux:sidebar.item icon="building-office" href="/admin/loket" :current="request()->is('admin/loket')" wire:navigate.hover>
                             {{ __('Loket') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="map" href="/admin/wilayah" :current="request()->is('admin/wilayah')" wire:navigate>
+                        <flux:sidebar.item icon="map" href="/admin/wilayah" :current="request()->is('admin/wilayah')" wire:navigate.hover>
                             {{ __('Setting Wilayah') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
@@ -85,10 +85,10 @@
                         :expanded="request()->is('admin/users') || request()->is('admin/roles') || request()->is('admin/izin-layanan')"
                         class="grid mt-4"
                     >
-                        <flux:sidebar.item icon="users" href="/admin/users" :current="request()->is('admin/users') && request()->query('tab') !== 'roles'" wire:navigate>
+                        <flux:sidebar.item icon="users" href="/admin/users" :current="request()->is('admin/users') && request()->query('tab') !== 'roles'" wire:navigate.hover>
                             {{ __('Users') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="shield-check" href="/admin/users?tab=roles" :current="request()->query('tab') === 'roles' || request()->is('admin/roles') || request()->is('admin/izin-layanan')" wire:navigate>
+                        <flux:sidebar.item icon="shield-check" href="/admin/users?tab=roles" :current="request()->query('tab') === 'roles' || request()->is('admin/roles') || request()->is('admin/izin-layanan')" wire:navigate.hover>
                             {{ __('Role & Izin') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
@@ -99,10 +99,10 @@
                         :expanded="request()->is('kiosk*') || request()->is('tv-display*')"
                         class="grid mt-4"
                     >
-                        <flux:sidebar.item icon="device-tablet" href="/kiosk/login" :current="request()->is('kiosk*')" wire:navigate>
+                        <flux:sidebar.item icon="device-tablet" href="/kiosk/login" :current="request()->is('kiosk*')" wire:navigate.hover>
                             {{ __('Kiosk') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="tv" href="/tv-display/login" :current="request()->is('tv-display*')" wire:navigate>
+                        <flux:sidebar.item icon="tv" href="/tv-display/login" :current="request()->is('tv-display*')" wire:navigate.hover>
                             {{ __('TV Display') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
