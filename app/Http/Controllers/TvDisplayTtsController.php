@@ -51,11 +51,11 @@ class TvDisplayTtsController extends Controller
         abort_unless(is_string($content) && $content !== '', 404);
 
         return response($content, 200, [
-            'Content-Type' => 'audio/wav',
+            'Content-Type' => 'audio/mpeg',
             'Cache-Control' => 'public, max-age=31536000, immutable',
             'Content-Length' => (string) strlen($content),
             'Accept-Ranges' => 'bytes',
-            'Content-Disposition' => 'inline; filename="announcement-'.$cacheKey.'.wav"',
+            'Content-Disposition' => 'inline; filename="announcement-'.$cacheKey.'.mp3"',
         ]);
     }
 }
