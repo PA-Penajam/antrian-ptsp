@@ -391,8 +391,9 @@
 
 </div>
 
-{{-- Debug bar TTS — tampil di pojok kiri bawah --}}
-<div id="ttsDebugBar" style="position:fixed;bottom:0;left:0;z-index:9998;background:rgba(0,0,0,0.92);color:#00ff88;font-family:monospace;font-size:11px;padding:8px 12px;display:none;max-width:360px;line-height:1.6;">
+{{-- Debug bar TTS — selalu tampil di pojok kiri atas, menimpa semua konten --}}
+<div id="ttsDebugBar" style="position:fixed;top:0;left:0;z-index:99999;background:rgba(0,0,0,0.95);border:2px solid #ff6600;color:#ffffff;font-family:monospace;font-size:14px;padding:12px 16px;display:block;min-width:400px;max-width:600px;max-height:300px;overflow-y:auto;line-height:1.8;">
+    <div style="color:#ff6600;font-weight:bold;margin-bottom:6px;">[DEBUG TTS]</div>
     <div id="ttsDebugContent"></div>
 </div>
 
@@ -428,18 +429,18 @@
     function ttsDebug(msg) {
         if (!ttsDebugEnabled) { return; }
         console.log('[TTS] ' + msg);
-        var bar = document.getElementById('ttsDebugBar');
         var content = document.getElementById('ttsDebugContent');
-        if (bar && content) {
+        if (content) {
             var now = new Date().toLocaleTimeString('id-ID', {hour12: false});
-            content.textContent = '[' + now + '] ' + msg;
-            bar.style.display = 'block';
+            var line = document.createElement('div');
+            line.textContent = '[' + now + '] ' + msg;
+            content.appendChild(line);
+            content.scrollTop = content.scrollHeight;
         }
     }
 
     function ttsDebugHide() {
-        var bar = document.getElementById('ttsDebugBar');
-        if (bar) { bar.style.display = 'none'; }
+        // Debug bar sekarang selalu tampil, jadi tidak perlu hide
     }
 
     $(document).ready(function () {
