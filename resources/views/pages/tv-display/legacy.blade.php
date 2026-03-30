@@ -12,6 +12,51 @@
         overflow: hidden;
     }
 
+    /* === Sound Activation Overlay === */
+    .sound-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.88);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: opacity 0.4s ease;
+    }
+
+    .sound-overlay.fade-out {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .sound-overlay-icon {
+        font-size: 5rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 1.5rem;
+        animation: pulse-icon 2s ease-in-out infinite;
+    }
+
+    .sound-overlay-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .sound-overlay-subtitle {
+        font-size: 1.3rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    @keyframes pulse-icon {
+        0%, 100% { transform: scale(1); opacity: 0.7; }
+        50% { transform: scale(1.12); opacity: 1; }
+    }
+
     .tv-root {
         height: 100vh;
         width: 100vw;
@@ -346,6 +391,16 @@
 
 </div>
 
+{{-- Overlay aktivasi suara — diperlukan untuk memenuhi Autoplay Policy browser --}}
+<div id="soundOverlay" class="sound-overlay">
+    <i class="ki-duotone ki-speaker sound-overlay-icon">
+        <span class="path1"></span>
+        <span class="path2"></span>
+    </i>
+    <div class="sound-overlay-title">Tekan Tombol Apa Saja</div>
+    <div class="sound-overlay-subtitle">untuk Mengaktifkan Suara</div>
+</div>
+
 <audio id="ttsAudio" style="display:none;"></audio>
 @endsection
 
@@ -401,8 +456,8 @@
             tvPlayer.volume = 1;
         });
 
-        document.addEventListener('click', unlockAudioIfNeeded, { once: true });
-        document.addEventListener('keydown', unlockAudioIfNeeded, { once: true });
+        document.addEventListener('click', activateSound);
+        document.addEventListener('keydown', activateSound);
 
         document.addEventListener('visibilitychange', function() {
             isPageVisible = !document.hidden;
@@ -434,10 +489,44 @@
         fetchStateInterval = null;
     }
 
-    function unlockAudioIfNeeded() {
-        var unlockAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
-        unlockAudio.volume = 0;
-        unlockAudio.play().catch(function () {});
+    var soundActivated = false;
+
+    function activateSound() {
+        if (soundActivated) { return; }
+        soundActivated = true;
+
+        // Hapus event listeners
+        document.removeEventListener('click', activateSound);
+        document.removeEventListener('keydown', activateSound);
+
+        // Unmute video player
+        tvPlayer.muted = false;
+
+        // Unlock audio element yang sebenarnya dengan silent clip
+        audioPlayer.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+        audioPlayer.volume = 0;
+        var unlockPromise = audioPlayer.play();
+        if (unlockPromise && typeof unlockPromise.catch === 'function') {
+            unlockPromise
+                .then(function () {
+                    audioPlayer.pause();
+                    audioPlayer.src = '';
+                    audioPlayer.volume = 1;
+                })
+                .catch(function () {
+                    audioPlayer.src = '';
+                    audioPlayer.volume = 1;
+                });
+        }
+
+        // Fade-out dan hapus overlay
+        var overlay = document.getElementById('soundOverlay');
+        if (overlay) {
+            overlay.classList.add('fade-out');
+            setTimeout(function () {
+                overlay.parentNode.removeChild(overlay);
+            }, 400);
+        }
     }
 
     function clearPlayGuard() {
@@ -671,6 +760,7 @@
         revokeAudioObjectUrl();
 
         if (!('speechSynthesis' in window)) {
+            console.warn('TV Display: speechSynthesis tidak tersedia di browser ini. Fallback TTS dilewati.');
             tvPlayer.volume = 1;
             return;
         }
