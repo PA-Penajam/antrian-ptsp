@@ -58,7 +58,7 @@ class PrintTicketToEposPrinter
                   <feed line="1"/>
                   <text align="center" width="3" height="3" bold="true">{$ticketNumber}&#10;</text>
                   <feed line="1"/>
-                  <text>------------------------------------------&#10;</text>
+                  <text width="1" height="1" bold="false">------------------------------------------&#10;</text>
                   <text align="left">Layanan : {$serviceName}&#10;</text>
                   <text>Nama    : {$visitorName}&#10;</text>
                   <text>Tanggal : {$serviceDate}&#10;</text>
