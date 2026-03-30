@@ -543,7 +543,7 @@ new class extends Component
             <flux:button
                 variant="ghost"
                 icon="forward"
-                x-on:click="$dispatch('open-modal', 'confirm-skip-ticket')"
+                x-on:click="Flux.modal('confirm-skip-ticket').show()"
                 :disabled="! $this->hasActiveTicket"
                 wire:loading.attr="disabled"
                 class="w-full text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
@@ -564,7 +564,7 @@ new class extends Component
             <flux:button
                 variant="ghost"
                 icon="x-circle"
-                x-on:click="$dispatch('open-modal', 'confirm-cancel-ticket')"
+                x-on:click="Flux.modal('confirm-cancel-ticket').show()"
                 :disabled="! $this->hasActiveTicket"
                 wire:loading.attr="disabled"
                 class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-950/30 dark:hover:text-red-400"
@@ -678,7 +678,7 @@ new class extends Component
                 Tiket aktif <strong>{{ $activeTicket?->ticket_number ?? '-' }}</strong> akan dipindahkan ke status skip.
             </flux:text>
             <div class="flex justify-end gap-2">
-                <flux:button type="button" variant="ghost" x-on:click="$dispatch('close-modal', 'confirm-skip-ticket')">
+                <flux:button type="button" variant="ghost" x-on:click="Flux.modal('confirm-skip-ticket').close()">
                     Batal
                 </flux:button>
                 <flux:button
@@ -686,7 +686,7 @@ new class extends Component
                     variant="filled"
                     color="amber"
                     wire:click="skip"
-                    x-on:click="$dispatch('close-modal', 'confirm-skip-ticket')"
+                    x-on:click="Flux.modal('confirm-skip-ticket').close()"
                     wire:loading.attr="disabled"
                 >
                     Ya, Lewati
@@ -702,7 +702,7 @@ new class extends Component
                 Tiket aktif <strong>{{ $activeTicket?->ticket_number ?? '-' }}</strong> akan dibatalkan dari antrean.
             </flux:text>
             <div class="flex justify-end gap-2">
-                <flux:button type="button" variant="ghost" x-on:click="$dispatch('close-modal', 'confirm-cancel-ticket')">
+                <flux:button type="button" variant="ghost" x-on:click="Flux.modal('confirm-cancel-ticket').close()">
                     Batal
                 </flux:button>
                 <flux:button
@@ -710,7 +710,7 @@ new class extends Component
                     variant="filled"
                     color="red"
                     wire:click="cancel"
-                    x-on:click="$dispatch('close-modal', 'confirm-cancel-ticket')"
+                    x-on:click="Flux.modal('confirm-cancel-ticket').close()"
                     wire:loading.attr="disabled"
                 >
                     Ya, Batalkan

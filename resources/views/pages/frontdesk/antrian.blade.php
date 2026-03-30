@@ -170,7 +170,7 @@
                             type="button"
                             variant="ghost"
                             x-data
-                            x-on:click="window.frontdeskScanner?.stop(); $dispatch('close-modal', 'frontdesk-scan-ticket')"
+                            x-on:click="window.frontdeskScanner?.stop(); Flux.modal('frontdesk-scan-ticket').close()"
                         >
                             Tutup
                         </flux:button>
@@ -192,10 +192,14 @@
             const modalName = 'frontdesk-scan-ticket';
 
             const dispatchModalEvent = (eventName) => {
-                const modalEvent = new CustomEvent(eventName, { detail: modalName });
-
-                document.dispatchEvent(modalEvent);
-                window.dispatchEvent(modalEvent);
+                if (eventName === 'open-modal') {
+                    Flux.modal(modalName).show();
+                    return;
+                }
+                if (eventName === 'close-modal') {
+                    Flux.modal(modalName).close();
+                    return;
+                }
             };
 
             const checkInForm = document.getElementById('check-in-form');
