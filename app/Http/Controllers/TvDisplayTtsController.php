@@ -54,7 +54,6 @@ class TvDisplayTtsController extends Controller
             'Content-Type' => 'audio/mpeg',
             'Cache-Control' => 'public, max-age=31536000, immutable',
             'Content-Length' => (string) strlen($content),
-            'Accept-Ranges' => 'bytes',
             'Content-Disposition' => 'inline; filename="announcement-'.$cacheKey.'.mp3"',
         ]);
     }
