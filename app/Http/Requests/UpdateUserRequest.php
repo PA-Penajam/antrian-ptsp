@@ -37,8 +37,7 @@ class UpdateUserRequest extends FormRequest
                 static fn (UserRole $role): string => $role->value,
                 UserRole::cases(),
             ))],
-            'services' => ['sometimes', 'array'],
-            'services.*' => ['integer', 'exists:services,id'],
+            'service_id' => ['nullable', 'integer', 'exists:services,id'],
         ];
     }
 }

@@ -117,7 +117,8 @@
         inset: 0;
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
+        background-color: #000;
         display: block;
     }
 
@@ -391,12 +392,6 @@
 
 </div>
 
-{{-- Debug bar TTS — selalu tampil di pojok kiri atas, menimpa semua konten --}}
-<div id="ttsDebugBar" style="position:fixed;top:0;left:0;z-index:99999;background:rgba(0,0,0,0.95);border:2px solid #ff6600;color:#ffffff;font-family:monospace;font-size:14px;padding:12px 16px;display:block;min-width:400px;max-width:600px;max-height:300px;overflow-y:auto;line-height:1.8;">
-    <div style="color:#ff6600;font-weight:bold;margin-bottom:6px;">[DEBUG TTS]</div>
-    <div id="ttsDebugContent"></div>
-</div>
-
 {{-- Overlay aktivasi suara — diperlukan untuk memenuhi Autoplay Policy browser --}}
 <div id="soundOverlay" class="sound-overlay">
     <i class="ki-duotone ki-speaker sound-overlay-icon">
@@ -423,32 +418,17 @@
     var pendingAnnouncementText = '';
     var currentAudioObjectUrl = null;
     var playGuardTimer = null;
-    var ttsDebugEnabled = true;
     var ttsSeq = 0;
-
-    function ttsDebug(msg) {
-        if (!ttsDebugEnabled) { return; }
-        console.log('[TTS] ' + msg);
-        var content = document.getElementById('ttsDebugContent');
-        if (content) {
-            var now = new Date().toLocaleTimeString('id-ID', {hour12: false});
-            var line = document.createElement('div');
-            line.textContent = '[' + now + '] ' + msg;
-            content.appendChild(line);
-            content.scrollTop = content.scrollHeight;
-        }
-    }
-
-    function ttsDebugHide() {
-        // Debug bar sekarang selalu tampil, jadi tidak perlu hide
-    }
+    var serverOffset = 0; // Selisih jam server - client dalam ms
 
     $(document).ready(function () {
+        syncServerTime();
         updateClock();
         setInterval(updateClock, 1000);
+        setInterval(syncServerTime, 60000); // Resync setiap 1 menit
 
         fetchState();
-        fetchStateInterval = setInterval(fetchState, 5000); // Mengurangi frekuensi polling dari 3000ms ke 5000ms.
+        fetchStateInterval = setInterval(fetchState, 5000);
 
         tvPlayer.addEventListener('ended', function () {
             if (playlist.length === 0) { return; }
@@ -459,21 +439,17 @@
         audioPlayer.addEventListener('playing', function () {
             clearPlayGuard();
             pendingAnnouncementText = '';
-            ttsDebug('audioPlayer: PLAYING event');
         });
 
         audioPlayer.addEventListener('ended', function () {
             clearPlayGuard();
             revokeAudioObjectUrl();
             tvPlayer.volume = 1;
-            ttsDebug('audioPlayer: ENDED event');
         });
 
         audioPlayer.addEventListener('error', function () {
             clearPlayGuard();
             revokeAudioObjectUrl();
-            ttsDebug('audioPlayer: ERROR - ' + (audioPlayer.error ? audioPlayer.error.message : 'unknown'));
-
             if (pendingAnnouncementText !== '') {
                 var fallbackText = pendingAnnouncementText;
                 pendingAnnouncementText = '';
@@ -595,11 +571,23 @@
     }
 
     function updateClock() {
-        var now = new Date();
+        var now = new Date(Date.now() + serverOffset);
         $('#clockDisplay').text(now.toLocaleTimeString('id-ID', { hour12: false }));
         $('#dateDisplay').text(now.toLocaleDateString('id-ID', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         }));
+    }
+
+    function syncServerTime() {
+        var before = Date.now();
+        $.get('/api/time', function (data) {
+            var after = Date.now();
+            var latency = (after - before) / 2;
+            serverOffset = data.timestamp - (after - latency);
+        }).fail(function () {
+            // Jika gagal, fallback ke jam client
+            serverOffset = 0;
+        });
     }
 
     function playCurrentVideo() {
@@ -629,9 +617,6 @@
             },
             error: function () {
                 fetchErrCount++;
-                if (fetchErrCount >= 5) {
-                    console.warn('TV Display: Koneksi ke server bermasalah (' + fetchErrCount + 'x gagal).');
-                }
             }
         });
     }
@@ -788,12 +773,9 @@
         revokeAudioObjectUrl();
 
         if (!('speechSynthesis' in window)) {
-            console.warn('TV Display: speechSynthesis tidak tersedia di browser ini. Fallback TTS dilewati.');
-            ttsDebug('Browser TTS: speechSynthesis TIDAK ADA di browser ini');
             tvPlayer.volume = 1;
             return;
         }
-        ttsDebug('Browser TTS: speak - ' + text.substring(0, 40));
 
         window.speechSynthesis.cancel();
 
@@ -814,7 +796,6 @@
 
     function playMiniMaxAudio(audioUrl, fallbackText) {
         var mySeq = ttsSeq;
-        ttsDebug('MiniMax[' + mySeq + ']: fetch audio - ' + audioUrl.substring(0, 60));
         fetch(audioUrl, {
             method: 'GET',
             credentials: 'same-origin',
@@ -822,19 +803,14 @@
         })
             .then(function (response) {
                 if (!response.ok) {
-                    ttsDebug('MiniMax HTTP ERROR: ' + response.status);
                     throw new Error('AUDIO_HTTP_' + response.status);
                 }
-                ttsDebug('MiniMax[' + mySeq + ']: response OK, fetching arrayBuffer...');
-                ttsDebug('MiniMax[' + mySeq + ']: Content-Type header = ' + response.headers.get('Content-Type'));
                 return response.arrayBuffer();
             })
             .then(function (audioBuffer) {
                 if (!audioBuffer || audioBuffer.byteLength <= 0) {
-                    ttsDebug('MiniMax[' + mySeq + ']: arrayBuffer kosong!');
                     throw new Error('AUDIO_EMPTY_BUFFER');
                 }
-                ttsDebug('MiniMax[' + mySeq + ']: buffer size = ' + (audioBuffer.byteLength / 1024).toFixed(1) + ' KB');
 
                 // Cek header binary untuk verify MP3 format
                 var headerView = new DataView(audioBuffer, 0, Math.min(16, audioBuffer.byteLength));
@@ -842,11 +818,9 @@
                 for (var hi = 0; hi < headerView.byteLength; hi++) {
                     headerHex.push(headerView.getUint8(hi).toString(16).padStart(2, '0'));
                 }
-                ttsDebug('MiniMax[' + mySeq + ']: audio header hex = ' + headerHex.join(' '));
                 // Validasi: MP3 harus mulai dengan FF (MPEG sync) atau 49 44 33 (ID3 tag)
                 var firstByte = headerView.getUint8(0);
                 var isValidMp3Header = (firstByte === 0xFF) || (headerHex[0] === '49' && headerHex[1] === '44' && headerHex[2] === '33');
-                ttsDebug('MiniMax[' + mySeq + ']: MP3 header valid = ' + isValidMp3Header + ' (firstByte=0x' + firstByte.toString(16) + ')');
 
                 clearPlayGuard();
                 revokeAudioObjectUrl();
@@ -859,7 +833,6 @@
                     // Perbesar guard timer: minimum 2x durasi TTS預估 (5-6s text = ~5-6s audio)
                     playGuardTimer = setTimeout(function () {
                         if (mySeq !== ttsSeq) { return; }
-                        ttsDebug('MiniMax[' + mySeq + ']: GUARD timeout - fallback browser TTS');
                         try { window._currentAudioSource.stop(); } catch (e) {}
                         if (window._currentAudioContext && window._currentAudioContext.state !== 'closed') { window._currentAudioContext.close(); }
                         if (pendingAnnouncementText !== '') {
@@ -872,15 +845,12 @@
                     ctx.decodeAudioData(audioBuffer)
                         .then(function (decodedBuffer) {
                             if (mySeq !== ttsSeq) {
-                                ttsDebug('MiniMax[' + mySeq + ']: ABORT - sequence changed');
                                 ctx.close();
                                 return;
                             }
-                            ttsDebug('MiniMax[' + mySeq + ']: AudioContext decode SUCCESS, duration=' + decodedBuffer.duration.toFixed(2) + 's, sampleRate=' + decodedBuffer.sampleRate + 'Hz');
                             playAudioBufferWithContext(ctx, decodedBuffer, fallbackText, mySeq);
                         })
                         .catch(function (decodeErr) {
-                            ttsDebug('MiniMax[' + mySeq + ']: AudioContext decode GAGAL: ' + decodeErr.message + ' - coba fallback audio element');
                             // Fallback ke audio element
                             var typedBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
                             var blobUrl = URL.createObjectURL(typedBlob);
@@ -889,7 +859,6 @@
                         });
                 } else {
                     // Tidak ada AudioContext — langsung pakai audio element
-                    ttsDebug('MiniMax[' + mySeq + ']: AudioContext tidak tersedia, pakai audio element');
                     var typedBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
                     var blobUrl = URL.createObjectURL(typedBlob);
                     currentAudioObjectUrl = blobUrl;
@@ -898,7 +867,6 @@
             })
             .catch(function (e) {
                 if (mySeq !== ttsSeq) { return; }
-                ttsDebug('MiniMax[' + mySeq + '] CATCH: ' + e.message + ' - fallback browser TTS');
                 audioPlayer.src = '';
                 speakWithBrowserTts(fallbackText);
             });
@@ -920,12 +888,10 @@
             revokeAudioObjectUrl();
             if (ctx.state !== 'closed') { ctx.close(); }
             tvPlayer.volume = 1;
-            ttsDebug('MiniMax[' + mySeq + ']: AudioContext PLAY ENDED');
         };
 
         source.onerror = function (e) {
             clearPlayGuard();
-            ttsDebug('MiniMax[' + mySeq + ']: AudioContext source ERROR: ' + (e.message || 'unknown'));
             if (ctx.state !== 'closed') { ctx.close(); }
             speakWithBrowserTts(fallbackText);
         };
@@ -935,7 +901,6 @@
 
         playGuardTimer = setTimeout(function () {
             if (mySeq !== ttsSeq) { return; }
-            ttsDebug('MiniMax[' + mySeq + ']: GUARD timeout - fallback browser TTS');
             try { source.stop(); } catch (e) {}
             if (ctx.state !== 'closed') { ctx.close(); }
             var pending = window._pendingFallbackText || '';
@@ -943,7 +908,6 @@
             if (pending) { speakWithBrowserTts(pending); }
         }, 10000);
 
-        ttsDebug('MiniMax[' + mySeq + ']: AudioContext playing... duration=' + buffer.duration.toFixed(2) + 's');
         source.start(0);
     }
 
@@ -952,7 +916,6 @@
 
         playGuardTimer = setTimeout(function () {
             if (mySeq !== ttsSeq) { return; }
-            ttsDebug('MiniMax[' + mySeq + ']: GUARD timeout audio element - fallback browser TTS');
             if (pendingAnnouncementText !== '') {
                 var guardText = pendingAnnouncementText;
                 pendingAnnouncementText = '';
@@ -961,24 +924,18 @@
         }, 10000);
 
         if (mySeq !== ttsSeq) {
-            ttsDebug('MiniMax[' + mySeq + ']: ABORT - sequence changed');
             audioPlayer.src = '';
             audioPlayer.load();
             return;
         }
-
-        ttsDebug('MiniMax[' + mySeq + ']: audio element play... src=' + (audioPlayer.src ? 'ADA' : 'KOSONG'));
         var playPromise = audioPlayer.play();
         if (playPromise && typeof playPromise.catch === 'function') {
             playPromise
                 .then(function () {
                     if (mySeq !== ttsSeq) { return; }
-                    ttsDebug('MiniMax[' + mySeq + ']: PLAYING (promise resolved)');
                 })
                 .catch(function (e) {
                     if (mySeq !== ttsSeq) { return; }
-                    ttsDebug('MiniMax[' + mySeq + '] play() CATCH: ' + e.message + ' | err=' + (audioPlayer.error ? audioPlayer.error.code + ':' + audioPlayer.error.message : 'null'));
-                    ttsDebug('MiniMax[' + mySeq + ']: FALLBACK ke browser TTS');
                     audioPlayer.src = '';
                     audioPlayer.load();
                     pendingAnnouncementText = '';
@@ -997,8 +954,6 @@
         var text = 'Nomor antrian, ' + ttsNomor + '. Silakan menuju, ' + loket + '.';
         var mySeq = ++ttsSeq;
 
-        ttsDebug('PANGGIL seq=' + mySeq + ': ' + text);
-        ttsDebug('soundActivated: ' + soundActivated + ' | audioPlayer.volume: ' + audioPlayer.volume);
 
         // Bersihkan state audio lama sebelum mulai announcement baru
         clearPlayGuard();
@@ -1031,20 +986,16 @@
             },
             success: function (response) {
                 if (mySeq !== ttsSeq) {
-                    ttsDebug('AJAX OK - but sequence changed ' + mySeq + ' !== ' + ttsSeq + ', aborting');
                     return;
                 }
-                ttsDebug('AJAX OK | provider: ' + (response ? response.provider : 'null'));
                 if (response && response.provider === 'minimax' && response.audio_url) {
                     playMiniMaxAudio(response.audio_url, text);
                     return;
                 }
-                ttsDebug('FALLBACK: browser TTS (provider: ' + (response ? response.provider : 'null') + ')');
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(text);
             },
             error: function (xhr, status, err) {
-                ttsDebug('AJAX ERROR: ' + status + ' - ' + err);
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(text);
             }

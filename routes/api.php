@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\PublicQueueController;
 use App\Http\Controllers\Api\PublicServiceController;
+use App\Http\Controllers\Api\TimeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -11,6 +12,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('services/{slug}', [PublicServiceController::class, 'show'])->name('api.services.show');
     Route::get('queue/lookup', [PublicQueueController::class, 'lookup'])->name('api.queue.lookup');
     Route::get('queue/ticket-by-id/{encryptedId}', [PublicQueueController::class, 'showById'])->name('api.queue.showById');
+    Route::get('time', [TimeController::class, 'index'])->name('api.time');
 });
 
 Route::middleware('throttle:10,1')->group(function () {

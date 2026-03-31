@@ -9,8 +9,8 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
@@ -43,9 +43,8 @@ class UserManagementController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        $serviceIds = $validated['services'] ?? [];
-        if ($validated['role'] === 'officer' && count($serviceIds) > 0) {
-            $user->services()->sync($serviceIds);
+        if ($validated['role'] === 'officer' && ! empty($validated['service_id'])) {
+            $user->services()->sync([$validated['service_id']]);
         }
 
         return redirect('/admin/users')
@@ -62,9 +61,8 @@ class UserManagementController extends Controller
             'role' => $validated['role'],
         ]);
 
-        $serviceIds = $validated['services'] ?? [];
-        if ($validated['role'] === 'officer') {
-            $user->services()->sync($serviceIds);
+        if ($validated['role'] === 'officer' && ! empty($validated['service_id'])) {
+            $user->services()->sync([$validated['service_id']]);
         } else {
             $user->services()->detach();
         }

@@ -138,7 +138,7 @@
                         <flux:table.column>Nama</flux:table.column>
                         <flux:table.column>Email</flux:table.column>
                         <flux:table.column>Role & Aksi</flux:table.column>
-                        <flux:table.column>Izin Layanan</flux:table.column>
+                        <flux:table.column>Layanan</flux:table.column>
                     </flux:table.columns>
                     <flux:table.rows>
                         @foreach ($users as $user)
@@ -163,18 +163,15 @@
 
                                         <div class="xl:col-span-2" x-show="role === 'officer'" x-cloak>
                                             <flux:select
-                                                name="services[]"
-                                                variant="listbox"
-                                                multiple
-                                                searchable
+                                                name="service_id"
                                                 size="sm"
-                                                selected-suffix="layanan"
-                                                placeholder="Pilih izin layanan"
+                                                placeholder="Pilih layanan..."
                                             >
+                                                <flux:select.option value="">Pilih layanan...</flux:select.option>
                                                 @foreach ($services as $service)
                                                     <flux:select.option
                                                         value="{{ $service->id }}"
-                                                        :selected="$user->services->contains('id', $service->id)"
+                                                        :selected="$user->services->first()?->id === {{ $service->id }}"
                                                     >
                                                         {{ $service->name }}
                                                     </flux:select.option>
@@ -184,13 +181,11 @@
                                     </form>
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <div class="flex flex-wrap gap-1">
-                                        @forelse ($user->services as $service)
-                                            <flux:badge size="sm">{{ $service->name }}</flux:badge>
-                                        @empty
-                                            <flux:text class="text-zinc-500">-</flux:text>
-                                        @endforelse
-                                    </div>
+                                    @if ($user->services->isNotEmpty())
+                                        <flux:badge size="sm">{{ $user->services->first()->name }}</flux:badge>
+                                    @else
+                                        <flux:text class="text-zinc-500">-</flux:text>
+                                    @endif
                                 </flux:table.cell>
                             </flux:table.row>
                         @endforeach
@@ -240,22 +235,19 @@
                 </flux:field>
 
                 <flux:field x-show="role === 'officer'" x-cloak>
-                    <flux:label>Izin Layanan</flux:label>
+                    <flux:label>Layanan / Lokasi</flux:label>
                     <flux:select
-                        name="services[]"
-                        variant="listbox"
-                        multiple
-                        searchable
-                        selected-suffix="layanan"
-                        placeholder="Pilih izin layanan"
+                        name="service_id"
+                        placeholder="Pilih layanan tempat petugas berdiri"
                     >
+                        <flux:select.option value="">Pilih layanan...</flux:select.option>
                         @foreach ($services as $service)
                             <flux:select.option value="{{ $service->id }}">
                                 {{ $service->name }}
                             </flux:select.option>
                         @endforeach
                     </flux:select>
-                    <flux:error name="services" />
+                    <flux:error name="service_id" />
                 </flux:field>
 
                 <div class="flex justify-end gap-2 pt-4">
@@ -302,20 +294,16 @@
                     </flux:field>
 
                     <flux:field x-show="role === 'officer'" x-cloak>
-                        <flux:label>Izin Layanan</flux:label>
+                        <flux:label>Layanan / Lokasi</flux:label>
                         <flux:select
-                            name="services[]"
-                            variant="listbox"
-                            multiple
-                            searchable
-                            size="sm"
-                            selected-suffix="layanan"
-                            placeholder="Pilih izin layanan"
+                            name="service_id"
+                            placeholder="Pilih layanan tempat petugas berdiri"
                         >
+                            <flux:select.option value="">Pilih layanan...</flux:select.option>
                             @foreach ($services as $service)
                                 <flux:select.option
                                     value="{{ $service->id }}"
-                                    :selected="$user->services->contains('id', $service->id)"
+                                    :selected="$user->services->first()?->id === {{ $service->id }}"
                                 >
                                     {{ $service->name }}
                                 </flux:select.option>

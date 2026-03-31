@@ -31,8 +31,7 @@ class StoreUserRequest extends FormRequest
                 UserRole::cases(),
             ))],
             'password' => ['required', 'string', 'min:8'],
-            'services' => ['sometimes', 'array'],
-            'services.*' => ['integer', 'exists:services,id'],
+            'service_id' => ['nullable', 'integer', 'exists:services,id'],
         ];
     }
 }
