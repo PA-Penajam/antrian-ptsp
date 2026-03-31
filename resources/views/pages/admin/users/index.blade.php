@@ -171,7 +171,7 @@
                                                 @foreach ($services as $service)
                                                     <flux:select.option
                                                         value="{{ $service->id }}"
-                                                        :selected="$user->services->first()?->id === {{ $service->id }}"
+                                                        :selected="$user->services->first()?->id == $service->id"
                                                     >
                                                         {{ $service->name }}
                                                     </flux:select.option>
@@ -303,7 +303,7 @@
                             @foreach ($services as $service)
                                 <flux:select.option
                                     value="{{ $service->id }}"
-                                    :selected="$user->services->first()?->id === {{ $service->id }}"
+                                    :selected="$user->services->first()?->id == $service->id"
                                 >
                                     {{ $service->name }}
                                 </flux:select.option>
