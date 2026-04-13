@@ -12,12 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('queue_pools', function (Blueprint $table) {
-            $table->string('letter_code', 5)->nullable()->after('code');
-        });
+        // Idempotent: skip jika kolom sudah ada (misal migration sempat gagal di tengah jalan)
+        if (! Schema::hasColumn('queue_pools', 'letter_code')) {
+            Schema::table('queue_pools', function (Blueprint $table) {
+                $table->string('letter_code', 5)->nullable()->after('code');
+            });
+        }
 
-        // Set letter_code berdasarkan data pool yang ada agar konsisten dengan Service lama
-        DB::table('queue_pools')->update([
+        // Set letter_code berdasarkan data pool yang ada (jalankan selalu agar data konsisten)
+        DB::table('queue_pools')->whereNull('letter_code')->update([
             'letter_code' => DB::raw("CASE
                 WHEN code = 'UMUM' THEN 'A'
                 WHEN code = 'BAYAR' THEN 'D'
