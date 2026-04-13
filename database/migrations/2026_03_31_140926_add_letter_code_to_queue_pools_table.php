@@ -28,8 +28,17 @@ return new class extends Migration
         ]);
 
         if (Schema::hasColumn('services', 'letter_code')) {
-            DB::statement('DROP INDEX IF EXISTS services_letter_code_unique');
-            Schema::table('services', function (Blueprint $table) {
+            // Cek apakah unique index ada sebelum drop (kompatibel MariaDB)
+            $indexExists = DB::table('information_schema.statistics')
+                ->where('table_schema', DB::connection()->getDatabaseName())
+                ->where('table_name', 'services')
+                ->where('index_name', 'services_letter_code_unique')
+                ->exists();
+
+            Schema::table('services', function (Blueprint $table) use ($indexExists) {
+                if ($indexExists) {
+                    $table->dropUnique('services_letter_code_unique');
+                }
                 $table->dropColumn('letter_code');
             });
         }
