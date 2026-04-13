@@ -644,7 +644,7 @@
             }
 
             activeTicketNumber.addClass('call-animate');
-            $('#activeCounterName').text(active.service ? 'LOKET ' + active.service.name.toUpperCase() : 'LOKET');
+            $('#activeCounterName').text(active.counter ? active.counter.name.toUpperCase() : 'LOKET');
             $('#activeServiceName').text('');
             /* Aktifkan pulse glow pada hero card */
             $('.queue-hero').addClass('hero-pulse-anim');
@@ -949,7 +949,7 @@
     }
 
     function playAnnouncer(call) {
-        var layanan = call.service ? 'Loket ' + call.service.name : 'Loket';
+        var layanan = call.counter ? call.counter.name : 'Loket';
         var nomor = call.ticket_number.replace(/^([A-Za-z]+)0+(.+)$/, '$1$2');
         var text = 'Nomor antrian ' + nomor + ', silakan menuju ' + layanan + '.';
         var mySeq = ++ttsSeq;
