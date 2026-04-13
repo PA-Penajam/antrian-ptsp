@@ -6,6 +6,7 @@ use App\Services\Tts\MiniMaxTtsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -19,17 +20,31 @@ class TvDisplayTtsController extends Controller
 
         try {
             $announcement = $ttsService->getOrCreateAnnouncement($validated['text']);
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            Log::error('[TTS] MiniMax TTS gagal', [
+                'text' => $validated['text'],
+                'error' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'provider' => 'browser',
             ], 200);
         }
 
         if (! $announcement) {
+            Log::warning('[TTS] MiniMax TTS null (mungkin config belum diset)', [
+                'text' => $validated['text'],
+            ]);
+
             return response()->json([
                 'provider' => 'browser',
             ], 200);
         }
+
+        Log::info('[TTS] MiniMax TTS sukses', [
+            'text' => $validated['text'],
+            'cache_key' => $announcement['cache_key'],
+        ]);
 
         return response()->json([
             'provider' => 'minimax',

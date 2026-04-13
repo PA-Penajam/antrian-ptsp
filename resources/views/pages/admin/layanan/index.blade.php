@@ -153,15 +153,15 @@
                     <flux:input name="slug" value="{{ old('slug') }}" />
                 </flux:field>
 
-                <flux:field>
-                    <flux:label>Queue Pool</flux:label>
-                    <flux:select name="queue_pool_id" required>
-                        <flux:select.option value="">Pilih Pool</flux:select.option>
-                        @foreach ($queuePools as $pool)
-                            <flux:select.option value="{{ $pool->id }}">{{ $pool->name }} ({{ $pool->code }})</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </flux:field>
+                    <flux:field>
+                        <flux:label>Queue Pool</flux:label>
+                        <flux:select name="queue_pool_id" required>
+                            <flux:select.option value="">Pilih Pool</flux:select.option>
+                            @foreach ($queuePools as $pool)
+                                <flux:select.option value="{{ $pool->id }}">{{ $pool->name }} ({{ $pool->letter_code ?? '-' }})</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    </flux:field>
 
                 <flux:field>
                     <flux:label>Sort Order</flux:label>
@@ -243,15 +243,10 @@
                         <flux:select name="queue_pool_id" required>
                             @foreach ($queuePools as $pool)
                                 <flux:select.option value="{{ $pool->id }}" :selected="$pool->id === $service->queue_pool_id">
-                                    {{ $pool->name }} ({{ $pool->code }})
+                                    {{ $pool->name }} ({{ $pool->letter_code ?? '-' }})
                                 </flux:select.option>
                             @endforeach
                         </flux:select>
-                    </flux:field>
-
-                    <flux:field>
-                        <flux:label>Kode Huruf Antrian</flux:label>
-                        <flux:input name="letter_code" value="{{ $service->letter_code }}" maxlength="3" />
                     </flux:field>
 
                     <flux:field>

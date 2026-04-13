@@ -14,6 +14,7 @@ class QueuePool extends Model
     protected $fillable = [
         'name',
         'code',
+        'letter_code',
         'description',
         'is_active',
     ];

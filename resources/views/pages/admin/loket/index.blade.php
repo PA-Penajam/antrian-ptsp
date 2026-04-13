@@ -12,11 +12,16 @@
                     <flux:breadcrumbs.item>Loket</flux:breadcrumbs.item>
                 </flux:breadcrumbs>
             </div>
-            
+
             <div class="flex items-center gap-2">
+                <flux:modal.trigger name="pool-manager">
+                    <flux:button variant="filled" icon="folder-plus">
+                        Pool
+                    </flux:button>
+                </flux:modal.trigger>
                 <flux:modal.trigger name="create-counter">
                     <flux:button variant="primary" icon="plus">
-                        Tambah Loket Baru
+                        Tambah Loket
                     </flux:button>
                 </flux:modal.trigger>
             </div>
@@ -34,7 +39,6 @@
             </flux:callout>
         @endif
 
-        {{-- Daftar Loket --}}
         <flux:card class="space-y-4">
             <div class="flex items-center gap-3">
                 <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
@@ -42,7 +46,7 @@
                 </div>
                 <flux:heading size="lg">Daftar Loket</flux:heading>
             </div>
-            
+
             <flux:table>
                 <flux:table.columns>
                     <flux:table.column>Loket</flux:table.column>
@@ -59,13 +63,16 @@
                             <flux:table.cell>
                                 <flux:badge size="sm" color="zinc">{{ $counter->code }}</flux:badge>
                             </flux:table.cell>
-                            <flux:table.cell>{{ $counter->queuePool?->name ?? '-' }}</flux:table.cell>
+                            <flux:table.cell>
+                                {{ $counter->queuePool?->name ?? '-' }}
+                                <span class="ml-1 text-xs text-zinc-400">({{ $counter->queuePool?->letter_code ?? '-' }})</span>
+                            </flux:table.cell>
                             <flux:table.cell>{{ $counter->sort_order }}</flux:table.cell>
                             <flux:table.cell>
                                 @if ($counter->is_active)
                                     <flux:badge size="sm" color="green" icon="check-circle">Aktif</flux:badge>
                                 @else
-                                    <flux:badge size="sm" color="red" icon="x-circle">Nonaktif</flux:badge>
+                                    <flux:badge size="sm" color="zinc" icon="x-circle">Nonaktif</flux:badge>
                                 @endif
                             </flux:table.cell>
                             <flux:table.cell>
@@ -102,11 +109,96 @@
         </flux:card>
     </div>
 
-    {{-- Create Modal --}}
+    {{-- Pool Manager Modal (Winbox-style: list + create, no edit) --}}
+    <flux:modal name="pool-manager" class="w-full max-w-2xl">
+        <div class="space-y-5">
+            <div class="flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-700 pb-4">
+                <div class="admin-icon-box bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400">
+                    <flux:icon.folder class="size-5" />
+                </div>
+                <div>
+                    <flux:heading size="lg">Pool Antrian</flux:heading>
+                    <p class="text-xs text-zinc-500 mt-0.5">Kelola pool untuk mengelompokkan layanan.</p>
+                </div>
+            </div>
+
+            {{-- Table List --}}
+            @if ($queuePools->count() > 0)
+                <div class="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead class="bg-zinc-50 dark:bg-zinc-800">
+                            <tr>
+                                <th class="px-4 py-2.5 text-left font-medium text-zinc-600 dark:text-zinc-400">Nama</th>
+                                <th class="px-4 py-2.5 text-left font-medium text-zinc-600 dark:text-zinc-400">Kode</th>
+                                <th class="px-4 py-2.5 text-left font-medium text-zinc-600 dark:text-zinc-400">Huruf</th>
+                                <th class="px-4 py-2.5 text-center font-medium text-zinc-600 dark:text-zinc-400">Layanan</th>
+                                <th class="px-4 py-2.5 text-center font-medium text-zinc-600 dark:text-zinc-400">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-700">
+                            @foreach ($queuePools as $pool)
+                                <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                                    <td class="px-4 py-2.5 font-medium text-zinc-900 dark:text-zinc-100">{{ $pool->name }}</td>
+                                    <td class="px-4 py-2.5">
+                                        <span class="inline-flex items-center rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">{{ $pool->code }}</span>
+                                    </td>
+                                    <td class="px-4 py-2.5">
+                                        <span class="inline-flex items-center rounded-md bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{{ $pool->letter_code ?? '-' }}</span>
+                                    </td>
+                                    <td class="px-4 py-2.5 text-center text-zinc-500">{{ $pool->services()->count() }}</td>
+                                    <td class="px-4 py-2.5 text-center">
+                                        <form method="POST" action="{{ route('admin.loket.pool.destroy', $pool) }}" class="inline"
+                                            onsubmit="return confirm('Hapus pool {{ $pool->name }}? Pool yang terhubung dengan layanan/loket tidak bisa dihapus.')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <flux:button type="submit" size="xs" variant="danger" icon="trash">
+                                                Hapus
+                                            </flux:button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="rounded-lg border border-dashed border-zinc-300 dark:border-zinc-600 py-8 text-center">
+                    <flux:icon name="folder-open" class="mx-auto h-8 w-8 text-zinc-300 dark:text-zinc-600" />
+                    <p class="mt-2 text-sm text-zinc-500">Belum ada pool. Buat pool pertama di bawah.</p>
+                </div>
+            @endif
+
+            {{-- Create Form --}}
+            <div class="rounded-lg border border-cyan-200 bg-cyan-50/50 dark:border-cyan-800 dark:bg-cyan-900/10 p-4 space-y-3">
+                <p class="text-xs font-semibold uppercase tracking-wide text-cyan-700 dark:text-cyan-400">Tambah Pool Baru</p>
+                <form method="POST" action="{{ route('admin.loket.pool.store') }}" class="grid gap-3 sm:grid-cols-4">
+                    @csrf
+                    <div>
+                        <input type="text" name="name" placeholder="Nama pool" required
+                            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" />
+                    </div>
+                    <div>
+                        <input type="text" name="code" placeholder="Kode" required maxlength="20"
+                            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" />
+                    </div>
+                    <div>
+                        <input type="text" name="letter_code" placeholder="Huruf" required maxlength="5"
+                            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" />
+                    </div>
+                    <flux:button type="submit" variant="filled" class="sm:self-end">
+                        <flux:icon.plus class="size-4" />
+                        Tambah
+                    </flux:button>
+                </form>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Create Counter Modal --}}
     <flux:modal name="create-counter" class="w-full max-w-md">
         <form method="POST" action="{{ route('admin.loket.store') }}" class="space-y-4">
             @csrf
-            
+
             <div class="flex items-center gap-3">
                 <div class="admin-icon-box bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
                     <flux:icon.plus-circle class="size-5" />
@@ -131,7 +223,7 @@
                 <flux:select name="queue_pool_id" placeholder="Pilih Pool Loket" required>
                     @foreach($queuePools as $pool)
                         <flux:select.option value="{{ $pool->id }}" :selected="old('queue_pool_id') == $pool->id">
-                            {{ $pool->name }}
+                            {{ $pool->name }} ({{ $pool->letter_code ?? '-' }})
                         </flux:select.option>
                     @endforeach
                 </flux:select>
@@ -157,22 +249,20 @@
 
             <div class="flex justify-end gap-2 pt-2">
                 <flux:modal.close>
-                    <flux:button type="button" variant="ghost">
-                        Batal
-                    </flux:button>
+                    <flux:button type="button" variant="ghost">Batal</flux:button>
                 </flux:modal.close>
                 <flux:button type="submit" variant="primary">Tambah Loket</flux:button>
             </div>
         </form>
     </flux:modal>
 
-    {{-- Edit Modals --}}
+    {{-- Edit Counter Modals --}}
     @foreach ($counters as $counter)
         <flux:modal name="edit-counter-{{ $counter->id }}" class="w-full max-w-md">
             <form method="POST" action="{{ route('admin.loket.update', $counter) }}" class="space-y-4">
                 @csrf
                 @method('PUT')
-                
+
                 <div class="flex items-center gap-3">
                     <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
                         <flux:icon.pencil-square class="size-5" />
@@ -197,7 +287,7 @@
                     <flux:select name="queue_pool_id" required>
                         @foreach($queuePools as $pool)
                             <flux:select.option value="{{ $pool->id }}" :selected="old('queue_pool_id', $counter->queue_pool_id) == $pool->id">
-                                {{ $pool->name }}
+                                {{ $pool->name }} ({{ $pool->letter_code ?? '-' }})
                             </flux:select.option>
                         @endforeach
                     </flux:select>
@@ -221,9 +311,7 @@
 
                 <div class="flex justify-end gap-2 pt-2">
                     <flux:modal.close>
-                        <flux:button type="button" variant="ghost">
-                            Batal
-                        </flux:button>
+                        <flux:button type="button" variant="ghost">Batal</flux:button>
                     </flux:modal.close>
                     <flux:button type="submit" variant="primary">Simpan</flux:button>
                 </div>

@@ -72,6 +72,11 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(f
     Route::put('/admin/loket/{counter}', [CounterManagementController::class, 'update'])->name('admin.loket.update');
     Route::delete('/admin/loket/{counter}', [CounterManagementController::class, 'destroy'])->name('admin.loket.destroy');
 
+    // Admin - Queue Pool
+    Route::post('/admin/loket/pool', [CounterManagementController::class, 'storePool'])->name('admin.loket.pool.store');
+    Route::put('/admin/loket/pool/{pool}', [CounterManagementController::class, 'updatePool'])->name('admin.loket.pool.update');
+    Route::delete('/admin/loket/pool/{pool}', [CounterManagementController::class, 'destroyPool'])->name('admin.loket.pool.destroy');
+
     // Admin - Users
     Route::get('/admin/users', [UserManagementController::class, 'index'])->name('admin.users.index');
     Route::post('/admin/users', [UserManagementController::class, 'store'])->name('admin.users.store');

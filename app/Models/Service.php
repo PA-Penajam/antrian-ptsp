@@ -26,7 +26,6 @@ class Service extends Model
         'walk_in_enabled',
         'daily_quota',
         'sort_order',
-        'letter_code',
     ];
 
     protected function casts(): array
@@ -43,6 +42,11 @@ class Service extends Model
     public function queuePool(): BelongsTo
     {
         return $this->belongsTo(QueuePool::class);
+    }
+
+    public function getLetterCodeAttribute(): ?string
+    {
+        return $this->queuePool?->letter_code;
     }
 
     public function queueTickets(): HasMany

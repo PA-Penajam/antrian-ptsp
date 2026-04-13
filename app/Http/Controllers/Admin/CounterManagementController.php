@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\QueueStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCounterRequest;
+use App\Http\Requests\StorePoolRequest;
 use App\Http\Requests\UpdateCounterRequest;
+use App\Http\Requests\UpdatePoolRequest;
 use App\Models\Counter;
 use App\Models\QueuePool;
 use Illuminate\Http\RedirectResponse;
@@ -62,5 +64,38 @@ class CounterManagementController extends Controller
 
         return redirect()->route('admin.loket.index')
             ->with('status', 'Loket berhasil dihapus.');
+    }
+
+    public function storePool(StorePoolRequest $request): RedirectResponse
+    {
+        QueuePool::query()->create($request->validated());
+
+        return redirect()->route('admin.loket.index')
+            ->with('status', 'Pool antrian berhasil dibuat.');
+    }
+
+    public function updatePool(UpdatePoolRequest $request, QueuePool $pool): RedirectResponse
+    {
+        $pool->update($request->validated());
+
+        return redirect()->route('admin.loket.index')
+            ->with('status', 'Pool antrian berhasil diperbarui.');
+    }
+
+    public function destroyPool(QueuePool $pool): RedirectResponse
+    {
+        $hasServices = $pool->services()->exists();
+        $hasCounters = $pool->counters()->exists();
+        $hasTickets = $pool->queueTickets()->exists();
+
+        if ($hasServices || $hasCounters || $hasTickets) {
+            return redirect()->route('admin.loket.index')
+                ->with('error', 'Pool tidak dapat dihapus karena masih terhubung dengan layanan, loket, atau antrian.');
+        }
+
+        $pool->delete();
+
+        return redirect()->route('admin.loket.index')
+            ->with('status', 'Pool antrian berhasil dihapus.');
     }
 }

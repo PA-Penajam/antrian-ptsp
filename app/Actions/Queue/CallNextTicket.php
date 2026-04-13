@@ -20,6 +20,7 @@ class CallNextTicket
     {
         return DB::transaction(function () use ($counter, $userId): ?QueueTicket {
             $query = QueueTicket::query()
+                ->whereDate('service_date', CarbonImmutable::today())
                 ->where('queue_pool_id', $counter->queue_pool_id)
                 ->where('status', QueueStatus::Waiting);
 
@@ -39,7 +40,7 @@ class CallNextTicket
             }
 
             $queueTicket = $query
-                ->orderBy('service_date')
+                ->orderByDesc('service_date')
                 ->orderBy('sequence_number')
                 ->orderBy('id')
                 ->lockForUpdate()

@@ -4,6 +4,7 @@ namespace App\Services\Tts;
 
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -17,12 +18,19 @@ class MiniMaxTtsService
     {
         $text = Str::squish($text);
         if ($text === '') {
+            Log::debug('[TTS] Text kosong, skip');
+
             return null;
         }
 
         $apiKey = (string) config('services.minimax.api_key');
         $voiceId = (string) config('services.minimax.voice_id');
         if ($apiKey === '' || $voiceId === '') {
+            Log::warning('[TTS] API key atau voice ID kosong', [
+                'api_key_set' => $apiKey !== '',
+                'voice_id' => $voiceId,
+            ]);
+
             return null;
         }
 
@@ -32,9 +40,21 @@ class MiniMaxTtsService
         $cacheKey = sha1(implode('|', [$voiceId, $model, mb_strtolower($text)]));
         $path = $prefix.'/'.$cacheKey.'.mp3';
 
+        Log::debug('[TTS] Processing', [
+            'text' => $text,
+            'cache_key' => $cacheKey,
+            'model' => $model,
+            'voice_id' => $voiceId,
+            'disk' => $disk,
+        ]);
+
         if ($this->cacheNeedsRefresh($disk, $path)) {
+            Log::info('[TTS] Cache miss, request speech API', ['text' => $text, 'strategy' => config('services.minimax.strategy')]);
             $audio = $this->requestSpeech($apiKey, $voiceId, $model, $text);
             Storage::disk($disk)->put($path, $audio);
+            Log::info('[TTS] Audio saved', ['path' => $path, 'audio_size' => strlen($audio)]);
+        } else {
+            Log::debug('[TTS] Cache hit', ['path' => $path]);
         }
 
         return [
@@ -232,12 +252,20 @@ class MiniMaxTtsService
     private function ensureSuccessfulApiResponse(Response $response, string $failureMessage): void
     {
         if (! $response->successful()) {
+            Log::error('[TTS] HTTP request gagal', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
             throw new RuntimeException($failureMessage);
         }
 
         $statusCode = $response->json('base_resp.status_code');
         if (is_numeric($statusCode) && (int) $statusCode !== 0) {
             $statusMessage = (string) $response->json('base_resp.status_msg', 'unknown_error');
+            Log::error('[TTS] MiniMax API error', [
+                'status_code' => $statusCode,
+                'status_msg' => $statusMessage,
+            ]);
 
             throw new RuntimeException($failureMessage.' ['.$statusCode.': '.$statusMessage.']');
         }
