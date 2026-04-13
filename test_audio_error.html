@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<body>
+<audio id="audio"></audio>
+<script>
+    const a = document.getElementById('audio');
+    a.addEventListener('error', () => console.log('ERROR FIRED!'));
+    a.removeAttribute('src');
+    a.load();
+</script>
+</body>
+</html>

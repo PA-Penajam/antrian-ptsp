@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\File;
 
 class WilayahSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         if (DB::table('wilayah')->exists()) {

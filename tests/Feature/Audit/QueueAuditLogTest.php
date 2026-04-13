@@ -13,7 +13,6 @@ use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
 use App\Support\Dashboard\PetugasStats;
-use Carbon\CarbonImmutable;
 
 test('queue lifecycle actions create audit entries with actor context', function () {
     $actor = User::factory()->create();
@@ -24,7 +23,7 @@ test('queue lifecycle actions create audit entries with actor context', function
     $ticket = app(CreateQueueTicket::class)->handle([
         'service_id' => $service->id,
         'channel' => 'online_booking',
-        'service_date' => CarbonImmutable::parse('2026-03-10'),
+        'service_date' => today(),
         'visitor_name' => 'Pemohon Audit',
         'visitor_identifier' => '7371CCCCCCCCCCCC',
         'visitor_phone' => '081233344455',

@@ -644,8 +644,8 @@
             }
 
             activeTicketNumber.addClass('call-animate');
-            $('#activeCounterName').text(active.counter ? active.counter.name.toUpperCase() : 'LOKET');
-            $('#activeServiceName').text(active.service ? active.service.name : '');
+            $('#activeCounterName').text(active.service ? 'LOKET ' + active.service.name.toUpperCase() : 'LOKET');
+            $('#activeServiceName').text('');
             /* Aktifkan pulse glow pada hero card */
             $('.queue-hero').addClass('hero-pulse-anim');
 
@@ -796,18 +796,21 @@
 
     function playMiniMaxAudio(audioUrl, fallbackText) {
         var mySeq = ttsSeq;
+        console.log('[TTS] Fetching audio from:', audioUrl);
         fetch(audioUrl, {
             method: 'GET',
             credentials: 'same-origin',
             cache: 'no-store'
         })
             .then(function (response) {
+                console.log('[TTS] Audio response status:', response.status, response.ok);
                 if (!response.ok) {
                     throw new Error('AUDIO_HTTP_' + response.status);
                 }
                 return response.arrayBuffer();
             })
             .then(function (audioBuffer) {
+                console.log('[TTS] Audio buffer received:', audioBuffer.byteLength, 'bytes');
                 if (!audioBuffer || audioBuffer.byteLength <= 0) {
                     throw new Error('AUDIO_EMPTY_BUFFER');
                 }
@@ -867,6 +870,7 @@
             })
             .catch(function (e) {
                 if (mySeq !== ttsSeq) { return; }
+                console.error('[TTS] MiniMax audio fetch failed:', e.message);
                 audioPlayer.src = '';
                 speakWithBrowserTts(fallbackText);
             });
@@ -945,14 +949,17 @@
     }
 
     function playAnnouncer(call) {
-        var loket    = call.counter ? call.counter.name : 'Loket';
-        var ttsNomor = call.ticket_number
-            .replace(/[^A-Za-z0-9]/g, '')
-            .split('')
-            .map(function (c) { return c === '0' ? 'nol' : c; })
-            .join(', ');
-        var text = 'Nomor antrian, ' + ttsNomor + '. Silakan menuju, ' + loket + '.';
+        var layanan = call.service ? 'Loket ' + call.service.name : 'Loket';
+        var nomor = call.ticket_number.replace(/^([A-Za-z]+)0+(.+)$/, '$1$2');
+        var text = 'Nomor antrian ' + nomor + ', silakan menuju ' + layanan + '.';
         var mySeq = ++ttsSeq;
+
+        console.log('[TTS] playAnnouncer:', JSON.stringify({
+            ticket: call.ticket_number,
+            service: call.service ? call.service.name : 'null',
+            counter: call.counter ? call.counter.name : 'null',
+            text: text
+        }));
 
 
         // Bersihkan state audio lama sebelum mulai announcement baru
@@ -980,7 +987,7 @@
             url: '{{ route("tv-display.tts.announcement") }}',
             type: 'GET',
             dataType: 'json',
-            timeout: 10000,
+            timeout: 15000,
             data: {
                 text: text,
             },
@@ -989,13 +996,16 @@
                     return;
                 }
                 if (response && response.provider === 'minimax' && response.audio_url) {
+                    console.log('[TTS] MiniMax URL:', response.audio_url, 'cache_key:', response.cache_key);
                     playMiniMaxAudio(response.audio_url, text);
                     return;
                 }
+                console.warn('[TTS] Browser TTS fallback - provider:', response ? response.provider : 'null');
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(text);
             },
             error: function (xhr, status, err) {
+                console.error('[TTS] API error:', status, err, 'xhr:', xhr.status, xhr.responseText);
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(text);
             }

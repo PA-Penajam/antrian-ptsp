@@ -30,3 +30,8 @@ frontend-public/
 # Git worktrees
 .worktrees/
 /public/metronic-assets
+docs/
+.github/
+.superpowers/
+.playwright-mcp/
+issue/

@@ -24,21 +24,21 @@ test('officer can run queue workflow and only serves own pool', function () {
     $firstUmumTicket = QueueTicket::factory()->for($umumService)->for($umumPool)->create([
         'status' => QueueStatus::Waiting,
         'counter_id' => null,
-        'service_date' => '2026-03-10',
+        'service_date' => today(),
         'sequence_number' => 1,
         'ticket_number' => 'UMUM-0001',
     ]);
     $secondUmumTicket = QueueTicket::factory()->for($umumService)->for($umumPool)->create([
         'status' => QueueStatus::Waiting,
         'counter_id' => null,
-        'service_date' => '2026-03-10',
+        'service_date' => today(),
         'sequence_number' => 2,
         'ticket_number' => 'UMUM-0002',
     ]);
     $bayarTicket = QueueTicket::factory()->for($bayarService)->for($bayarPool)->create([
         'status' => QueueStatus::Waiting,
         'counter_id' => null,
-        'service_date' => '2026-03-10',
+        'service_date' => today(),
         'sequence_number' => 1,
         'ticket_number' => 'BAYAR-0001',
     ]);
@@ -102,21 +102,21 @@ test('officer only claims eligible oldest ticket and claimed ticket is not reuse
     $olderBlocked = QueueTicket::factory()->for($blockedService)->for($pool)->create([
         'status' => QueueStatus::Waiting,
         'counter_id' => null,
-        'service_date' => '2026-03-10',
+        'service_date' => today(),
         'sequence_number' => 1,
         'ticket_number' => 'UMUM-0001',
     ]);
     $olderAllowed = QueueTicket::factory()->for($allowedService)->for($pool)->create([
         'status' => QueueStatus::Waiting,
         'counter_id' => null,
-        'service_date' => '2026-03-10',
+        'service_date' => today(),
         'sequence_number' => 2,
         'ticket_number' => 'UMUM-0002',
     ]);
     $nextAllowed = QueueTicket::factory()->for($allowedService)->for($pool)->create([
         'status' => QueueStatus::Waiting,
         'counter_id' => null,
-        'service_date' => '2026-03-10',
+        'service_date' => today(),
         'sequence_number' => 3,
         'ticket_number' => 'UMUM-0003',
     ]);

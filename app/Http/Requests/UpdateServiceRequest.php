@@ -46,7 +46,6 @@ class UpdateServiceRequest extends FormRequest
                 'max:255',
                 Rule::unique('services', 'slug')->ignore($serviceId),
             ],
-            'letter_code' => ['sometimes', 'nullable', 'string', 'max:3'],
             'description' => ['sometimes', 'nullable', 'string'],
             'requirements' => ['sometimes', 'nullable', 'string'],
             'is_active' => ['sometimes', 'required', 'boolean'],

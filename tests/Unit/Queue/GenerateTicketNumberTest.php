@@ -7,9 +7,8 @@ use App\Models\Service;
 use Carbon\CarbonImmutable;
 
 test('first ticket in a pool for a date starts at sequence one', function () {
-    $service = Service::factory()->create(['letter_code' => 'A']);
-    $pool = QueuePool::factory()->create(['code' => 'UMUM']);
-    $service->update(['queue_pool_id' => $pool->id]);
+    $pool = QueuePool::factory()->create(['code' => 'UMUM', 'letter_code' => 'A']);
+    $service = Service::factory()->create(['queue_pool_id' => $pool->id]);
     $serviceDate = CarbonImmutable::parse('2026-03-06');
 
     $result = app(GenerateTicketNumber::class)->handle($service, $pool, $serviceDate);
@@ -19,9 +18,8 @@ test('first ticket in a pool for a date starts at sequence one', function () {
 });
 
 test('next ticket in the same pool and date increments sequence', function () {
-    $service = Service::factory()->create(['letter_code' => 'A']);
-    $pool = QueuePool::factory()->create(['code' => 'UMUM']);
-    $service->update(['queue_pool_id' => $pool->id]);
+    $pool = QueuePool::factory()->create(['code' => 'UMUM', 'letter_code' => 'A']);
+    $service = Service::factory()->create(['queue_pool_id' => $pool->id]);
     $serviceDate = CarbonImmutable::parse('2026-03-06');
     QueueTicket::factory()->create([
         'service_id' => $service->id,
@@ -38,10 +36,10 @@ test('next ticket in the same pool and date increments sequence', function () {
 });
 
 test('different pool on same date starts from one', function () {
-    $firstPool = QueuePool::factory()->create(['code' => 'UMUM']);
-    $secondPool = QueuePool::factory()->create(['code' => 'BAYAR']);
-    $service1 = Service::factory()->create(['letter_code' => 'A', 'queue_pool_id' => $firstPool->id]);
-    $service2 = Service::factory()->create(['letter_code' => 'B', 'queue_pool_id' => $secondPool->id]);
+    $firstPool = QueuePool::factory()->create(['code' => 'UMUM', 'letter_code' => 'A']);
+    $secondPool = QueuePool::factory()->create(['code' => 'BAYAR', 'letter_code' => 'B']);
+    $service1 = Service::factory()->create(['queue_pool_id' => $firstPool->id]);
+    $service2 = Service::factory()->create(['queue_pool_id' => $secondPool->id]);
     $serviceDate = CarbonImmutable::parse('2026-03-06');
 
     QueueTicket::factory()->create([
@@ -59,9 +57,8 @@ test('different pool on same date starts from one', function () {
 });
 
 test('same pool on a new date resets sequence to one', function () {
-    $service = Service::factory()->create(['letter_code' => 'A']);
-    $pool = QueuePool::factory()->create(['code' => 'UMUM']);
-    $service->update(['queue_pool_id' => $pool->id]);
+    $pool = QueuePool::factory()->create(['code' => 'UMUM', 'letter_code' => 'A']);
+    $service = Service::factory()->create(['queue_pool_id' => $pool->id]);
 
     QueueTicket::factory()->create([
         'service_id' => $service->id,

@@ -19,6 +19,7 @@ class QueuePoolFactory extends Factory
         return [
             'name' => strtoupper(fake()->lexify('Pool ???')),
             'code' => strtoupper(fake()->unique()->bothify('P??##')),
+            'letter_code' => strtoupper(fake()->lexify('?')),
             'description' => fake()->sentence(),
             'is_active' => true,
         ];

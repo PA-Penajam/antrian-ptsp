@@ -2,6 +2,7 @@
 
 use App\Livewire\KioskBooking;
 use App\Models\AppSetting;
+use App\Models\QueuePool;
 use App\Models\Service;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
@@ -48,9 +49,10 @@ it('renders kiosk booking page when authenticated', function () {
 });
 
 it('shows active walk_in_enabled services as cards', function () {
+    $pool = QueuePool::factory()->create(['letter_code' => 'PC']);
     Service::factory()->create([
         'name' => 'Permohonan Cerai',
-        'letter_code' => 'PC',
+        'queue_pool_id' => $pool->id,
         'is_active' => true,
         'walk_in_enabled' => true,
     ]);

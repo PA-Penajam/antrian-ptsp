@@ -2,6 +2,8 @@
 
 use App\Enums\QueueStatus;
 use App\Models\Counter;
+use App\Models\CounterSession;
+use App\Models\QueueActivity;
 use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
@@ -12,13 +14,27 @@ it('returns correct aggregations from database queries', function () {
     $counter = Counter::factory()->create();
     $user = User::factory()->create();
 
-    QueueTicket::factory()->count(5)->create([
+    CounterSession::factory()->create([
+        'counter_id' => $counter->id,
+        'user_id' => $user->id,
+    ]);
+
+    $tickets = QueueTicket::factory()->count(5)->create([
         'service_id' => $service->id,
         'counter_id' => $counter->id,
         'created_by' => $user->id,
         'service_date' => today(),
         'status' => QueueStatus::Completed,
     ]);
+
+    foreach ($tickets as $ticket) {
+        QueueActivity::factory()->create([
+            'queue_ticket_id' => $ticket->id,
+            'user_id' => $user->id,
+            'counter_id' => $counter->id,
+            'action' => 'ticket_completed',
+        ]);
+    }
 
     $builder = new QueueReportBuilder;
     $result = $builder->build(today()->toDateString(), today()->toDateString());

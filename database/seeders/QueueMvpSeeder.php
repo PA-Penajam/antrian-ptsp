@@ -9,15 +9,13 @@ use Illuminate\Database\Seeder;
 
 class QueueMvpSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $umumPool = QueuePool::query()->firstOrCreate(
             ['code' => 'UMUM'],
             [
                 'name' => 'Pool Umum',
+                'letter_code' => 'A',
                 'description' => 'Pool untuk layanan umum PTSP.',
                 'is_active' => true,
             ]
@@ -27,6 +25,7 @@ class QueueMvpSeeder extends Seeder
             ['code' => 'BAYAR'],
             [
                 'name' => 'Pool Pembayaran',
+                'letter_code' => 'D',
                 'description' => 'Pool khusus layanan pembayaran.',
                 'is_active' => true,
             ]
@@ -36,6 +35,7 @@ class QueueMvpSeeder extends Seeder
             ['code' => 'POSBAKUM'],
             [
                 'name' => 'Pool Posbakum',
+                'letter_code' => 'E',
                 'description' => 'Pool khusus layanan pos bantuan hukum.',
                 'is_active' => true,
             ]
@@ -54,12 +54,11 @@ class QueueMvpSeeder extends Seeder
                 'walk_in_enabled' => true,
                 'daily_quota' => 100,
                 'sort_order' => 1,
-                'letter_code' => 'A',
             ]
         );
 
         Service::query()->firstOrCreate(
-            ['code' => 'C'],
+            ['code' => 'B'],
             [
                 'queue_pool_id' => $umumPool->id,
                 'name' => 'Informasi/Pengaduan',
@@ -71,12 +70,11 @@ class QueueMvpSeeder extends Seeder
                 'walk_in_enabled' => true,
                 'daily_quota' => 100,
                 'sort_order' => 2,
-                'letter_code' => 'B',
             ]
         );
 
         Service::query()->firstOrCreate(
-            ['code' => 'D'],
+            ['code' => 'C'],
             [
                 'queue_pool_id' => $umumPool->id,
                 'name' => 'Pengambilan Produk Hukum',
@@ -88,12 +86,11 @@ class QueueMvpSeeder extends Seeder
                 'walk_in_enabled' => true,
                 'daily_quota' => 100,
                 'sort_order' => 3,
-                'letter_code' => 'C',
             ]
         );
 
         Service::query()->firstOrCreate(
-            ['code' => 'B'],
+            ['code' => 'D'],
             [
                 'queue_pool_id' => $bayarPool->id,
                 'name' => 'Pembayaran',
@@ -105,7 +102,6 @@ class QueueMvpSeeder extends Seeder
                 'walk_in_enabled' => true,
                 'daily_quota' => 80,
                 'sort_order' => 4,
-                'letter_code' => 'D',
             ]
         );
 
@@ -122,7 +118,6 @@ class QueueMvpSeeder extends Seeder
                 'walk_in_enabled' => true,
                 'daily_quota' => 60,
                 'sort_order' => 5,
-                'letter_code' => 'E',
             ]
         );
 

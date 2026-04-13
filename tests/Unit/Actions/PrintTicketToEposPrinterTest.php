@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Queue\PrintTicketToEposPrinter;
+use App\Models\QueuePool;
 use App\Models\QueueTicket;
 use App\Models\Service;
 use Illuminate\Http\Client\Request;
@@ -18,7 +19,8 @@ beforeEach(function () {
 
 function makePrintableTicket(): QueueTicket
 {
-    $service = Service::factory()->create(['name' => 'Pemberkasan', 'letter_code' => 'A']);
+    $pool = QueuePool::factory()->create(['letter_code' => 'A']);
+    $service = Service::factory()->create(['name' => 'Pemberkasan', 'queue_pool_id' => $pool->id]);
     $ticket = QueueTicket::factory()->create([
         'service_id' => $service->id,
         'ticket_number' => 'A1',

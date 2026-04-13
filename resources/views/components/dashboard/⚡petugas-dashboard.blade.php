@@ -4,8 +4,8 @@ use App\Actions\Queue\CallNextTicket;
 use App\Actions\Queue\CancelTicket;
 use App\Actions\Queue\CompleteTicket;
 use App\Actions\Queue\RecallTicket;
-use App\Actions\Queue\SkipTicket;
 use App\Actions\Queue\RestoreSkippedTicket;
+use App\Actions\Queue\SkipTicket;
 use App\Enums\QueueStatus;
 use App\Models\Counter;
 use App\Models\QueueTicket;
@@ -337,19 +337,19 @@ new class extends Component
             return;
         }
 
-        $queueQuery = QueueTicket::query()
+        $queueBase = QueueTicket::query()
             ->whereDate('service_date', $today)
             ->where('queue_pool_id', $selectedCounter->queue_pool_id);
 
         if (! $isAdmin) {
-            $queueQuery->whereIn('service_id', $allowedServiceIds);
+            $queueBase->whereIn('service_id', $allowedServiceIds);
         }
 
-        $this->waitingCount = (clone $queueQuery)
+        $this->waitingCount = (clone $queueBase)
             ->where('status', QueueStatus::Waiting)
             ->count();
 
-        $this->activeTicket = (clone $queueQuery)
+        $this->activeTicket = (clone $queueBase)
             ->with('service')
             ->where('counter_id', $selectedCounter->id)
             ->where('status', QueueStatus::Called)
@@ -357,7 +357,7 @@ new class extends Component
             ->orderByDesc('id')
             ->first();
 
-        $this->waitingTickets = (clone $queueQuery)
+        $this->waitingTickets = (clone $queueBase)
             ->with('service')
             ->where('status', QueueStatus::Waiting)
             ->orderBy('sequence_number')
@@ -373,7 +373,7 @@ new class extends Component
             ])
             ->toArray();
 
-        $this->skippedTickets = (clone $queueQuery)
+        $this->skippedTickets = (clone $queueBase)
             ->with('service')
             ->where('status', QueueStatus::Skipped)
             ->orderByDesc('updated_at')

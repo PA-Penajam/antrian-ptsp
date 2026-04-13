@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Counter;
+use App\Models\CounterSession;
 use App\Models\QueueActivity;
 use App\Models\QueuePool;
 use App\Models\QueueTicket;
@@ -10,12 +11,15 @@ use App\Support\Reports\QueueReportBuilder;
 
 test('report builder aggregates by service counter officer and status', function () {
     $pool = QueuePool::factory()->create(['code' => 'UMUM']);
-    $serviceA = Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
-    $serviceB = Service::factory()->for($pool)->create(['name' => 'Informasi/Pengaduan']);
+    $serviceA = Service::factory()->for($pool)->create(['name' => 'Pendaftaran', 'code' => 'A']);
+    $serviceB = Service::factory()->for($pool)->create(['name' => 'Informasi/Pengaduan', 'code' => 'B']);
     $counter1 = Counter::factory()->for($pool)->create(['name' => 'Loket Umum 1']);
     $counter2 = Counter::factory()->for($pool)->create(['name' => 'Loket Umum 2']);
     $officer1 = User::factory()->create(['name' => 'Officer Satu']);
     $officer2 = User::factory()->create(['name' => 'Officer Dua']);
+
+    CounterSession::factory()->for($counter1)->for($officer1)->create();
+    CounterSession::factory()->for($counter2)->for($officer2)->create();
 
     $ticket1 = QueueTicket::factory()->for($serviceA)->for($pool)->for($counter1)->for($officer1, 'creator')->create([
         'service_date' => '2026-03-10',
@@ -38,7 +42,7 @@ test('report builder aggregates by service counter officer and status', function
         'action' => 'ticket_completed',
     ]);
     QueueActivity::factory()->for($ticket3)->for($officer2)->for($counter2)->create([
-        'action' => 'ticket_completed',
+        'action' => 'ticket_called',
     ]);
     QueueActivity::factory()->for($ticket2)->for($officer1)->for($counter1)->create([
         'action' => 'ticket_recalled',
@@ -50,11 +54,10 @@ test('report builder aggregates by service counter officer and status', function
         ->and($report['by_service']['Informasi/Pengaduan'])->toBe(1)
         ->and($report['by_counter']['Loket Umum 1'])->toBe(2)
         ->and($report['by_counter']['Loket Umum 2'])->toBe(1)
-        ->and($report['by_officer']['Officer Satu'])->toBe(2)
-        ->and($report['by_officer']['Officer Dua'])->toBe(1)
+        ->and($report['by_officer']['Officer Satu'])->toBe(1)
+        ->and($report['by_officer'])->not->toHaveKey('Officer Dua')
         ->and($report['by_status']['completed'])->toBe(1)
         ->and($report['by_status']['waiting'])->toBe(1)
         ->and($report['by_status']['cancelled'])->toBe(1)
-        ->and($report['officer_service_distribution']['Officer Satu']['Pendaftaran'])->toBe(1)
-        ->and($report['officer_service_distribution']['Officer Dua']['Informasi/Pengaduan'])->toBe(1);
+        ->and($report['officer_service_distribution']['Officer Satu']['Pendaftaran'])->toBe(1);
 });
