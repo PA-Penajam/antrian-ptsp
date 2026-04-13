@@ -80,7 +80,8 @@
     ],
     "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-      "@php artisan package:discover --ansi"
+      "@php artisan package:discover --ansi",
+      "@php -r \"@mkdir('public/flux', 0755, true); foreach (['flux.js','flux.min.js','editor.js','editor.min.js','editor.css'] as $f) { $src = file_exists('vendor/livewire/flux-pro/dist/'.$f) ? 'vendor/livewire/flux-pro/dist/'.$f : 'vendor/livewire/flux/dist/'.$f; if (file_exists($src)) copy($src, 'public/flux/'.$f); }\""
     ],
     "post-update-cmd": [
       "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
