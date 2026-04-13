@@ -341,9 +341,8 @@ new class extends Component
             ->whereDate('service_date', $today)
             ->where('queue_pool_id', $selectedCounter->queue_pool_id);
 
-        if (! $isAdmin) {
-            $queueBase->whereIn('service_id', $allowedServiceIds);
-        }
+        // Do not filter by specific service_id for PTSP. 
+        // Tickets are already scoped bounds to the selected counter's queue pool.
 
         $this->waitingCount = (clone $queueBase)
             ->where('status', QueueStatus::Waiting)
