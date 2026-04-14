@@ -561,6 +561,7 @@
 
         // Resume video if playlist exists
         if (tvPlayer && playlist.length > 0 && tvPlayer.paused) {
+            tvPlayer.volume = TV_VIDEO_VOLUME;
             tvPlayer.play().catch(function() {
                 // Autoplay blocked, will try on next user interaction
             });
@@ -605,6 +606,7 @@
             tvPlayer.load();
         }
 
+        tvPlayer.volume = TV_VIDEO_VOLUME;
         tvPlayer.src = playlist[currentVideoIdx];
         tvPlayer.play().catch(function () {
             /* Autoplay diblokir browser — menunggu interaksi pengguna */
