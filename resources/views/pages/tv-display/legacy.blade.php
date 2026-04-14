@@ -407,6 +407,10 @@
 
 @push('scripts')
 <script>
+    var TV_VIDEO_VOLUME          = {{ config('tv.video_volume') }};
+    var TV_VIDEO_VOLUME_DURING_TTS = {{ config('tv.video_volume_during_tts') }};
+    var TV_TTS_VOLUME            = {{ config('tv.tts_volume') }};
+
     var playlist         = [];
     var currentVideoIdx  = 0;
     var tvPlayer         = document.getElementById('tvPlayer');
@@ -444,7 +448,7 @@
         audioPlayer.addEventListener('ended', function () {
             clearPlayGuard();
             revokeAudioObjectUrl();
-            tvPlayer.volume = 1;
+            tvPlayer.volume = TV_VIDEO_VOLUME;
         });
 
         audioPlayer.addEventListener('error', function () {
@@ -457,7 +461,7 @@
                 return;
             }
 
-            tvPlayer.volume = 1;
+            tvPlayer.volume = TV_VIDEO_VOLUME;
         });
 
         document.addEventListener('click', activateSound);
@@ -503,8 +507,9 @@
         document.removeEventListener('click', activateSound);
         document.removeEventListener('keydown', activateSound);
 
-        // Unmute video player
+        // Unmute video player dan set volume default
         tvPlayer.muted = false;
+        tvPlayer.volume = TV_VIDEO_VOLUME;
 
         // Unlock audio element yang sebenarnya dengan silent clip
         audioPlayer.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
@@ -773,7 +778,7 @@
         revokeAudioObjectUrl();
 
         if (!('speechSynthesis' in window)) {
-            tvPlayer.volume = 1;
+            tvPlayer.volume = TV_VIDEO_VOLUME;
             return;
         }
 
@@ -783,12 +788,12 @@
         utterance.lang = 'id-ID';
         utterance.rate = 0.95;
         utterance.pitch = 1;
-        utterance.volume = 1;
+        utterance.volume = TV_TTS_VOLUME;
         utterance.onend = function () {
-            tvPlayer.volume = 1;
+            tvPlayer.volume = TV_VIDEO_VOLUME;
         };
         utterance.onerror = function () {
-            tvPlayer.volume = 1;
+            tvPlayer.volume = TV_VIDEO_VOLUME;
         };
 
         window.speechSynthesis.speak(utterance);
@@ -881,7 +886,11 @@
 
         var source = ctx.createBufferSource();
         source.buffer = buffer;
-        source.connect(ctx.destination);
+
+        var gainNode = ctx.createGain();
+        gainNode.gain.value = TV_TTS_VOLUME;
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
 
         // Simpan reference untuk cleanup
         window._currentAudioSource = source;
@@ -891,7 +900,7 @@
             clearPlayGuard();
             revokeAudioObjectUrl();
             if (ctx.state !== 'closed') { ctx.close(); }
-            tvPlayer.volume = 1;
+            tvPlayer.volume = TV_VIDEO_VOLUME;
         };
 
         source.onerror = function (e) {
@@ -917,6 +926,7 @@
 
     function playWithAudioElement(blobUrl, fallbackText, mySeq) {
         audioPlayer.src = blobUrl;
+        audioPlayer.volume = TV_TTS_VOLUME;
 
         playGuardTimer = setTimeout(function () {
             if (mySeq !== ttsSeq) { return; }
@@ -980,7 +990,7 @@
         audioPlayer.removeAttribute('src');
         audioPlayer.load();
 
-        tvPlayer.volume = 0.2;
+        tvPlayer.volume = TV_VIDEO_VOLUME_DURING_TTS;
         pendingAnnouncementText = text;
 
         $.ajax({
