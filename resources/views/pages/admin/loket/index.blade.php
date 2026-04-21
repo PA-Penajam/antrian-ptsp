@@ -121,14 +121,11 @@
                                             Edit
                                         </flux:button>
                                     </flux:modal.trigger>
-                                    <form method="POST" action="{{ route('admin.loket.destroy', $counter) }}" class="inline"
-                                        onsubmit="return confirm('Yakin ingin menghapus loket {{ $counter->name }}?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <flux:button type="submit" size="sm" variant="danger" icon="trash">
+                                    <flux:modal.trigger name="delete-counter-{{ $counter->id }}">
+                                        <flux:button size="sm" variant="danger" icon="trash">
                                             Hapus
                                         </flux:button>
-                                    </form>
+                                    </flux:modal.trigger>
                                 </div>
                             </flux:table.cell>
                         </flux:table.row>
@@ -198,14 +195,11 @@
                                                     Edit
                                                 </flux:button>
                                             </flux:modal.trigger>
-                                            <form method="POST" action="{{ route('admin.loket.pool.destroy', $pool) }}" class="inline"
-                                                onsubmit="return confirm('Hapus pool {{ $pool->name }}? Pool yang terhubung dengan layanan/loket tidak bisa dihapus.')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <flux:button type="submit" size="xs" variant="danger" icon="trash">
+                                            <flux:modal.trigger name="delete-pool-{{ $pool->id }}">
+                                                <flux:button size="xs" variant="danger" icon="trash">
                                                     Hapus
                                                 </flux:button>
-                                            </form>
+                                            </flux:modal.trigger>
                                         </div>
                                     </td>
                                 </tr>
@@ -223,24 +217,31 @@
             {{-- Create Form --}}
             <div class="rounded-lg border border-cyan-200 bg-cyan-50/50 dark:border-cyan-800 dark:bg-cyan-900/10 p-4 space-y-3">
                 <p class="text-xs font-semibold uppercase tracking-wide text-cyan-700 dark:text-cyan-400">Tambah Pool Baru</p>
-                <form method="POST" action="{{ route('admin.loket.pool.store') }}" class="grid gap-3 sm:grid-cols-4">
+                <form method="POST" action="{{ route('admin.loket.pool.store') }}" class="space-y-3">
                     @csrf
-                    <div>
-                        <input type="text" name="name" placeholder="Nama pool" required
-                            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" />
+                    <input type="hidden" name="is_active" value="1">
+
+                    <div class="grid gap-3 sm:grid-cols-4">
+                        <div>
+                            <input type="text" name="name" value="{{ old('name') }}" placeholder="Nama pool" required
+                                class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" />
+                            <flux:error name="name" />
+                        </div>
+                        <div>
+                            <input type="text" name="code" value="{{ old('code') }}" placeholder="Kode" required maxlength="20"
+                                class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" />
+                            <flux:error name="code" />
+                        </div>
+                        <div>
+                            <input type="text" name="letter_code" value="{{ old('letter_code') }}" placeholder="Huruf" required maxlength="5"
+                                class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" />
+                            <flux:error name="letter_code" />
+                        </div>
+                        <flux:button type="submit" variant="filled" class="sm:self-start">
+                            <flux:icon.plus class="size-4" />
+                            Tambah
+                        </flux:button>
                     </div>
-                    <div>
-                        <input type="text" name="code" placeholder="Kode" required maxlength="20"
-                            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" />
-                    </div>
-                    <div>
-                        <input type="text" name="letter_code" placeholder="Huruf" required maxlength="5"
-                            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" />
-                    </div>
-                    <flux:button type="submit" variant="filled" class="sm:self-end">
-                        <flux:icon.plus class="size-4" />
-                        Tambah
-                    </flux:button>
                 </form>
             </div>
         </div>
@@ -437,6 +438,60 @@
                     </flux:button>
                 </div>
             </form>
+        </flux:modal>
+    @endforeach
+
+    {{-- Delete Counter Confirmation Modals --}}
+    @foreach ($counters as $counter)
+        <flux:modal name="delete-counter-{{ $counter->id }}" class="w-full max-w-md">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400">
+                        <flux:icon.trash class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Hapus Loket</flux:heading>
+                </div>
+
+                <flux:callout icon="exclamation-circle" color="red">
+                    Apakah Anda yakin ingin menghapus loket <strong>{{ $counter->name }}</strong>? Tindakan ini tidak dapat dibatalkan.
+                </flux:callout>
+
+                <form method="POST" action="{{ route('admin.loket.destroy', $counter) }}" class="flex justify-end gap-2 pt-2">
+                    @csrf
+                    @method('DELETE')
+                    <flux:modal.close>
+                        <flux:button type="button" variant="ghost">Batal</flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="danger" icon="trash">Hapus</flux:button>
+                </form>
+            </div>
+        </flux:modal>
+    @endforeach
+
+    {{-- Delete Pool Confirmation Modals --}}
+    @foreach ($queuePools as $pool)
+        <flux:modal name="delete-pool-{{ $pool->id }}" class="w-full max-w-md">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400">
+                        <flux:icon.trash class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Hapus Pool</flux:heading>
+                </div>
+
+                <flux:callout icon="exclamation-circle" color="red">
+                    Apakah Anda yakin ingin menghapus pool <strong>{{ $pool->name }}</strong>? Pool yang terhubung dengan layanan atau loket tidak dapat dihapus.
+                </flux:callout>
+
+                <form method="POST" action="{{ route('admin.loket.pool.destroy', $pool) }}" class="flex justify-end gap-2 pt-2">
+                    @csrf
+                    @method('DELETE')
+                    <flux:modal.close>
+                        <flux:button type="button" variant="ghost">Batal</flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="danger" icon="trash">Hapus</flux:button>
+                </form>
+            </div>
         </flux:modal>
     @endforeach
 </x-layouts::app>

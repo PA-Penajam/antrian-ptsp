@@ -114,13 +114,11 @@
                                             Edit
                                         </flux:button>
                                     </flux:modal.trigger>
-                                    <form method="POST" action="{{ route('admin.layanan.destroy', $service) }}" class="inline" onsubmit="return confirm('Hapus layanan {{ $service->name }}?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <flux:button type="submit" size="sm" variant="danger" icon="trash">
+                                    <flux:modal.trigger name="delete-service-{{ $service->id }}">
+                                        <flux:button size="sm" variant="danger" icon="trash">
                                             Hapus
                                         </flux:button>
-                                    </form>
+                                    </flux:modal.trigger>
                                 </div>
                             </flux:table.cell>
                         </flux:table.row>
@@ -162,61 +160,72 @@
                 <flux:field>
                     <flux:label>Nama Layanan</flux:label>
                     <flux:input name="name" value="{{ old('name') }}" required />
+                    <flux:error name="name" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>Kode</flux:label>
                     <flux:input name="code" value="{{ old('code') }}" required />
+                    <flux:error name="code" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>Slug (Opsional)</flux:label>
-                    <flux:input name="slug" value="{{ old('slug') }}" />
+                    <flux:label>Slug</flux:label>
+                    <flux:input name="slug" value="{{ old('slug') }}" placeholder="Akan dibuat otomatis dari nama" />
+                    <flux:error name="slug" />
                 </flux:field>
 
-                    <flux:field>
-                        <flux:label>Queue Pool</flux:label>
-                        <flux:select name="queue_pool_id" required>
-                            <flux:select.option value="">Pilih Pool</flux:select.option>
-                            @foreach ($queuePools as $pool)
-                                <flux:select.option value="{{ $pool->id }}">{{ $pool->name }} ({{ $pool->letter_code ?? '-' }})</flux:select.option>
-                            @endforeach
-                        </flux:select>
-                    </flux:field>
+                <flux:field>
+                    <flux:label>Queue Pool</flux:label>
+                    <flux:select name="queue_pool_id" required>
+                        <flux:select.option value="">Pilih Pool</flux:select.option>
+                        @foreach ($queuePools as $pool)
+                            <flux:select.option value="{{ $pool->id }}">{{ $pool->name }} ({{ $pool->letter_code ?? '-' }})</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="queue_pool_id" />
+                </flux:field>
 
                 <flux:field>
                     <flux:label>Sort Order</flux:label>
-                    <flux:input type="number" name="sort_order" value="{{ old('sort_order', 0) }}" />
+                    <flux:input type="number" name="sort_order" value="{{ old('sort_order', 0) }}" required />
+                    <flux:error name="sort_order" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>Kuota Harian</flux:label>
                     <flux:input type="number" name="daily_quota" value="{{ old('daily_quota') }}" placeholder="Kosongkan jika tak terbatas" />
+                    <flux:error name="daily_quota" />
                 </flux:field>
 
                 <div class="grid gap-3 sm:grid-cols-3 md:col-span-2">
                     <div>
                         <input type="hidden" name="is_active" value="0">
                         <flux:checkbox name="is_active" value="1" :checked="(bool) old('is_active', 1)" label="Aktif" />
+                        <flux:error name="is_active" />
                     </div>
                     <div>
                         <input type="hidden" name="booking_enabled" value="0">
                         <flux:checkbox name="booking_enabled" value="1" :checked="(bool) old('booking_enabled', 1)" label="Terima Booking" />
+                        <flux:error name="booking_enabled" />
                     </div>
                     <div>
                         <input type="hidden" name="walk_in_enabled" value="0">
                         <flux:checkbox name="walk_in_enabled" value="1" :checked="(bool) old('walk_in_enabled', 1)" label="Terima Walk-in" />
+                        <flux:error name="walk_in_enabled" />
                     </div>
                 </div>
 
                 <flux:field class="md:col-span-2">
                     <flux:label>Deskripsi</flux:label>
                     <flux:textarea name="description" rows="2">{{ old('description') }}</flux:textarea>
+                    <flux:error name="description" />
                 </flux:field>
 
                 <flux:field class="md:col-span-2">
-                    <flux:label>Persyaratan (Opsional)</flux:label>
+                    <flux:label>Persyaratan</flux:label>
                     <flux:textarea name="requirements" rows="2">{{ old('requirements') }}</flux:textarea>
+                    <flux:error name="requirements" />
                 </flux:field>
             </div>
 
@@ -255,63 +264,74 @@
                 <div class="grid gap-4 md:grid-cols-2">
                     <flux:field>
                         <flux:label>Nama Layanan</flux:label>
-                        <flux:input name="name" value="{{ $service->name }}" required />
+                        <flux:input name="name" value="{{ old('name', $service->name) }}" required />
+                        <flux:error name="name" />
                     </flux:field>
 
                     <flux:field>
                         <flux:label>Kode</flux:label>
-                        <flux:input name="code" value="{{ $service->code }}" required />
+                        <flux:input name="code" value="{{ old('code', $service->code) }}" required />
+                        <flux:error name="code" />
                     </flux:field>
 
                     <flux:field>
                         <flux:label>Slug</flux:label>
-                        <flux:input name="slug" value="{{ $service->slug }}" />
+                        <flux:input name="slug" value="{{ old('slug', $service->slug) }}" />
+                        <flux:error name="slug" />
                     </flux:field>
 
                     <flux:field>
                         <flux:label>Queue Pool</flux:label>
                         <flux:select name="queue_pool_id" required>
                             @foreach ($queuePools as $pool)
-                                <flux:select.option value="{{ $pool->id }}" :selected="$pool->id === $service->queue_pool_id">
+                                <flux:select.option value="{{ $pool->id }}" :selected="$pool->id === old('queue_pool_id', $service->queue_pool_id)">
                                     {{ $pool->name }} ({{ $pool->letter_code ?? '-' }})
                                 </flux:select.option>
                             @endforeach
                         </flux:select>
+                        <flux:error name="queue_pool_id" />
                     </flux:field>
 
                     <flux:field>
                         <flux:label>Sort Order</flux:label>
-                        <flux:input type="number" name="sort_order" value="{{ $service->sort_order }}" />
+                        <flux:input type="number" name="sort_order" value="{{ old('sort_order', $service->sort_order) }}" required />
+                        <flux:error name="sort_order" />
                     </flux:field>
 
                     <flux:field>
                         <flux:label>Kuota Harian</flux:label>
-                        <flux:input type="number" name="daily_quota" value="{{ $service->daily_quota }}" />
+                        <flux:input type="number" name="daily_quota" value="{{ old('daily_quota', $service->daily_quota) }}" />
+                        <flux:error name="daily_quota" />
                     </flux:field>
 
                     <div class="grid gap-3 sm:grid-cols-3 md:col-span-2">
                         <div>
                             <input type="hidden" name="is_active" value="0">
-                            <flux:checkbox name="is_active" value="1" :checked="$service->is_active" label="Aktif" />
+                            <flux:checkbox name="is_active" value="1" :checked="(bool) old('is_active', $service->is_active)" label="Aktif" />
+                            <flux:error name="is_active" />
                         </div>
                         <div>
                             <input type="hidden" name="booking_enabled" value="0">
-                            <flux:checkbox name="booking_enabled" value="1" :checked="$service->booking_enabled" label="Booking" />
+                            <flux:checkbox name="booking_enabled" value="1" :checked="(bool) old('booking_enabled', $service->booking_enabled)" label="Booking" />
+                            <flux:error name="booking_enabled" />
                         </div>
                         <div>
                             <input type="hidden" name="walk_in_enabled" value="0">
-                            <flux:checkbox name="walk_in_enabled" value="1" :checked="$service->walk_in_enabled" label="Walk-in" />
+                            <flux:checkbox name="walk_in_enabled" value="1" :checked="(bool) old('walk_in_enabled', $service->walk_in_enabled)" label="Walk-in" />
+                            <flux:error name="walk_in_enabled" />
                         </div>
                     </div>
 
                     <flux:field class="md:col-span-2">
                         <flux:label>Deskripsi</flux:label>
-                        <flux:textarea name="description" rows="2">{{ $service->description }}</flux:textarea>
+                        <flux:textarea name="description" rows="2">{{ old('description', $service->description) }}</flux:textarea>
+                        <flux:error name="description" />
                     </flux:field>
 
                     <flux:field class="md:col-span-2">
                         <flux:label>Persyaratan</flux:label>
-                        <flux:textarea name="requirements" rows="2">{{ $service->requirements }}</flux:textarea>
+                        <flux:textarea name="requirements" rows="2">{{ old('requirements', $service->requirements) }}</flux:textarea>
+                        <flux:error name="requirements" />
                     </flux:field>
                 </div>
 
@@ -331,6 +351,33 @@
                     </flux:button>
                 </div>
             </form>
+        </flux:modal>
+    @endforeach
+
+    {{-- Delete Confirmation Modals --}}
+    @foreach ($services as $service)
+        <flux:modal name="delete-service-{{ $service->id }}" class="w-full max-w-md">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400">
+                        <flux:icon.trash class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Hapus Layanan</flux:heading>
+                </div>
+
+                <flux:callout icon="exclamation-circle" color="red">
+                    Apakah Anda yakin ingin menghapus layanan <strong>{{ $service->name }}</strong>? Tindakan ini tidak dapat dibatalkan.
+                </flux:callout>
+
+                <form method="POST" action="{{ route('admin.layanan.destroy', $service) }}" class="flex justify-end gap-2 pt-2">
+                    @csrf
+                    @method('DELETE')
+                    <flux:modal.close>
+                        <flux:button type="button" variant="ghost">Batal</flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="danger" icon="trash">Hapus</flux:button>
+                </form>
+            </div>
         </flux:modal>
     @endforeach
 </x-layouts::app>

@@ -12,7 +12,9 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 class UserManagementController extends Controller
 {
@@ -34,41 +36,64 @@ class UserManagementController extends Controller
 
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        $user = User::query()->create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'role' => $validated['role'],
-            'password' => Hash::make($validated['password']),
-        ]);
+            $user = User::query()->create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'role' => $validated['role'],
+                'password' => Hash::make($validated['password']),
+            ]);
 
-        if ($validated['role'] === 'officer' && ! empty($validated['service_id'])) {
-            $user->services()->sync([$validated['service_id']]);
+            if ($validated['role'] === 'officer' && ! empty($validated['service_id'])) {
+                $user->services()->sync([$validated['service_id']]);
+            }
+
+            return redirect('/admin/users')
+                ->with('status', 'User Berhasil Dibuat');
+        } catch (Throwable $e) {
+            Log::error('[Admin][User] Gagal membuat user', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'input' => $request->except(['_token', 'password']),
+            ]);
+
+            return redirect('/admin/users')
+                ->with('error', 'Terjadi kesalahan saat membuat user. Silakan coba lagi.');
         }
-
-        return redirect('/admin/users')
-            ->with('status', 'User Berhasil Dibuat');
     }
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        $user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'role' => $validated['role'],
-        ]);
+            $user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'role' => $validated['role'],
+            ]);
 
-        if ($validated['role'] === 'officer' && ! empty($validated['service_id'])) {
-            $user->services()->sync([$validated['service_id']]);
-        } else {
-            $user->services()->detach();
+            if ($validated['role'] === 'officer' && ! empty($validated['service_id'])) {
+                $user->services()->sync([$validated['service_id']]);
+            } else {
+                $user->services()->detach();
+            }
+
+            return redirect('/admin/users')
+                ->with('status', 'User Berhasil Diperbarui');
+        } catch (Throwable $e) {
+            Log::error('[Admin][User] Gagal memperbarui user', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'target_user_id' => $user->id,
+                'input' => $request->except(['_token', '_method', 'password']),
+            ]);
+
+            return redirect('/admin/users')
+                ->with('error', 'Terjadi kesalahan saat memperbarui user. Silakan coba lagi.');
         }
-
-        return redirect('/admin/users')
-            ->with('status', 'User Berhasil Diperbarui');
     }
 
     public function destroy(User $user): RedirectResponse
@@ -90,10 +115,21 @@ class UserManagementController extends Controller
                 ->with('error', 'User tidak dapat dihapus karena memiliki antrian aktif.');
         }
 
-        $user->services()->detach();
-        $user->delete();
+        try {
+            $user->services()->detach();
+            $user->delete();
 
-        return redirect()->route('admin.users.index')
-            ->with('status', 'User berhasil dihapus.');
+            return redirect()->route('admin.users.index')
+                ->with('status', 'User berhasil dihapus.');
+        } catch (Throwable $e) {
+            Log::error('[Admin][User] Gagal menghapus user', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'target_user_id' => $user->id,
+            ]);
+
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Terjadi kesalahan saat menghapus user. Silakan coba lagi.');
+        }
     }
 }

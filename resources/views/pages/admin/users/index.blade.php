@@ -102,18 +102,11 @@
                                             <flux:modal.trigger name="edit-user-{{ $user->id }}">
                                                 <flux:button size="sm" variant="filled" icon="pencil">Edit</flux:button>
                                             </flux:modal.trigger>
-                                            <form
-                                                method="POST"
-                                                action="{{ route('admin.users.destroy', $user) }}"
-                                                class="inline"
-                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus user {{ $user->name }}?')"
-                                            >
-                                                @csrf
-                                                @method('DELETE')
-                                                <flux:button type="submit" size="sm" variant="danger" icon="trash">
+                                            <flux:modal.trigger name="delete-user-{{ $user->id }}">
+                                                <flux:button size="sm" variant="danger" icon="trash">
                                                     Hapus
                                                 </flux:button>
-                                            </form>
+                                            </flux:modal.trigger>
                                         </div>
                                     </flux:table.cell>
                                 </flux:table.row>
@@ -318,6 +311,33 @@
                         <flux:button type="submit" variant="primary">Simpan Perubahan</flux:button>
                     </div>
                 </form>
+            </flux:modal>
+        @endforeach
+
+        {{-- Delete User Confirmation Modals --}}
+        @foreach ($otherUsers as $user)
+            <flux:modal name="delete-user-{{ $user->id }}" class="w-full max-w-md">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="admin-icon-box bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400">
+                            <flux:icon.trash class="size-5" />
+                        </div>
+                        <flux:heading size="lg">Hapus User</flux:heading>
+                    </div>
+
+                    <flux:callout icon="exclamation-circle" color="red">
+                        Apakah Anda yakin ingin menghapus user <strong>{{ $user->name }}</strong>? Tindakan ini tidak dapat dibatalkan.
+                    </flux:callout>
+
+                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="flex justify-end gap-2 pt-2">
+                        @csrf
+                        @method('DELETE')
+                        <flux:modal.close>
+                            <flux:button type="button" variant="ghost">Batal</flux:button>
+                        </flux:modal.close>
+                        <flux:button type="submit" variant="danger" icon="trash">Hapus</flux:button>
+                    </form>
+                </div>
             </flux:modal>
         @endforeach
     </div>

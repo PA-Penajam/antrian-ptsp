@@ -21,6 +21,12 @@
             </flux:callout>
         @endif
 
+        @if (session('error'))
+            <flux:callout icon="exclamation-circle" color="red">
+                {{ session('error') }}
+            </flux:callout>
+        @endif
+
         <flux:card class="admin-stat-success admin-card-elevated p-5">
             <div class="flex items-center gap-3 mb-3">
                 <div class="admin-icon-box bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">

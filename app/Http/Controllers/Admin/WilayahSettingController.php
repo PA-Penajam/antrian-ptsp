@@ -8,7 +8,9 @@ use App\Models\AppSetting;
 use App\Models\Wilayah;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 class WilayahSettingController extends Controller
 {
@@ -43,11 +45,22 @@ class WilayahSettingController extends Controller
 
     public function update(UpdateWilayahScopeRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        AppSetting::setValue('wilayah.scope.kabupaten_kode', $validated['kabupaten_kode']);
+            AppSetting::setValue('wilayah.scope.kabupaten_kode', $validated['kabupaten_kode']);
 
-        return redirect()->route('admin.wilayah.index')
-            ->with('status', 'Setting wilayah berhasil diperbarui.');
+            return redirect()->route('admin.wilayah.index')
+                ->with('status', 'Setting wilayah berhasil diperbarui.');
+        } catch (Throwable $e) {
+            Log::error('[Admin][Wilayah] Gagal memperbarui setting wilayah', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'input' => $request->except(['_token', '_method']),
+            ]);
+
+            return redirect()->route('admin.wilayah.index')
+                ->with('error', 'Terjadi kesalahan saat memperbarui setting wilayah. Silakan coba lagi.');
+        }
     }
 }
