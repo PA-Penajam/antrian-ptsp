@@ -40,20 +40,59 @@
         @endif
 
         <flux:card class="space-y-4">
-            <div class="flex items-center gap-3">
-                <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
-                    <flux:icon.building-office class="size-5" />
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
+                        <flux:icon.building-office class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Daftar Loket</flux:heading>
                 </div>
-                <flux:heading size="lg">Daftar Loket</flux:heading>
+                <form method="GET" action="{{ route('admin.loket.index') }}" class="w-full sm:w-auto">
+                    <flux:input
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Cari nama atau kode..."
+                        icon="magnifying-glass"
+                        class="w-full sm:w-64"
+                    />
+                </form>
             </div>
 
             <flux:table>
                 <flux:table.columns>
-                    <flux:table.column>Loket</flux:table.column>
-                    <flux:table.column>Kode</flux:table.column>
+                    <flux:table.column>
+                        <a href="{{ route('admin.loket.index', ['sort_by' => 'name', 'sort_direction' => $sortBy === 'name' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                            Loket
+                            @if ($sortBy === 'name')
+                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                            @endif
+                        </a>
+                    </flux:table.column>
+                    <flux:table.column>
+                        <a href="{{ route('admin.loket.index', ['sort_by' => 'code', 'sort_direction' => $sortBy === 'code' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                            Kode
+                            @if ($sortBy === 'code')
+                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                            @endif
+                        </a>
+                    </flux:table.column>
                     <flux:table.column>Pool</flux:table.column>
-                    <flux:table.column>Urutan</flux:table.column>
-                    <flux:table.column>Status</flux:table.column>
+                    <flux:table.column>
+                        <a href="{{ route('admin.loket.index', ['sort_by' => 'sort_order', 'sort_direction' => $sortBy === 'sort_order' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                            Urutan
+                            @if ($sortBy === 'sort_order')
+                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                            @endif
+                        </a>
+                    </flux:table.column>
+                    <flux:table.column>
+                        <a href="{{ route('admin.loket.index', ['sort_by' => 'is_active', 'sort_direction' => $sortBy === 'is_active' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                            Status
+                            @if ($sortBy === 'is_active')
+                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                            @endif
+                        </a>
+                    </flux:table.column>
                     <flux:table.column>Aksi</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
@@ -106,6 +145,12 @@
                     @endforelse
                 </flux:table.rows>
             </flux:table>
+
+            @if ($counters->hasPages())
+                <div class="mt-4">
+                    {{ $counters->appends(['search' => request('search')])->links() }}
+                </div>
+            @endif
         </flux:card>
     </div>
 
@@ -147,14 +192,21 @@
                                     </td>
                                     <td class="px-4 py-2.5 text-center text-zinc-500">{{ $pool->services()->count() }}</td>
                                     <td class="px-4 py-2.5 text-center">
-                                        <form method="POST" action="{{ route('admin.loket.pool.destroy', $pool) }}" class="inline"
-                                            onsubmit="return confirm('Hapus pool {{ $pool->name }}? Pool yang terhubung dengan layanan/loket tidak bisa dihapus.')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <flux:button type="submit" size="xs" variant="danger" icon="trash">
-                                                Hapus
-                                            </flux:button>
-                                        </form>
+                                        <div class="flex items-center justify-center gap-2">
+                                            <flux:modal.trigger name="edit-pool-{{ $pool->id }}">
+                                                <flux:button size="xs" variant="filled" icon="pencil">
+                                                    Edit
+                                                </flux:button>
+                                            </flux:modal.trigger>
+                                            <form method="POST" action="{{ route('admin.loket.pool.destroy', $pool) }}" class="inline"
+                                                onsubmit="return confirm('Hapus pool {{ $pool->name }}? Pool yang terhubung dengan layanan/loket tidak bisa dihapus.')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <flux:button type="submit" size="xs" variant="danger" icon="trash">
+                                                    Hapus
+                                                </flux:button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -194,9 +246,60 @@
         </div>
     </flux:modal>
 
+    {{-- Edit Pool Modals --}}
+    @foreach ($queuePools as $pool)
+        <flux:modal name="edit-pool-{{ $pool->id }}" class="w-full max-w-md">
+            <form method="POST" action="{{ route('admin.loket.pool.update', $pool) }}" class="space-y-4">
+                @csrf
+                @method('PUT')
+
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400">
+                        <flux:icon.pencil-square class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Edit Pool: {{ $pool->name }}</flux:heading>
+                </div>
+
+                <flux:field>
+                    <flux:label>Nama Pool</flux:label>
+                    <flux:input name="name" value="{{ old('name', $pool->name) }}" required />
+                    <flux:error name="name" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Kode</flux:label>
+                    <flux:input name="code" value="{{ old('code', $pool->code) }}" required maxlength="20" />
+                    <flux:error name="code" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Kode Huruf</flux:label>
+                    <flux:input name="letter_code" value="{{ old('letter_code', $pool->letter_code) }}" required maxlength="5" />
+                    <flux:error name="letter_code" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Status</flux:label>
+                    <flux:select name="is_active" required>
+                        <flux:select.option value="1" :selected="old('is_active', $pool->is_active) == 1">Aktif</flux:select.option>
+                        <flux:select.option value="0" :selected="old('is_active', $pool->is_active) == 0">Nonaktif</flux:select.option>
+                    </flux:select>
+                    <flux:error name="is_active" />
+                </flux:field>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <flux:modal.close>
+                        <flux:button type="button" variant="ghost">Batal</flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="primary">Simpan</flux:button>
+                </div>
+            </form>
+        </flux:modal>
+    @endforeach
+
     {{-- Create Counter Modal --}}
     <flux:modal name="create-counter" class="w-full max-w-md">
-        <form method="POST" action="{{ route('admin.loket.store') }}" class="space-y-4">
+        <form method="POST" action="{{ route('admin.loket.store') }}" class="space-y-4" x-data="{ submitting: false }" @submit="submitting = true">
             @csrf
 
             <div class="flex items-center gap-3">
@@ -251,7 +354,16 @@
                 <flux:modal.close>
                     <flux:button type="button" variant="ghost">Batal</flux:button>
                 </flux:modal.close>
-                <flux:button type="submit" variant="primary">Tambah Loket</flux:button>
+                <flux:button type="submit" variant="primary" x-bind:disabled="submitting">
+                    <span x-show="!submitting">Tambah Loket</span>
+                    <span x-show="submitting" class="flex items-center gap-2">
+                        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Menyimpan...
+                    </span>
+                </flux:button>
             </div>
         </form>
     </flux:modal>
@@ -259,7 +371,7 @@
     {{-- Edit Counter Modals --}}
     @foreach ($counters as $counter)
         <flux:modal name="edit-counter-{{ $counter->id }}" class="w-full max-w-md">
-            <form method="POST" action="{{ route('admin.loket.update', $counter) }}" class="space-y-4">
+            <form method="POST" action="{{ route('admin.loket.update', $counter) }}" class="space-y-4" x-data="{ submitting: false }" @submit="submitting = true">
                 @csrf
                 @method('PUT')
 
@@ -313,7 +425,16 @@
                     <flux:modal.close>
                         <flux:button type="button" variant="ghost">Batal</flux:button>
                     </flux:modal.close>
-                    <flux:button type="submit" variant="primary">Simpan</flux:button>
+                    <flux:button type="submit" variant="primary" x-bind:disabled="submitting">
+                        <span x-show="!submitting">Simpan</span>
+                        <span x-show="submitting" class="flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Menyimpan...
+                        </span>
+                    </flux:button>
                 </div>
             </form>
         </flux:modal>

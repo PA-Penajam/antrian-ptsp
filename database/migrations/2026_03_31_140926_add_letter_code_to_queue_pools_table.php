@@ -31,12 +31,27 @@ return new class extends Migration
         ]);
 
         if (Schema::hasColumn('services', 'letter_code')) {
-            // Cek apakah unique index ada sebelum drop (kompatibel MariaDB)
-            $indexExists = DB::table('information_schema.statistics')
-                ->where('table_schema', DB::connection()->getDatabaseName())
-                ->where('table_name', 'services')
-                ->where('index_name', 'services_letter_code_unique')
-                ->exists();
+            // Cek apakah unique index ada sebelum drop (kompatibel dengan semua database)
+            $driver = DB::connection()->getDriverName();
+            $indexExists = false;
+
+            if ($driver === 'sqlite') {
+                // SQLite: cek menggunakan PRAGMA
+                $indexes = DB::select("PRAGMA index_list('services')");
+                foreach ($indexes as $index) {
+                    if ($index->name === 'services_letter_code_unique') {
+                        $indexExists = true;
+                        break;
+                    }
+                }
+            } else {
+                // MySQL/MariaDB/PostgreSQL
+                $indexExists = DB::table('information_schema.statistics')
+                    ->where('table_schema', DB::connection()->getDatabaseName())
+                    ->where('table_name', 'services')
+                    ->where('index_name', 'services_letter_code_unique')
+                    ->exists();
+            }
 
             Schema::table('services', function (Blueprint $table) use ($indexExists) {
                 if ($indexExists) {

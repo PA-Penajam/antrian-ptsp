@@ -11,17 +11,30 @@ use App\Http\Requests\UpdatePoolRequest;
 use App\Models\Counter;
 use App\Models\QueuePool;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CounterManagementController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = $request->query('search');
+        $sortBy = $request->query('sort_by', 'sort_order');
+        $sortDirection = $request->query('sort_direction', 'asc');
+
+        $allowedSortColumns = ['name', 'code', 'sort_order', 'is_active'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'sort_order';
+        }
+        $sortDirection = in_array($sortDirection, ['asc', 'desc']) ? $sortDirection : 'asc';
+
         $counters = Counter::query()
             ->with('queuePool')
-            ->orderBy('sort_order')
+            ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('code', 'like', "%{$search}%"))
+            ->orderBy($sortBy, $sortDirection)
             ->orderBy('name')
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
         $queuePools = QueuePool::query()
             ->orderBy('name')
@@ -30,6 +43,8 @@ class CounterManagementController extends Controller
         return view('pages.admin.loket.index', [
             'counters' => $counters,
             'queuePools' => $queuePools,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
         ]);
     }
 
@@ -51,13 +66,24 @@ class CounterManagementController extends Controller
 
     public function destroy(Counter $counter): RedirectResponse
     {
+        // Check for active tickets (booked, waiting, or called)
         $hasActiveTickets = $counter->queueTickets()
-            ->whereIn('status', [QueueStatus::Waiting, QueueStatus::Called])
+            ->whereIn('status', [QueueStatus::Booked->value, QueueStatus::Waiting->value, QueueStatus::Called->value])
             ->exists();
 
         if ($hasActiveTickets) {
             return redirect()->route('admin.loket.index')
                 ->with('error', 'Loket tidak dapat dihapus karena memiliki antrian aktif.');
+        }
+
+        // Check for active counter sessions
+        $hasActiveSessions = $counter->sessions()
+            ->where('status', 'open')
+            ->exists();
+
+        if ($hasActiveSessions) {
+            return redirect()->route('admin.loket.index')
+                ->with('error', 'Loket tidak dapat dihapus karena memiliki sesi aktif.');
         }
 
         $counter->delete();

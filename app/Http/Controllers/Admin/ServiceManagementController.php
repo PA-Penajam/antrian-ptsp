@@ -17,10 +17,19 @@ class ServiceManagementController extends Controller
     public function index(Request $request): View
     {
         $search = $request->query('search');
+        $sortBy = $request->query('sort_by', 'sort_order');
+        $sortDirection = $request->query('sort_direction', 'asc');
+
+        $allowedSortColumns = ['name', 'code', 'is_active', 'sort_order'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'sort_order';
+        }
+        $sortDirection = in_array($sortDirection, ['asc', 'desc']) ? $sortDirection : 'asc';
+
         $services = Service::query()
             ->with('queuePool')
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('code', 'like', "%{$search}%"))
-            ->orderBy('sort_order')
+            ->orderBy($sortBy, $sortDirection)
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
@@ -33,6 +42,8 @@ class ServiceManagementController extends Controller
         return view('pages.admin.layanan.index', [
             'services' => $services,
             'queuePools' => $queuePools,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
         ]);
     }
 

@@ -133,3 +133,198 @@ test('empty state shows when no counters', function () {
     $response->assertOk()
         ->assertSee('Belum ada loket');
 });
+
+test('admin can create pool', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+
+    $response = $this->actingAs($admin)->post('/admin/loket/pool', [
+        'name' => 'Pool Test',
+        'code' => 'TEST',
+        'letter_code' => 'T',
+        'is_active' => true,
+    ]);
+
+    $response->assertRedirect('/admin/loket')
+        ->assertSessionHas('status', 'Pool antrian berhasil dibuat.');
+
+    $this->assertDatabaseHas('queue_pools', [
+        'name' => 'Pool Test',
+        'code' => 'TEST',
+        'letter_code' => 'T',
+        'is_active' => 1,
+    ]);
+});
+
+test('admin can update pool', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create([
+        'name' => 'Pool Lama',
+        'code' => 'OLD',
+        'letter_code' => 'O',
+    ]);
+
+    $response = $this->actingAs($admin)->put("/admin/loket/pool/{$pool->id}", [
+        'name' => 'Pool Baru',
+        'code' => 'NEW',
+        'letter_code' => 'N',
+        'is_active' => false,
+    ]);
+
+    $response->assertRedirect('/admin/loket')
+        ->assertSessionHas('status', 'Pool antrian berhasil diperbarui.');
+
+    $this->assertDatabaseHas('queue_pools', [
+        'id' => $pool->id,
+        'name' => 'Pool Baru',
+        'code' => 'NEW',
+        'letter_code' => 'N',
+        'is_active' => 0,
+    ]);
+});
+
+test('admin cannot delete pool with services', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create();
+    \App\Models\Service::factory()->for($pool)->create();
+
+    $response = $this->actingAs($admin)->delete("/admin/loket/pool/{$pool->id}");
+
+    $response->assertRedirect('/admin/loket')
+        ->assertSessionHas('error', 'Pool tidak dapat dihapus karena masih terhubung dengan layanan, loket, atau antrian.');
+
+    $this->assertDatabaseHas('queue_pools', ['id' => $pool->id]);
+});
+
+test('admin cannot delete pool with counters', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create();
+    Counter::factory()->for($pool)->create();
+
+    $response = $this->actingAs($admin)->delete("/admin/loket/pool/{$pool->id}");
+
+    $response->assertRedirect('/admin/loket')
+        ->assertSessionHas('error', 'Pool tidak dapat dihapus karena masih terhubung dengan layanan, loket, atau antrian.');
+
+    $this->assertDatabaseHas('queue_pools', ['id' => $pool->id]);
+});
+
+test('admin cannot delete pool with tickets', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create();
+    $service = \App\Models\Service::factory()->create();
+    \App\Models\QueueTicket::factory()->create([
+        'queue_pool_id' => $pool->id,
+        'service_id' => $service->id,
+    ]);
+
+    $response = $this->actingAs($admin)->delete("/admin/loket/pool/{$pool->id}");
+
+    $response->assertRedirect('/admin/loket')
+        ->assertSessionHas('error', 'Pool tidak dapat dihapus karena masih terhubung dengan layanan, loket, atau antrian.');
+
+    $this->assertDatabaseHas('queue_pools', ['id' => $pool->id]);
+});
+
+test('admin can delete pool without relations', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create();
+
+    $response = $this->actingAs($admin)->delete("/admin/loket/pool/{$pool->id}");
+
+    $response->assertRedirect('/admin/loket')
+        ->assertSessionHas('status', 'Pool antrian berhasil dihapus.');
+
+    $this->assertDatabaseMissing('queue_pools', ['id' => $pool->id]);
+});
+
+test('admin cannot delete counter with active sessions', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create();
+    $counter = Counter::factory()->for($pool)->create();
+
+    // Create active counter session
+    \App\Models\CounterSession::factory()->create([
+        'counter_id' => $counter->id,
+        'status' => 'open',
+    ]);
+
+    $response = $this->actingAs($admin)->delete("/admin/loket/{$counter->id}");
+
+    $response->assertRedirect('/admin/loket')
+        ->assertSessionHas('error', 'Loket tidak dapat dihapus karena memiliki sesi aktif.');
+
+    $this->assertDatabaseHas('counters', ['id' => $counter->id]);
+});
+
+test('search filters counters by name', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create();
+    $counter1 = Counter::factory()->for($pool)->create(['name' => 'Loket Umum 1']);
+    $counter2 = Counter::factory()->for($pool)->create(['name' => 'Loket Khusus 2']);
+
+    $response = $this->actingAs($admin)->get('/admin/loket?search=Umum');
+
+    $response->assertOk()
+        ->assertSee($counter1->name)
+        ->assertDontSee($counter2->name);
+});
+
+test('search filters counters by code', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create();
+    $counter1 = Counter::factory()->for($pool)->create(['code' => 'U1']);
+    $counter2 = Counter::factory()->for($pool)->create(['code' => 'K2']);
+
+    $response = $this->actingAs($admin)->get('/admin/loket?search=U1');
+
+    $response->assertOk()
+        ->assertSee($counter1->code)
+        ->assertDontSee($counter2->code);
+});
+
+test('pagination returns 10 items per page', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create();
+
+    // Create 15 counters
+    Counter::factory()->for($pool)->count(15)->create();
+
+    $response = $this->actingAs($admin)->get('/admin/loket');
+
+    $response->assertOk();
+
+    // First page should have 10 items
+    $counters = $response->viewData('counters');
+    expect($counters)->toHaveCount(10);
+    expect($counters->total())->toBe(15);
+});

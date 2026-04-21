@@ -55,10 +55,31 @@
 
             <flux:table>
                 <flux:table.columns>
-                    <flux:table.column>Nama</flux:table.column>
-                    <flux:table.column>Kode</flux:table.column>
+                    <flux:table.column>
+                        <a href="{{ route('admin.layanan.index', ['sort_by' => 'name', 'sort_direction' => $sortBy === 'name' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                            Nama
+                            @if ($sortBy === 'name')
+                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                            @endif
+                        </a>
+                    </flux:table.column>
+                    <flux:table.column>
+                        <a href="{{ route('admin.layanan.index', ['sort_by' => 'code', 'sort_direction' => $sortBy === 'code' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                            Kode
+                            @if ($sortBy === 'code')
+                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                            @endif
+                        </a>
+                    </flux:table.column>
                     <flux:table.column>Pool</flux:table.column>
-                    <flux:table.column>Status</flux:table.column>
+                    <flux:table.column>
+                        <a href="{{ route('admin.layanan.index', ['sort_by' => 'is_active', 'sort_direction' => $sortBy === 'is_active' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                            Status
+                            @if ($sortBy === 'is_active')
+                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                            @endif
+                        </a>
+                    </flux:table.column>
                     <flux:table.column>Aksi</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
@@ -127,7 +148,7 @@
 
     {{-- Create Modal --}}
     <flux:modal name="create-service" class="w-full max-w-2xl">
-        <form method="POST" action="{{ route('admin.layanan.store') }}" class="space-y-4">
+        <form method="POST" action="{{ route('admin.layanan.store') }}" class="space-y-4" x-data="{ submitting: false }" @submit="submitting = true">
             @csrf
             
             <div class="flex items-center gap-3">
@@ -203,7 +224,16 @@
                 <flux:modal.close>
                     <flux:button type="button" variant="ghost">Batal</flux:button>
                 </flux:modal.close>
-                <flux:button type="submit" variant="primary">Tambah Layanan</flux:button>
+                <flux:button type="submit" variant="primary" x-bind:disabled="submitting">
+                    <span x-show="!submitting">Tambah Layanan</span>
+                    <span x-show="submitting" class="flex items-center gap-2">
+                        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Menyimpan...
+                    </span>
+                </flux:button>
             </div>
         </form>
     </flux:modal>
@@ -211,7 +241,7 @@
     {{-- Edit Modals --}}
     @foreach ($services as $service)
         <flux:modal name="edit-service-{{ $service->id }}" class="w-full max-w-2xl">
-            <form method="POST" action="{{ route('admin.layanan.update', $service) }}" class="space-y-4">
+            <form method="POST" action="{{ route('admin.layanan.update', $service) }}" class="space-y-4" x-data="{ submitting: false }" @submit="submitting = true">
                 @csrf
                 @method('PUT')
                 
@@ -289,7 +319,16 @@
                     <flux:modal.close>
                         <flux:button type="button" variant="ghost">Batal</flux:button>
                     </flux:modal.close>
-                    <flux:button type="submit" variant="primary">Simpan</flux:button>
+                    <flux:button type="submit" variant="primary" x-bind:disabled="submitting">
+                        <span x-show="!submitting">Simpan</span>
+                        <span x-show="submitting" class="flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Menyimpan...
+                        </span>
+                    </flux:button>
                 </div>
             </form>
         </flux:modal>
