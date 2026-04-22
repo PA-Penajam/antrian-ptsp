@@ -1007,8 +1007,8 @@
                 if (mySeq !== ttsSeq) {
                     return;
                 }
-                if (response && response.provider === 'minimax' && response.audio_url) {
-                    console.log('[TTS] MiniMax URL:', response.audio_url, 'cache_key:', response.cache_key);
+                if (response && response.audio_url) {
+                    console.log('[TTS] Audio URL:', response.audio_url, 'provider:', response.provider, 'cache_key:', response.cache_key);
                     playMiniMaxAudio(response.audio_url, text);
                     return;
                 }
