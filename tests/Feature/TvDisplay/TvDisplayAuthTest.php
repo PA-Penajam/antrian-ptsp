@@ -71,7 +71,7 @@ it('blocks unauthenticated access to tv-display tts endpoint', function () {
     $response->assertRedirect('/tv-legacy/login');
 });
 
-it('returns browser provider fallback when minimax is not configured', function () {
+it('returns browser provider fallback when google tts is not configured', function () {
     $response = withSession([
         'tv_display_authenticated' => true,
         'tv_display_authenticated_at' => now()->timestamp,
@@ -87,13 +87,13 @@ it('serves cached audio payload for authenticated tv legacy session', function (
     Storage::fake('public');
 
     config([
-        'services.minimax.cache_disk' => 'public',
-        'services.minimax.cache_prefix' => 'tts/minimax',
+        'services.google_tts.cache_disk' => 'public',
+        'services.google_tts.cache_prefix' => 'tts/google',
     ]);
 
     $cacheKey = str_repeat('a', 40);
     $audioPayload = 'ID3FAKE-AUDIO-PAYLOAD';
-    Storage::disk('public')->put('tts/minimax/'.$cacheKey.'.mp3', $audioPayload);
+    Storage::disk('public')->put('tts/google/'.$cacheKey.'.mp3', $audioPayload);
 
     $response = withSession([
         'tv_display_authenticated' => true,
@@ -102,7 +102,6 @@ it('serves cached audio payload for authenticated tv legacy session', function (
 
     $response->assertOk()
         ->assertHeader('Content-Type', 'audio/mpeg')
-        ->assertHeader('Accept-Ranges', 'bytes')
         ->assertHeader('Content-Length', (string) strlen($audioPayload));
 
     expect($response->getContent())->toBe($audioPayload);

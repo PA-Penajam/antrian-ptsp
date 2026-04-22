@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Tts\MiniMaxTtsService;
+use App\Services\Tts\GoogleTtsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -12,7 +12,7 @@ use Throwable;
 
 class TvDisplayTtsController extends Controller
 {
-    public function announcement(Request $request, MiniMaxTtsService $ttsService): JsonResponse
+    public function announcement(Request $request, GoogleTtsService $ttsService): JsonResponse
     {
         $validated = $request->validate([
             'text' => ['required', 'string', 'max:200'],
@@ -21,7 +21,7 @@ class TvDisplayTtsController extends Controller
         try {
             $announcement = $ttsService->getOrCreateAnnouncement($validated['text']);
         } catch (Throwable $e) {
-            Log::error('[TTS] MiniMax TTS gagal', [
+            Log::error('[TTS] Google TTS gagal', [
                 'text' => $validated['text'],
                 'error' => $e->getMessage(),
             ]);
@@ -32,7 +32,7 @@ class TvDisplayTtsController extends Controller
         }
 
         if (! $announcement) {
-            Log::warning('[TTS] MiniMax TTS null (mungkin config belum diset)', [
+            Log::warning('[TTS] Google TTS null (mungkin config belum diset)', [
                 'text' => $validated['text'],
             ]);
 
@@ -41,24 +41,24 @@ class TvDisplayTtsController extends Controller
             ], 200);
         }
 
-        Log::info('[TTS] MiniMax TTS sukses', [
+        Log::info('[TTS] Google TTS sukses', [
             'text' => $validated['text'],
             'cache_key' => $announcement['cache_key'],
         ]);
 
         return response()->json([
-            'provider' => 'minimax',
+            'provider' => 'google',
             'cache_key' => $announcement['cache_key'],
             'audio_url' => route('tv-display.tts.audio', ['cacheKey' => $announcement['cache_key']]),
         ]);
     }
 
-    public function audio(string $cacheKey, MiniMaxTtsService $ttsService): Response
+    public function audio(string $cacheKey, GoogleTtsService $ttsService): Response
     {
         abort_unless(preg_match('/^[a-f0-9]{40}$/', $cacheKey) === 1, 404);
 
         $path = $ttsService->cachePathFromKey($cacheKey);
-        $disk = (string) config('services.minimax.cache_disk', 'public');
+        $disk = (string) config('services.google_tts.cache_disk', 'public');
 
         abort_unless(Storage::disk($disk)->exists($path), 404);
 

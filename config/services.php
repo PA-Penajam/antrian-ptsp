@@ -42,19 +42,15 @@ return [
         'device_id' => env('THERMAL_PRINTER_DEVICE_ID', 'local_printer'),
     ],
 
-    'minimax' => [
-        'api_key' => env('MINIMAX_API_KEY'),
-        'voice_id' => env('MINIMAX_VOICE_ID', 'Indonesian_GentleGirl'),
-        'model' => env('MINIMAX_MODEL', 'speech-2.8-hd'),
-        'strategy' => env('MINIMAX_STRATEGY', 'async'),
-        'language_boost' => env('MINIMAX_LANGUAGE_BOOST', 'auto'),
-        'speed' => (float) env('MINIMAX_SPEED', 1.0),
-        'vol' => (float) env('MINIMAX_VOL', 1.0),
-        'pitch' => (int) env('MINIMAX_PITCH', 0),
-        'async_poll_attempts' => (int) env('MINIMAX_ASYNC_POLL_ATTEMPTS', 12),
-        'async_poll_interval_ms' => (int) env('MINIMAX_ASYNC_POLL_INTERVAL_MS', 500),
-        'cache_disk' => env('MINIMAX_CACHE_DISK', 'public'),
-        'cache_prefix' => env('MINIMAX_CACHE_PREFIX', 'tts/minimax'),
+    'google_tts' => [
+        'api_key' => env('GOOGLE_TTS_API_KEY'),
+        'language_code' => env('GOOGLE_TTS_LANGUAGE_CODE', 'id-ID'),
+        'voice_name' => env('GOOGLE_TTS_VOICE_NAME', 'id-ID-Wavenet-A'),
+        'speaking_rate' => (float) env('GOOGLE_TTS_SPEAKING_RATE', 1.0),
+        'pitch' => (float) env('GOOGLE_TTS_PITCH', 0.0),
+        'volume_gain_db' => (float) env('GOOGLE_TTS_VOLUME_GAIN_DB', 0.0),
+        'cache_disk' => env('GOOGLE_TTS_CACHE_DISK', 'public'),
+        'cache_prefix' => env('GOOGLE_TTS_CACHE_PREFIX', 'tts/google'),
     ],
 
 ];
