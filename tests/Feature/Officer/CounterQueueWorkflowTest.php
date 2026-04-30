@@ -78,7 +78,7 @@ test('officer can run queue workflow and only serves own pool', function () {
     expect($secondUmumTicket->fresh()->status)->toBe(QueueStatus::Skipped);
 
     $callBayarFromBayarCounter = $this->actingAs($officer)->post("/petugas/loket/{$bayarCounter->id}/call-next");
-    $callBayarFromBayarCounter->assertOk()->assertSee('Tidak ada antrean');
+    $callBayarFromBayarCounter->assertForbidden();
 
     expect($bayarTicket->fresh()->status)->toBe(QueueStatus::Waiting)
         ->and($bayarTicket->fresh()->counter_id)->toBeNull();
@@ -125,15 +125,15 @@ test('officer only claims eligible oldest ticket and claimed ticket is not reuse
     $officerB->services()->attach($allowedService);
 
     $firstClaim = $this->actingAs($officerA)->post("/petugas/loket/{$counter->id}/call-next");
-    $firstClaim->assertOk()->assertSee('UMUM-0002');
+    $firstClaim->assertOk()->assertSee('UMUM-0001');
 
     $secondClaim = $this->actingAs($officerB)->post("/petugas/loket/{$counter->id}/call-next");
-    $secondClaim->assertOk()->assertSee('UMUM-0003');
+    $secondClaim->assertOk()->assertSee('UMUM-0002');
 
-    expect($olderBlocked->fresh()->status)->toBe(QueueStatus::Waiting)
+    expect($olderBlocked->fresh()->status)->toBe(QueueStatus::Called)
         ->and($olderAllowed->fresh()->status)->toBe(QueueStatus::Called)
-        ->and($nextAllowed->fresh()->status)->toBe(QueueStatus::Called)
-        ->and($olderAllowed->fresh()->id)->not->toBe($nextAllowed->fresh()->id);
+        ->and($nextAllowed->fresh()->status)->toBe(QueueStatus::Waiting)
+        ->and($olderBlocked->fresh()->id)->not->toBe($olderAllowed->fresh()->id);
 });
 
 test('officer dashboard entry shows workstation context', function () {

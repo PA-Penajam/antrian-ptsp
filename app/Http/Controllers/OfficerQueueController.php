@@ -39,6 +39,8 @@ class OfficerQueueController extends Controller
 
     public function callNext(Counter $counter, CallNextTicket $callNextTicket): Response
     {
+        $this->ensureOfficerCanAccessPool($counter);
+
         $ticket = $callNextTicket->handle($counter, request()->user()?->id);
 
         if (! $ticket) {
@@ -50,6 +52,8 @@ class OfficerQueueController extends Controller
 
     public function recall(Counter $counter, QueueTicketActionRequest $request, RecallTicket $recallTicket): Response
     {
+        $this->ensureOfficerCanAccessPool($counter);
+
         $ticket = QueueTicket::query()->findOrFail($request->integer('ticket_id'));
         $this->ensureTicketPoolMatchesCounterPool($ticket, $counter);
 
@@ -60,6 +64,8 @@ class OfficerQueueController extends Controller
 
     public function skip(Counter $counter, QueueTicketActionRequest $request, SkipTicket $skipTicket): Response
     {
+        $this->ensureOfficerCanAccessPool($counter);
+
         $ticket = QueueTicket::query()->findOrFail($request->integer('ticket_id'));
         $this->ensureTicketPoolMatchesCounterPool($ticket, $counter);
 
@@ -70,6 +76,8 @@ class OfficerQueueController extends Controller
 
     public function complete(Counter $counter, QueueTicketActionRequest $request, CompleteTicket $completeTicket): Response
     {
+        $this->ensureOfficerCanAccessPool($counter);
+
         $ticket = QueueTicket::query()->findOrFail($request->integer('ticket_id'));
         $this->ensureTicketPoolMatchesCounterPool($ticket, $counter);
 
@@ -80,12 +88,30 @@ class OfficerQueueController extends Controller
 
     public function cancel(Counter $counter, QueueTicketActionRequest $request, CancelTicket $cancelTicket): Response
     {
+        $this->ensureOfficerCanAccessPool($counter);
+
         $ticket = QueueTicket::query()->findOrFail($request->integer('ticket_id'));
         $this->ensureTicketPoolMatchesCounterPool($ticket, $counter);
 
         $updated = $cancelTicket->handle($ticket, $counter, $request->user()?->id);
 
         return response("Batal: {$updated->ticket_number}", 200);
+    }
+
+    private function ensureOfficerCanAccessPool(Counter $counter): void
+    {
+        $user = request()->user();
+
+        abort_if(! $user, 403);
+
+        $allowedPoolIds = $user->services()
+            ->pluck('queue_pool_id')
+            ->filter()
+            ->values();
+
+        if ($allowedPoolIds->isNotEmpty()) {
+            abort_if(! $allowedPoolIds->contains($counter->queue_pool_id), 403);
+        }
     }
 
     private function ensureTicketPoolMatchesCounterPool(QueueTicket $queueTicket, Counter $counter): void

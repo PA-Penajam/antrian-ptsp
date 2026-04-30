@@ -22,7 +22,7 @@ test('admin can list users with role management page', function () {
         ->assertSee('Manajemen User')
         ->assertSee($officer->name)
         ->assertSee('name="role"', false)
-        ->assertSee('name="services[]"', false);
+        ->assertSee('name="service_id"', false);
 });
 
 test('admin can update user role and allowed services', function () {
@@ -42,7 +42,7 @@ test('admin can update user role and allowed services', function () {
         'name' => $officer->name,
         'email' => $officer->email,
         'role' => UserRole::Officer->value,
-        'services' => [$serviceA->id, $serviceB->id],
+        'service_id' => $serviceA->id,
     ]);
 
     $response->assertRedirect('/admin/users');
@@ -50,8 +50,8 @@ test('admin can update user role and allowed services', function () {
     $officer->refresh();
 
     expect($officer->role)->toBe(UserRole::Officer)
-        ->and($officer->services()->pluck('services.id')->sort()->values()->all())
-        ->toBe([$serviceA->id, $serviceB->id]);
+        ->and($officer->services()->pluck('services.id')->all())
+        ->toBe([$serviceA->id]);
 });
 
 test('non admin cannot access user management pages', function () {
@@ -197,7 +197,7 @@ test('admin can create officer with services', function () {
         'email' => 'officerservices@example.com',
         'role' => UserRole::Officer->value,
         'password' => 'password123',
-        'services' => [$serviceA->id],
+        'service_id' => $serviceA->id,
     ]);
 
     $response->assertRedirect('/admin/users');
