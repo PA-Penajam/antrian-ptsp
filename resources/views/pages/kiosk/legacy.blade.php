@@ -449,77 +449,16 @@
             font-size: 0.9rem !important;
         }
     }
-
-    /* ═══ PRINTER STATUS BAR ═══ */
-    .printer-status-bar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 7px 20px;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        border-top: 1px solid rgba(255,255,255,0.07);
-        cursor: pointer;
-        user-select: none;
-        flex-shrink: 0;
-        transition: filter 0.15s;
-    }
-    .printer-status-bar:hover  { filter: brightness(1.2); }
-    .printer-status-bar:active { filter: brightness(0.85); }
-    .printer-status-bar.bar-checking { background: rgba(213,216,61,0.10); color: #c8cb30; }
-    .printer-status-bar.bar-ok       { background: rgba(53,210,154,0.10); color: #35D29A; }
-    .printer-status-bar.bar-err      { background: rgba(249,102,110,0.13); color: #F9666E; }
-
-    .printer-status-bar .ps-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-    .printer-status-bar.bar-checking .ps-dot { background: #c8cb30; animation: psDotY 0.9s infinite; }
-    .printer-status-bar.bar-ok       .ps-dot { background: #35D29A; animation: psDotG 2s infinite; }
-    .printer-status-bar.bar-err      .ps-dot { background: #F9666E; }
-
-    @keyframes psDotG { 0%,100%{box-shadow:0 0 0 0 rgba(53,210,154,0.5)} 50%{box-shadow:0 0 0 5px rgba(53,210,154,0)} }
-    @keyframes psDotY { 0%,100%{box-shadow:0 0 0 0 rgba(213,216,61,0.5)} 50%{box-shadow:0 0 0 5px rgba(213,216,61,0)} }
-
-    .ps-tap-hint { font-size: 8px; font-weight: 500; opacity: 0.32; margin-left: 4px; }
-
-    .printer-flash {
-        position: fixed;
-        bottom: 46px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(18,18,38,0.97);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 10px;
-        padding: 10px 16px;
-        font-size: 10px;
-        color: #fff;
-        white-space: nowrap;
-        z-index: 9998;
-        display: none;
-        min-width: 260px;
-        pointer-events: none;
-    }
-    .printer-flash .pf-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
-    .printer-flash .pf-row:last-child { margin-bottom: 0; }
-    .printer-flash .pf-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.4; min-width: 72px; }
-    .printer-flash .pf-val   { font-weight: 600; font-size: 10px; }
-    .printer-flash .pf-val.ok   { color: #35D29A; }
-    .printer-flash .pf-val.warn { color: #c8cb30; }
-    .printer-flash .pf-val.err  { color: #F9666E; }
-    .printer-flash .pf-hr  { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 5px 0; }
-    .printer-flash .pf-hint { font-size: 8.5px; color: rgba(255,165,90,0.85); }
 </style>
 @endpush
 
 @section('content')
 <div id="kioskRoot" class="kiosk-root"
+     data-printer-enabled="{{ config('services.thermal_printer.enabled') ? '1' : '0' }}"
+     data-printer-ip="{{ e(config('services.thermal_printer.ip', '127.0.0.1')) }}"
+     data-printer-port="{{ e(config('services.thermal_printer.port', '8008')) }}"
+     data-printer-device-id="{{ e(config('services.thermal_printer.device_id', 'local_printer')) }}"
+     data-institution-name="{{ e(config('institution.name')) }}"
      style="background-image: url('/metronic-assets/media/auth/bg10.jpeg');">
 <div class="kiosk-overlay">
 
@@ -622,6 +561,97 @@
         </div>
     </div>
 
+    {{-- ═══ LAYAR 1b: SUB-LAYANAN (hanya untuk Layanan Umum) ═══ --}}
+    <div id="screenSubService" class="flex-grow-1 d-flex flex-column flex-center px-10 pb-8 d-none">
+        <div class="text-center mb-12">
+            <h1 class="text-white fw-boldest text-uppercase mb-5"
+                style="font-size:3.5rem; font-size:clamp(2.5rem,5vw,4.5rem); letter-spacing:-3px; line-height:1.1;">
+                PILIH TUJUAN LAYANAN
+            </h1>
+            <div class="d-inline-flex align-items-center">
+                <span class="bullet bullet-dot bg-primary" style="width:8px;height:8px;"></span>
+                <span class="text-white fw-semibold fs-3 text-uppercase ms-3 me-3"
+                      style="opacity:0.5;letter-spacing:1px;">Sentuh pada tujuan yang Anda butuhkan</span>
+                <span class="bullet bullet-dot bg-primary" style="width:8px;height:8px;"></span>
+            </div>
+        </div>
+
+        <div class="kiosk-service-grid">
+            <div class="kiosk-service-col">
+                <div data-visit-purpose="pendaftaran"
+                     onclick="selectSubService(this.dataset.visitPurpose)"
+                     class="card service-card svc-purple shadow-lg">
+                    <div class="card-body d-flex flex-column flex-center text-center p-10">
+                        <div class="d-flex align-items-center justify-content-center mb-6 svc-illustration" style="height:115px;">
+                            <i class="fa-solid fa-file-lines text-white" style="font-size:72px;"></i>
+                        </div>
+                        <h3 class="text-white fw-boldest fs-2 text-uppercase mb-4 lh-sm" style="letter-spacing:-0.5px;">Pendaftaran</h3>
+                        <div class="d-inline-flex align-items-center gap-2 py-3 px-5 rounded-pill fw-bold fs-6 text-uppercase text-white" style="background:rgba(255,255,255,0.18);letter-spacing:0.5px;">
+                            <i class="ki-duotone ki-arrow-right fs-6 text-white"><span class="path1"></span><span class="path2"></span></i>
+                            PILIH
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="kiosk-service-col">
+                <div data-visit-purpose="informasi_pengaduan"
+                     onclick="selectSubService(this.dataset.visitPurpose)"
+                     class="card service-card svc-red shadow-lg">
+                    <div class="card-body d-flex flex-column flex-center text-center p-10">
+                        <div class="d-flex align-items-center justify-content-center mb-6 svc-illustration" style="height:115px;">
+                            <i class="fa-solid fa-folder-open text-white" style="font-size:72px;"></i>
+                        </div>
+                        <h3 class="text-white fw-boldest fs-2 text-uppercase mb-4 lh-sm" style="letter-spacing:-0.5px;">Informasi & Pengaduan</h3>
+                        <div class="d-inline-flex align-items-center gap-2 py-3 px-5 rounded-pill fw-bold fs-6 text-uppercase text-white" style="background:rgba(255,255,255,0.18);letter-spacing:0.5px;">
+                            <i class="ki-duotone ki-arrow-right fs-6 text-white"><span class="path1"></span><span class="path2"></span></i>
+                            PILIH
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="kiosk-service-col">
+                <div data-visit-purpose="produk_hukum"
+                     onclick="selectSubService(this.dataset.visitPurpose)"
+                     class="card service-card svc-green shadow-lg">
+                    <div class="card-body d-flex flex-column flex-center text-center p-10">
+                        <div class="d-flex align-items-center justify-content-center mb-6 svc-illustration" style="height:115px;">
+                            <i class="fa-solid fa-briefcase text-white" style="font-size:72px;"></i>
+                        </div>
+                        <h3 class="text-white fw-boldest fs-2 text-uppercase mb-4 lh-sm" style="letter-spacing:-0.5px;">Pengambilan Produk Hukum</h3>
+                        <div class="d-inline-flex align-items-center gap-2 py-3 px-5 rounded-pill fw-bold fs-6 text-uppercase text-white" style="background:rgba(255,255,255,0.18);letter-spacing:0.5px;">
+                            <i class="ki-duotone ki-arrow-right fs-6 text-white"><span class="path1"></span><span class="path2"></span></i>
+                            PILIH
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="kiosk-service-col">
+                <div data-visit-purpose="ecourt"
+                     onclick="selectSubService(this.dataset.visitPurpose)"
+                     class="card service-card svc-yellow shadow-lg">
+                    <div class="card-body d-flex flex-column flex-center text-center p-10">
+                        <div class="d-flex align-items-center justify-content-center mb-6 svc-illustration" style="height:115px;">
+                            <i class="fa-solid fa-laptop text-white" style="font-size:72px;"></i>
+                        </div>
+                        <h3 class="text-white fw-boldest fs-2 text-uppercase mb-4 lh-sm" style="letter-spacing:-0.5px;">eCourt</h3>
+                        <div class="d-inline-flex align-items-center gap-2 py-3 px-5 rounded-pill fw-bold fs-6 text-uppercase text-white" style="background:rgba(255,255,255,0.18);letter-spacing:0.5px;">
+                            <i class="ki-duotone ki-arrow-right fs-6 text-white"><span class="path1"></span><span class="path2"></span></i>
+                            PILIH
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-8">
+            <button type="button" onclick="backToServices()"
+                    class="btn btn-light btn-lg fs-2 fw-bold px-12 py-6 rounded-pill">
+                <i class="ki-duotone ki-arrow-left fs-2 me-2"><span class="path1"></span><span class="path2"></span></i>
+                KEMBALI
+            </button>
+        </div>
+    </div>
+
     {{-- ═══ LAYAR 2: BOOKING FORM ═══ --}}
     <div id="screenForm" class="flex-grow-1 d-flex flex-center px-10 d-none">
         <div class="booking-card card w-100" style="max-width:880px;">
@@ -640,6 +670,7 @@
                 <form id="bookingForm">
                     @csrf
                     <input type="hidden" id="service_id" name="service_id">
+                    <input type="hidden" id="visit_purpose" name="visit_purpose">
 
                     <div class="mb-8">
                         <label class="fs-3 fw-bold text-gray-700 mb-3 ms-2 text-uppercase d-block">
@@ -790,14 +821,6 @@
         </div>
     </div>
 
-    {{-- PRINTER STATUS BAR --}}
-    <div id="printerFlash" class="printer-flash"></div>
-    <div id="printerStatusBar" class="printer-status-bar bar-checking" onclick="showPrinterFlash()">
-        <span class="ps-dot"></span>
-        <span id="printerLabel">MEMERIKSA KONEKSI PRINTER...</span>
-        <span class="ps-tap-hint">ketuk untuk detail</span>
-    </div>
-
     {{-- FOOTER --}}
     <div class="py-7 text-center flex-shrink-0">
         <span class="kiosk-footer-text fw-semibold fs-6 text-uppercase" style="letter-spacing:1px;">
@@ -808,7 +831,12 @@
     <div id="kioskLegacyConfig"
          class="d-none"
          data-print-url="{{ route('kiosk.legacy.print') }}"
-         data-status-url="{{ route('kiosk.legacy.printer-status') }}"></div>
+         data-printer-enabled="{{ config('services.thermal_printer.enabled') ? '1' : '0' }}"
+         data-printer-ip="{{ config('services.thermal_printer.ip', '127.0.0.1') }}"
+         data-printer-port="{{ config('services.thermal_printer.port', '8008') }}"
+         data-printer-device-id="{{ config('services.thermal_printer.device_id', 'local_printer') }}"
+         data-institution-name="{{ e(config('institution.name')) }}"
+         data-umum-service-id="{{ $umumServiceId }}"></div>
 
 </div>
 </div>
@@ -816,27 +844,25 @@
 
 @push('scripts')
 <script>
-    var printerLastData    = null;
-    var printerNextCheckAt = null;
-    var printerCurrentState = 'checking';
-    var printerFlashTimer  = null;
-    var cdInterval = null;
-    var cdSeconds = 20;
-    var CD_TOTAL = 20;
+    var eposPrinter   = null;
+    var cdInterval    = null;
+    var cdSeconds     = 20;
+    var CD_TOTAL      = 20;
     var kioskAlertOverlay = document.getElementById('kioskAlertOverlay');
     var kioskAlertMsg = document.getElementById('kioskAlertMsg');
     var kioskLegacyConfig = document.getElementById('kioskLegacyConfig');
     var kioskPrintUrl = kioskLegacyConfig ? kioskLegacyConfig.dataset.printUrl : '';
-    var kioskStatusUrl = kioskLegacyConfig ? kioskLegacyConfig.dataset.statusUrl : '';
+    var kioskPrinterEnabled = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerEnabled === '1' : false;
+    var kioskPrinterIp = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerIp : '127.0.0.1';
+    var kioskPrinterPort = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerPort : '8008';
+    var kioskPrinterDeviceId = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerDeviceId : 'local_printer';
+    var kioskInstitutionName = kioskLegacyConfig ? kioskLegacyConfig.dataset.institutionName : '';
+    var kioskUmumServiceId = kioskLegacyConfig ? parseInt(kioskLegacyConfig.dataset.umumServiceId, 10) || 0 : 0;
 
     $(document).ready(function () {
+        initPrinter();
         updateKioskClock();
         setInterval(updateKioskClock, 1000);
-
-        if (kioskStatusUrl) {
-            checkPrinterStatus();
-            setInterval(checkPrinterStatus, 30000);
-        }
 
         if ($.fn.select2) {
             $('#visitor_wilayah_kode').select2({
@@ -865,20 +891,7 @@
                             res.ticket.service ? res.ticket.service.name.toUpperCase() : ''
                         );
                         switchScreen('screenSuccess');
-                        if (!res.printed) {
-                            if (typeof Swal !== 'undefined') {
-                                Swal.fire({
-                                    title: 'Printer Tidak Tersedia',
-                                    text: 'Nomor antrian berhasil dibuat, tetapi tiket belum tercetak. Periksa koneksi printer kiosk.',
-                                    icon: 'warning',
-                                    buttonsStyling: false,
-                                    confirmButtonText: 'Mengerti',
-                                    customClass: { confirmButton: 'btn btn-primary px-10' }
-                                });
-                            } else {
-                                showKioskAlert('Nomor antrian berhasil dibuat, tetapi tiket belum tercetak. Periksa koneksi printer kiosk.');
-                            }
-                        }
+                        printTicket(res.ticket);
                         startCountdown();
                     }
                 },
@@ -906,103 +919,6 @@
         });
     });
 
-    function escPrinterHtml(str) {
-        var d = document.createElement('div');
-        d.appendChild(document.createTextNode(String(str || '')));
-        return d.innerHTML;
-    }
-
-    function checkPrinterStatus() {
-        setPrinterBar('checking');
-        printerNextCheckAt = Date.now() + 30000;
-
-        $.ajax({
-            url: kioskStatusUrl,
-            type: 'GET',
-            success: function (data) {
-                printerLastData = data;
-                printerLastData._checkedAt = new Date();
-                setPrinterBar(data.status === 'connected' ? 'connected' : 'offline');
-            },
-            error: function () {
-                printerLastData = null;
-                setPrinterBar('offline');
-            }
-        });
-    }
-
-    function setPrinterBar(state) {
-        printerCurrentState = state;
-        var bar   = document.getElementById('printerStatusBar');
-        var label = document.getElementById('printerLabel');
-        if (!bar || !label) { return; }
-
-        bar.className = 'printer-status-bar';
-        if (state === 'checking') {
-            bar.classList.add('bar-checking');
-            label.textContent = 'MEMERIKSA KONEKSI PRINTER...';
-        } else if (state === 'connected') {
-            bar.classList.add('bar-ok');
-            label.textContent = 'PRINTER SIAP CETAK';
-        } else {
-            bar.classList.add('bar-err');
-            var isDisabled = printerLastData && printerLastData.status === 'disabled';
-            label.textContent = isDisabled ? 'PRINTER TIDAK AKTIF' : 'PRINTER TIDAK MERESPONS';
-        }
-    }
-
-    function showPrinterFlash() {
-        var flash = document.getElementById('printerFlash');
-        if (!flash) { return; }
-
-        var d = printerLastData;
-        var html = '';
-
-        if (printerCurrentState === 'checking' || !d) {
-            var addr = d ? escPrinterHtml(d.ip + ':' + d.port) : '---';
-            html = '<div class="pf-row"><span class="pf-label">Status</span><span class="pf-val warn">Memeriksa...</span></div>' +
-                   '<div class="pf-row"><span class="pf-label">Alamat</span><span class="pf-val">' + addr + '</span></div>' +
-                   '<div class="pf-row"><span class="pf-label">Timeout</span><span class="pf-val">5 detik</span></div>';
-        } else {
-            var addr      = escPrinterHtml(d.ip + ':' + d.port);
-            var checkedAt = d._checkedAt ? formatPrinterTime(d._checkedAt) : '-';
-            var secsAgo   = d._checkedAt ? Math.round((Date.now() - d._checkedAt.getTime()) / 1000) : 0;
-            var secsLeft  = printerNextCheckAt ? Math.max(0, Math.round((printerNextCheckAt - Date.now()) / 1000)) : '-';
-
-            if (d.status === 'connected') {
-                html = '<div class="pf-row"><span class="pf-label">Status</span><span class="pf-val ok">Terhubung</span></div>' +
-                       '<div class="pf-row"><span class="pf-label">Alamat</span><span class="pf-val">' + addr + '</span></div>' +
-                       '<div class="pf-row"><span class="pf-label">Terakhir cek</span><span class="pf-val">' + escPrinterHtml(checkedAt) + ' (' + secsAgo + 's lalu)</span></div>' +
-                       '<div class="pf-row"><span class="pf-label">Cek berikut</span><span class="pf-val">±' + secsLeft + ' detik lagi</span></div>';
-            } else {
-                var errRow  = d.error ? '<div class="pf-row"><span class="pf-label">Penyebab</span><span class="pf-val err">' + escPrinterHtml(d.error) + '</span></div>' : '';
-                var hint    = d.status !== 'disabled'
-                    ? '<hr class="pf-hr"><div class="pf-hint">Tiket tetap dibuat · Hubungi petugas untuk cetak manual</div>'
-                    : '';
-                var statVal = d.status === 'disabled' ? 'Tidak aktif' : 'Tidak terhubung';
-                html = '<div class="pf-row"><span class="pf-label">Status</span><span class="pf-val err">' + statVal + '</span></div>' +
-                       '<div class="pf-row"><span class="pf-label">Alamat</span><span class="pf-val">' + addr + '</span></div>' +
-                       errRow +
-                       '<div class="pf-row"><span class="pf-label">Terakhir cek</span><span class="pf-val">' + escPrinterHtml(checkedAt) + ' (' + secsAgo + 's lalu)</span></div>' +
-                       hint;
-            }
-        }
-
-        flash.innerHTML = html;
-        flash.style.display = 'block';
-
-        clearTimeout(printerFlashTimer);
-        printerFlashTimer = setTimeout(function () {
-            flash.style.display = 'none';
-        }, 3500);
-    }
-
-    function formatPrinterTime(date) {
-        return ('0' + date.getHours()).slice(-2) + ':' +
-               ('0' + date.getMinutes()).slice(-2) + ':' +
-               ('0' + date.getSeconds()).slice(-2);
-    }
-
     function updateKioskClock() {
         var now = new Date();
         var h = ('0' + now.getHours()).slice(-2);
@@ -1023,6 +939,20 @@
         $('#service_id').val(id);
         $('#selectedServiceName').text(name);
         $('#selectedServiceBadge').text(name);
+
+        var serviceId = parseInt(id, 10);
+        if (kioskUmumServiceId && serviceId === kioskUmumServiceId) {
+            switchScreen('screenSubService');
+        } else {
+            $('#visit_purpose').val('');
+            switchScreen('screenForm');
+            if ($.fn.select2) $('#visitor_wilayah_kode').val(null).trigger('change');
+            setTimeout(function () { $('#visitor_name').focus(); }, 500);
+        }
+    }
+
+    function selectSubService(purpose) {
+        $('#visit_purpose').val(purpose);
         switchScreen('screenForm');
         if ($.fn.select2) $('#visitor_wilayah_kode').val(null).trigger('change');
         setTimeout(function () { $('#visitor_name').focus(); }, 500);
@@ -1035,12 +965,13 @@
     function resetKiosk() {
         clearCountdown();
         $('#bookingForm')[0].reset();
+        $('#visit_purpose').val('');
         if ($.fn.select2) $('#visitor_wilayah_kode').val(null).trigger('change');
         backToServices();
     }
 
     function switchScreen(screenId) {
-        $('#screenServices, #screenForm, #screenSuccess').addClass('d-none').hide();
+        $('#screenServices, #screenSubService, #screenForm, #screenSuccess').addClass('d-none').hide();
         $('#' + screenId).removeClass('d-none').hide().fadeIn(350);
     }
 
@@ -1078,5 +1009,50 @@
         kioskAlertOverlay.style.display = 'flex';
     }
 
+    function initPrinter() {
+        var printerEnabled = kioskPrinterEnabled;
+        if (!printerEnabled || typeof epson === 'undefined') { return; }
+        var ePosDevice = new epson.ePOSDevice();
+        ePosDevice.connect(
+            kioskPrinterIp,
+            kioskPrinterPort,
+            function (data) {
+                if (data === 'OK' || data === 'SSL_CONNECT_OK') {
+                    ePosDevice.createDevice(
+                        kioskPrinterDeviceId,
+                        ePosDevice.DEVICE_TYPE_PRINTER,
+                        { crypto: false, buffer: false },
+                        function (deviceObj, retcode) {
+                            if (retcode === 'OK') { eposPrinter = deviceObj; }
+                        }
+                    );
+                }
+            }
+        );
+    }
+
+    function printTicket(ticketData) {
+        if (!eposPrinter) { return; }
+        var institutionName = kioskInstitutionName;
+        var now = new Date();
+        var months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+        var dateStr = now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear() + ' ' +
+            ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+        eposPrinter.addTextAlign(eposPrinter.ALIGN_CENTER);
+        eposPrinter.addTextSize(1, 1);
+        eposPrinter.addText(institutionName + '\n');
+        eposPrinter.addText(dateStr + '\n\n');
+        eposPrinter.addTextSize(2, 2);
+        eposPrinter.addText((ticketData.service ? ticketData.service.name.toUpperCase() : 'LAYANAN') + '\n\n');
+        eposPrinter.addTextSize(4, 4);
+        eposPrinter.addTextStyle(false, false, true, eposPrinter.COLOR_1);
+        eposPrinter.addText(ticketData.ticket_number + '\n');
+        eposPrinter.addTextStyle(false, false, false, eposPrinter.COLOR_1);
+        eposPrinter.addTextSize(1, 1);
+        eposPrinter.addText('\nNama: ' + (ticketData.visitor_name || '-') + '\n');
+        eposPrinter.addText('Harap tunggu di ruang tunggu.\n\n\n\n');
+        eposPrinter.addCut(eposPrinter.CUT_FEED);
+        eposPrinter.send();
+    }
 </script>
 @endpush

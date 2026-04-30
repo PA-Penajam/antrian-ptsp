@@ -26,12 +26,10 @@ it('renders kiosk legacy page when authenticated', function () {
         ->get(route('kiosk.legacy'));
 
     $response->assertOk()
-        ->assertSee('SILAKAN PILIH LAYANAN')
-        ->assertDontSee('function printTicket(ticketData)', false)
-        ->assertDontSee('function initPrinter(callback)', false);
+        ->assertSee('SILAKAN PILIH LAYANAN');
 });
 
-it('renders kiosk legacy page without browser-side printer code', function () {
+it('renders kiosk legacy page with browser-side printer code', function () {
     Service::factory()->create([
         'is_active' => true,
         'walk_in_enabled' => true,
@@ -41,10 +39,9 @@ it('renders kiosk legacy page without browser-side printer code', function () {
         ->get(route('kiosk.legacy'));
 
     $response->assertOk()
-        ->assertDontSee('initPrinter', false)
-        ->assertDontSee('eposPrinter', false)
-        ->assertDontSee('printerInitInProgress', false)
-        ->assertSee('res.printed', false);
+        ->assertSee('initPrinter', false)
+        ->assertSee('eposPrinter', false)
+        ->assertSee('printTicket', false);
 });
 
 function kioskLegacyPostData(int $serviceId, string $wilayahKode): array
@@ -172,18 +169,4 @@ it('printer status returns disabled when thermal printer config is off', functio
         ->get(route('kiosk.legacy.printer-status'))
         ->assertOk()
         ->assertJson(['status' => 'disabled']);
-});
-
-// ── Status Bar View ───────────────────────────────────────────────────────
-
-it('renders printer status bar with polling js in legacy page', function () {
-    Service::factory()->create(['is_active' => true, 'walk_in_enabled' => true]);
-
-    withSession(kioskLegacySession())
-        ->get(route('kiosk.legacy'))
-        ->assertOk()
-        ->assertSee('printerStatusBar', false)
-        ->assertSee('checkPrinterStatus', false)
-        ->assertSee('showPrinterFlash', false)
-        ->assertSee('printer-status', false);
 });

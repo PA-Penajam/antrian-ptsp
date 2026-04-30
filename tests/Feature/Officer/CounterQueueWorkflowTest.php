@@ -146,5 +146,6 @@ test('officer dashboard entry shows workstation context', function () {
         ->get('/dashboard')
         ->assertOk()
         ->assertSee('Modul Panggilan Petugas')
-        ->assertSee('Panggil Berikutnya');
+        ->assertSee('Panggil Berikutnya')
+        ->assertSee('Daftar Skip');
 });

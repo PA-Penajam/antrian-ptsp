@@ -21,6 +21,7 @@ test('admin navigation template highlights every admin subpage', function () {
 
     expect($header)->toContain("request()->is('admin/*')");
     expect($sidebar)->toContain("request()->is('admin/layanan')");
+    expect($sidebar)->toContain("request()->is('admin/loket')");
 });
 
 test('admin user management view avoids native select controls in forms', function () {

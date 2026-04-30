@@ -26,6 +26,7 @@ class CreateQueueTicket
      *     visitor_identifier:?string,
      *     visitor_phone:?string,
      *     visitor_wilayah_kode:?string,
+     *     visit_purpose:?string,
      *     notes:?string,
      *     created_by:?int
      * }  $payload
@@ -60,6 +61,7 @@ class CreateQueueTicket
                 'visitor_identifier' => $payload['visitor_identifier'] ?? null,
                 'visitor_phone' => $payload['visitor_phone'] ?? null,
                 'visitor_wilayah_kode' => $payload['visitor_wilayah_kode'] ?? null,
+                'visit_purpose' => $payload['visit_purpose'] ?? null,
                 'notes' => $payload['notes'] ?? null,
                 'status' => $status,
                 'checked_in_at' => null,

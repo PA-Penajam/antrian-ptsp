@@ -56,18 +56,30 @@
                     </div>
                     <flux:heading size="lg">Buat Tiket Antrian Baru</flux:heading>
                 </div>
-                <form method="POST" action="{{ route('frontdesk.queue.store') }}" class="mt-4 space-y-6">
+                <form method="POST" action="{{ route('frontdesk.queue.store') }}" class="mt-4 space-y-6" x-data="{ serviceId: '{{ old('service_id') }}', umumServiceId: '{{ $umumServiceId }}' }">
                     @csrf
 
                     <flux:field>
                         <flux:label>Layanan</flux:label>
-                        <flux:select name="service_id" required>
+                        <flux:select name="service_id" required x-model="serviceId">
                             <flux:select.option value="" :selected="old('service_id') === null">Pilih Layanan</flux:select.option>
                             @foreach ($services as $service)
                                 <flux:select.option value="{{ $service->id }}" :selected="(string) old('service_id') === (string) $service->id">{{ $service->name }}</flux:select.option>
                             @endforeach
                         </flux:select>
                         <flux:error name="service_id" />
+                    </flux:field>
+
+                    <flux:field x-show="serviceId === umumServiceId" x-cloak>
+                        <flux:label>Tujuan Layanan</flux:label>
+                        <flux:select name="visit_purpose" required x-bind:required="serviceId === umumServiceId">
+                            <flux:select.option value="" :selected="old('visit_purpose') === null">Pilih Tujuan</flux:select.option>
+                            <flux:select.option value="pendaftaran" :selected="old('visit_purpose') === 'pendaftaran'">Pendaftaran</flux:select.option>
+                            <flux:select.option value="informasi_pengaduan" :selected="old('visit_purpose') === 'informasi_pengaduan'">Informasi & Pengaduan</flux:select.option>
+                            <flux:select.option value="produk_hukum" :selected="old('visit_purpose') === 'produk_hukum'">Pengambilan Produk Hukum</flux:select.option>
+                            <flux:select.option value="ecourt" :selected="old('visit_purpose') === 'ecourt'">eCourt</flux:select.option>
+                        </flux:select>
+                        <flux:error name="visit_purpose" />
                     </flux:field>
 
                     <flux:field>

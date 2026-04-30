@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\QueueStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AssignCounterOfficerRequest;
 use App\Http\Requests\StoreCounterRequest;
 use App\Http\Requests\StorePoolRequest;
 use App\Http\Requests\UpdateCounterRequest;
 use App\Http\Requests\UpdatePoolRequest;
 use App\Models\Counter;
+use App\Models\CounterSession;
 use App\Models\QueuePool;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -42,11 +46,26 @@ class CounterManagementController extends Controller
             ->orderBy('name')
             ->get();
 
+        $officers = User::query()
+            ->where('role', UserRole::Officer)
+            ->with('services')
+            ->orderBy('name')
+            ->get();
+
+        $activeSessions = CounterSession::query()
+            ->with(['user', 'assigner'])
+            ->where('status', 'open')
+            ->whereDate('opened_at', today())
+            ->get()
+            ->keyBy('counter_id');
+
         return view('pages.admin.loket.index', [
             'counters' => $counters,
             'queuePools' => $queuePools,
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
+            'officers' => $officers,
+            'activeSessions' => $activeSessions,
         ]);
     }
 
@@ -193,5 +212,44 @@ class CounterManagementController extends Controller
             return redirect()->route('admin.loket.index')
                 ->with('error', 'Terjadi kesalahan saat menghapus pool. Silakan coba lagi.');
         }
+    }
+
+    public function assignOfficer(AssignCounterOfficerRequest $request, Counter $counter): RedirectResponse
+    {
+        $validated = $request->validated();
+        $userId = $validated['user_id'];
+
+        CounterSession::query()
+            ->where('user_id', $userId)
+            ->where('status', 'open')
+            ->update([
+                'status' => 'closed',
+                'closed_at' => now(),
+            ]);
+
+        CounterSession::query()->create([
+            'counter_id' => $counter->id,
+            'user_id' => $userId,
+            'assigned_by' => auth()->id(),
+            'opened_at' => now(),
+            'status' => 'open',
+        ]);
+
+        return redirect()->route('admin.loket.index', ['tab' => 'assignment'])
+            ->with('status', 'Petugas berhasil ditugaskan ke loket.');
+    }
+
+    public function releaseOfficer(Counter $counter): RedirectResponse
+    {
+        CounterSession::query()
+            ->where('counter_id', $counter->id)
+            ->where('status', 'open')
+            ->update([
+                'status' => 'closed',
+                'closed_at' => now(),
+            ]);
+
+        return redirect()->route('admin.loket.index', ['tab' => 'assignment'])
+            ->with('status', 'Penugasan petugas dilepaskan.');
     }
 }

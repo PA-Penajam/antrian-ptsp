@@ -34,7 +34,7 @@ class CallNextTicket
                     if ($allowedServiceIds->isEmpty()) {
                         return null;
                     }
-                    
+
                     // Do not filter by specific service_id.
                     // The officer should serve ALL tickets that belong to the Counter's Queue Pool.
                 }
@@ -69,6 +69,7 @@ class CallNextTicket
                     'to_status' => QueueStatus::Called->value,
                     'service_id' => $queueTicket->service_id,
                     'queue_pool_id' => $queueTicket->queue_pool_id,
+                    'visit_purpose' => $queueTicket->visit_purpose,
                 ]
             );
 

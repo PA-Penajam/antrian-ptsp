@@ -12,51 +12,6 @@
         overflow: hidden;
     }
 
-    /* === Sound Activation Overlay === */
-    .sound-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        background: rgba(0, 0, 0, 0.88);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: opacity 0.4s ease;
-    }
-
-    .sound-overlay.fade-out {
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .sound-overlay-icon {
-        font-size: 5rem;
-        color: rgba(255, 255, 255, 0.7);
-        margin-bottom: 1.5rem;
-        animation: pulse-icon 2s ease-in-out infinite;
-    }
-
-    .sound-overlay-title {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #ffffff;
-        letter-spacing: 1px;
-        margin-bottom: 0.5rem;
-    }
-
-    .sound-overlay-subtitle {
-        font-size: 1.3rem;
-        font-weight: 400;
-        color: rgba(255, 255, 255, 0.6);
-    }
-
-    @keyframes pulse-icon {
-        0%, 100% { transform: scale(1); opacity: 0.7; }
-        50% { transform: scale(1.12); opacity: 1; }
-    }
-
     .tv-root {
         height: 100vh;
         width: 100vw;
@@ -117,8 +72,7 @@
         inset: 0;
         width: 100%;
         height: 100%;
-        object-fit: contain;
-        background-color: #000;
+        object-fit: cover;
         display: block;
     }
 
@@ -355,6 +309,8 @@
                     </div>
                     <div class="fw-semibold fs-3 text-uppercase slide-up" style="color:rgba(255,255,255,0.7);" id="activeServiceName">
                     </div>
+                    <div class="fw-semibold fs-4 text-uppercase slide-up mt-2" style="color:rgba(255,255,255,0.5);" id="activeVisitPurpose">
+                    </div>
                 </div>
             </div>
 
@@ -392,25 +348,11 @@
 
 </div>
 
-{{-- Overlay aktivasi suara — diperlukan untuk memenuhi Autoplay Policy browser --}}
-<div id="soundOverlay" class="sound-overlay">
-    <i class="ki-duotone ki-speaker sound-overlay-icon">
-        <span class="path1"></span>
-        <span class="path2"></span>
-    </i>
-    <div class="sound-overlay-title">Tekan Tombol Apa Saja</div>
-    <div class="sound-overlay-subtitle">untuk Mengaktifkan Suara</div>
-</div>
-
 <audio id="ttsAudio" style="display:none;"></audio>
 @endsection
 
 @push('scripts')
 <script>
-    var TV_VIDEO_VOLUME          = {{ config('tv.video_volume') }};
-    var TV_VIDEO_VOLUME_DURING_TTS = {{ config('tv.video_volume_during_tts') }};
-    var TV_TTS_VOLUME            = {{ config('tv.tts_volume') }};
-
     var playlist         = [];
     var currentVideoIdx  = 0;
     var tvPlayer         = document.getElementById('tvPlayer');
@@ -422,17 +364,13 @@
     var pendingAnnouncementText = '';
     var currentAudioObjectUrl = null;
     var playGuardTimer = null;
-    var ttsSeq = 0;
-    var serverOffset = 0; // Selisih jam server - client dalam ms
 
     $(document).ready(function () {
-        syncServerTime();
         updateClock();
         setInterval(updateClock, 1000);
-        setInterval(syncServerTime, 60000); // Resync setiap 1 menit
 
         fetchState();
-        fetchStateInterval = setInterval(fetchState, 5000);
+        fetchStateInterval = setInterval(fetchState, 5000); // Mengurangi frekuensi polling dari 3000ms ke 5000ms.
 
         tvPlayer.addEventListener('ended', function () {
             if (playlist.length === 0) { return; }
@@ -448,12 +386,13 @@
         audioPlayer.addEventListener('ended', function () {
             clearPlayGuard();
             revokeAudioObjectUrl();
-            tvPlayer.volume = TV_VIDEO_VOLUME;
+            tvPlayer.volume = 1;
         });
 
         audioPlayer.addEventListener('error', function () {
             clearPlayGuard();
             revokeAudioObjectUrl();
+
             if (pendingAnnouncementText !== '') {
                 var fallbackText = pendingAnnouncementText;
                 pendingAnnouncementText = '';
@@ -461,11 +400,11 @@
                 return;
             }
 
-            tvPlayer.volume = TV_VIDEO_VOLUME;
+            tvPlayer.volume = 1;
         });
 
-        document.addEventListener('click', activateSound);
-        document.addEventListener('keydown', activateSound);
+        document.addEventListener('click', unlockAudioIfNeeded, { once: true });
+        document.addEventListener('keydown', unlockAudioIfNeeded, { once: true });
 
         document.addEventListener('visibilitychange', function() {
             isPageVisible = !document.hidden;
@@ -497,45 +436,10 @@
         fetchStateInterval = null;
     }
 
-    var soundActivated = false;
-
-    function activateSound() {
-        if (soundActivated) { return; }
-        soundActivated = true;
-
-        // Hapus event listeners
-        document.removeEventListener('click', activateSound);
-        document.removeEventListener('keydown', activateSound);
-
-        // Unmute video player dan set volume default
-        tvPlayer.muted = false;
-        tvPlayer.volume = TV_VIDEO_VOLUME;
-
-        // Unlock audio element yang sebenarnya dengan silent clip
-        audioPlayer.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-        audioPlayer.volume = 0;
-        var unlockPromise = audioPlayer.play();
-        if (unlockPromise && typeof unlockPromise.catch === 'function') {
-            unlockPromise
-                .then(function () {
-                    audioPlayer.pause();
-                    audioPlayer.src = '';
-                    audioPlayer.volume = 1;
-                })
-                .catch(function () {
-                    audioPlayer.src = '';
-                    audioPlayer.volume = 1;
-                });
-        }
-
-        // Fade-out dan hapus overlay
-        var overlay = document.getElementById('soundOverlay');
-        if (overlay) {
-            overlay.classList.add('fade-out');
-            setTimeout(function () {
-                overlay.parentNode.removeChild(overlay);
-            }, 400);
-        }
+    function unlockAudioIfNeeded() {
+        var unlockAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+        unlockAudio.volume = 0;
+        unlockAudio.play().catch(function () {});
     }
 
     function clearPlayGuard() {
@@ -561,7 +465,6 @@
 
         // Resume video if playlist exists
         if (tvPlayer && playlist.length > 0 && tvPlayer.paused) {
-            tvPlayer.volume = TV_VIDEO_VOLUME;
             tvPlayer.play().catch(function() {
                 // Autoplay blocked, will try on next user interaction
             });
@@ -577,23 +480,11 @@
     }
 
     function updateClock() {
-        var now = new Date(Date.now() + serverOffset);
+        var now = new Date();
         $('#clockDisplay').text(now.toLocaleTimeString('id-ID', { hour12: false }));
         $('#dateDisplay').text(now.toLocaleDateString('id-ID', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         }));
-    }
-
-    function syncServerTime() {
-        var before = Date.now();
-        $.get('/api/time', function (data) {
-            var after = Date.now();
-            var latency = (after - before) / 2;
-            serverOffset = data.timestamp - (after - latency);
-        }).fail(function () {
-            // Jika gagal, fallback ke jam client
-            serverOffset = 0;
-        });
     }
 
     function playCurrentVideo() {
@@ -606,7 +497,6 @@
             tvPlayer.load();
         }
 
-        tvPlayer.volume = TV_VIDEO_VOLUME;
         tvPlayer.src = playlist[currentVideoIdx];
         tvPlayer.play().catch(function () {
             /* Autoplay diblokir browser — menunggu interaksi pengguna */
@@ -624,6 +514,9 @@
             },
             error: function () {
                 fetchErrCount++;
+                if (fetchErrCount >= 5) {
+                    console.warn('TV Display: Koneksi ke server bermasalah (' + fetchErrCount + 'x gagal).');
+                }
             }
         });
     }
@@ -652,7 +545,8 @@
 
             activeTicketNumber.addClass('call-animate');
             $('#activeCounterName').text(active.counter ? active.counter.name.toUpperCase() : 'LOKET');
-            $('#activeServiceName').text('');
+            $('#activeServiceName').text(active.service ? active.service.name : '');
+            $('#activeVisitPurpose').text(active.visit_purpose ? formatVisitPurpose(active.visit_purpose) : '');
             /* Aktifkan pulse glow pada hero card */
             $('.queue-hero').addClass('hero-pulse-anim');
 
@@ -683,10 +577,24 @@
         }
     }
 
+    function formatVisitPurpose(purpose) {
+        var map = {
+            'pendaftaran': 'Pendaftaran',
+            'informasi_pengaduan': 'Informasi & Pengaduan',
+            'produk_hukum': 'Pengambilan Produk Hukum',
+            'ecourt': 'eCourt'
+        };
+        return map[purpose] || purpose;
+    }
+
     function renderRecentCallItem(call, opacity) {
         var serviceName = call.service ? call.service.name : '';
         var counterName = call.counter ? call.counter.name : '-';
         var initial     = call.ticket_number.charAt(0);
+        var visitPurpose = call.visit_purpose ? formatVisitPurpose(call.visit_purpose) : '';
+        var purposeHtml = visitPurpose
+            ? '<div class="visit-purpose fw-semibold fs-7 text-uppercase" style="color:rgba(255,255,255,0.5);">' + visitPurpose + '</div>'
+            : '';
 
         return '<div class="recent-call-item" id="call-' + call.id + '" style="opacity:' + opacity + ';">' +
             '<div class="d-flex align-items-center gap-4">' +
@@ -701,6 +609,7 @@
                     '<div class="service-name fw-semibold fs-6 text-uppercase" style="color:rgba(255,255,255,0.7);">' +
                         serviceName +
                     '</div>' +
+                    purposeHtml +
                 '</div>' +
             '</div>' +
             '<div class="counter-name badge badge-light-primary fs-4 fw-boldest px-5 py-2 rounded-pill text-uppercase">' +
@@ -735,14 +644,18 @@
                 var currentTicket = existingItem.querySelector('.ticket-number');
                 var currentService = existingItem.querySelector('.service-name');
                 var currentCounter = existingItem.querySelector('.counter-name');
+                var currentPurpose = existingItem.querySelector('.visit-purpose');
 
                 var serviceName = call.service ? call.service.name : '';
                 var counterName = call.counter ? call.counter.name : '-';
+                var visitPurpose = call.visit_purpose ? formatVisitPurpose(call.visit_purpose) : '';
+                var currentPurposeText = currentPurpose ? currentPurpose.textContent.trim() : '';
 
                 var hasChanged = (
                     (currentTicket && currentTicket.textContent.trim() !== call.ticket_number) ||
                     (currentService && currentService.textContent.trim() !== serviceName) ||
-                    (currentCounter && currentCounter.textContent.trim() !== counterName)
+                    (currentCounter && currentCounter.textContent.trim() !== counterName) ||
+                    (currentPurposeText !== visitPurpose)
                 );
 
                 if (hasChanged) {
@@ -780,7 +693,7 @@
         revokeAudioObjectUrl();
 
         if (!('speechSynthesis' in window)) {
-            tvPlayer.volume = TV_VIDEO_VOLUME;
+            tvPlayer.volume = 1;
             return;
         }
 
@@ -790,234 +703,103 @@
         utterance.lang = 'id-ID';
         utterance.rate = 0.95;
         utterance.pitch = 1;
-        utterance.volume = TV_TTS_VOLUME;
+        utterance.volume = 1;
         utterance.onend = function () {
-            tvPlayer.volume = TV_VIDEO_VOLUME;
+            tvPlayer.volume = 1;
         };
         utterance.onerror = function () {
-            tvPlayer.volume = TV_VIDEO_VOLUME;
+            tvPlayer.volume = 1;
         };
 
         window.speechSynthesis.speak(utterance);
     }
 
     function playMiniMaxAudio(audioUrl, fallbackText) {
-        var mySeq = ttsSeq;
-        console.log('[TTS] Fetching audio from:', audioUrl);
         fetch(audioUrl, {
             method: 'GET',
             credentials: 'same-origin',
             cache: 'no-store'
         })
             .then(function (response) {
-                console.log('[TTS] Audio response status:', response.status, response.ok);
                 if (!response.ok) {
                     throw new Error('AUDIO_HTTP_' + response.status);
                 }
-                return response.arrayBuffer();
+
+                return response.blob();
             })
-            .then(function (audioBuffer) {
-                console.log('[TTS] Audio buffer received:', audioBuffer.byteLength, 'bytes');
-                if (!audioBuffer || audioBuffer.byteLength <= 0) {
-                    throw new Error('AUDIO_EMPTY_BUFFER');
+            .then(function (audioBlob) {
+                if (!audioBlob || audioBlob.size <= 0) {
+                    throw new Error('AUDIO_EMPTY_BLOB');
                 }
 
-                // Cek header binary untuk verify MP3 format
-                var headerView = new DataView(audioBuffer, 0, Math.min(16, audioBuffer.byteLength));
-                var headerHex = [];
-                for (var hi = 0; hi < headerView.byteLength; hi++) {
-                    headerHex.push(headerView.getUint8(hi).toString(16).padStart(2, '0'));
+                var blobType = (audioBlob.type || '').toLowerCase();
+                if (blobType && blobType.indexOf('audio') === -1 && blobType.indexOf('octet-stream') === -1) {
+                    throw new Error('AUDIO_INVALID_BLOB_TYPE_' + blobType);
                 }
-                // Validasi: MP3 harus mulai dengan FF (MPEG sync) atau 49 44 33 (ID3 tag)
-                var firstByte = headerView.getUint8(0);
-                var isValidMp3Header = (firstByte === 0xFF) || (headerHex[0] === '49' && headerHex[1] === '44' && headerHex[2] === '33');
 
                 clearPlayGuard();
                 revokeAudioObjectUrl();
 
-                // Gunakan Web Audio API untuk decode dan play — lebih robust dari <audio> element
-                if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
-                    var AudioCtx = window.AudioContext || window.webkitAudioContext;
-                    var ctx = new AudioCtx();
+                currentAudioObjectUrl = URL.createObjectURL(audioBlob);
+                audioPlayer.src = currentAudioObjectUrl;
 
-                    // Perbesar guard timer: minimum 2x durasi TTS預估 (5-6s text = ~5-6s audio)
-                    playGuardTimer = setTimeout(function () {
-                        if (mySeq !== ttsSeq) { return; }
-                        try { window._currentAudioSource.stop(); } catch (e) {}
-                        if (window._currentAudioContext && window._currentAudioContext.state !== 'closed') { window._currentAudioContext.close(); }
-                        if (pendingAnnouncementText !== '') {
-                            var guardText = pendingAnnouncementText;
-                            pendingAnnouncementText = '';
-                            speakWithBrowserTts(guardText);
-                        }
-                    }, 10000);
+                playGuardTimer = setTimeout(function () {
+                    if (pendingAnnouncementText !== '') {
+                        var guardText = pendingAnnouncementText;
+                        pendingAnnouncementText = '';
+                        speakWithBrowserTts(guardText);
+                    }
+                }, 2500);
 
-                    ctx.decodeAudioData(audioBuffer)
-                        .then(function (decodedBuffer) {
-                            if (mySeq !== ttsSeq) {
-                                ctx.close();
-                                return;
-                            }
-                            playAudioBufferWithContext(ctx, decodedBuffer, fallbackText, mySeq);
-                        })
-                        .catch(function (decodeErr) {
-                            // Fallback ke audio element
-                            var typedBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-                            var blobUrl = URL.createObjectURL(typedBlob);
-                            currentAudioObjectUrl = blobUrl;
-                            playWithAudioElement(blobUrl, fallbackText, mySeq);
-                        });
-                } else {
-                    // Tidak ada AudioContext — langsung pakai audio element
-                    var typedBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-                    var blobUrl = URL.createObjectURL(typedBlob);
-                    currentAudioObjectUrl = blobUrl;
-                    playWithAudioElement(blobUrl, fallbackText, mySeq);
+                var playPromise = audioPlayer.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(function () {
+                        // Bersihkan src agar tidak memicu error event setelah blob dicabut
+                        audioPlayer.src = '';
+                        speakWithBrowserTts(fallbackText);
+                    });
                 }
             })
-            .catch(function (e) {
-                if (mySeq !== ttsSeq) { return; }
-                console.error('[TTS] MiniMax audio fetch failed:', e.message);
+            .catch(function () {
+                // Fetch gagal — pastikan src bersih sebelum fallback ke browser TTS
                 audioPlayer.src = '';
                 speakWithBrowserTts(fallbackText);
             });
     }
 
-    function playAudioBufferWithContext(ctx, buffer, fallbackText, mySeq) {
-        clearPlayGuard();
-
-        var source = ctx.createBufferSource();
-        source.buffer = buffer;
-
-        var gainNode = ctx.createGain();
-        gainNode.gain.value = TV_TTS_VOLUME;
-        source.connect(gainNode);
-        gainNode.connect(ctx.destination);
-
-        // Simpan reference untuk cleanup
-        window._currentAudioSource = source;
-        window._currentAudioContext = ctx;
-
-        source.onended = function () {
-            clearPlayGuard();
-            revokeAudioObjectUrl();
-            if (ctx.state !== 'closed') { ctx.close(); }
-            tvPlayer.volume = TV_VIDEO_VOLUME;
-        };
-
-        source.onerror = function (e) {
-            clearPlayGuard();
-            if (ctx.state !== 'closed') { ctx.close(); }
-            speakWithBrowserTts(fallbackText);
-        };
-
-        // Simpan text agar bisa di-fallback saat guard timeout
-        window._pendingFallbackText = fallbackText;
-
-        playGuardTimer = setTimeout(function () {
-            if (mySeq !== ttsSeq) { return; }
-            try { source.stop(); } catch (e) {}
-            if (ctx.state !== 'closed') { ctx.close(); }
-            var pending = window._pendingFallbackText || '';
-            window._pendingFallbackText = null;
-            if (pending) { speakWithBrowserTts(pending); }
-        }, 10000);
-
-        source.start(0);
-    }
-
-    function playWithAudioElement(blobUrl, fallbackText, mySeq) {
-        audioPlayer.src = blobUrl;
-        audioPlayer.volume = TV_TTS_VOLUME;
-
-        playGuardTimer = setTimeout(function () {
-            if (mySeq !== ttsSeq) { return; }
-            if (pendingAnnouncementText !== '') {
-                var guardText = pendingAnnouncementText;
-                pendingAnnouncementText = '';
-                speakWithBrowserTts(guardText);
-            }
-        }, 10000);
-
-        if (mySeq !== ttsSeq) {
-            audioPlayer.src = '';
-            audioPlayer.load();
-            return;
-        }
-        var playPromise = audioPlayer.play();
-        if (playPromise && typeof playPromise.catch === 'function') {
-            playPromise
-                .then(function () {
-                    if (mySeq !== ttsSeq) { return; }
-                })
-                .catch(function (e) {
-                    if (mySeq !== ttsSeq) { return; }
-                    audioPlayer.src = '';
-                    audioPlayer.load();
-                    pendingAnnouncementText = '';
-                    speakWithBrowserTts(fallbackText);
-                });
-        }
-    }
-
     function playAnnouncer(call) {
-        var layanan = call.counter ? call.counter.name : 'Loket';
-        var nomor = call.ticket_number.replace(/^([A-Za-z]+)0+(.+)$/, '$1$2');
-        var text = 'Nomor antrian ' + nomor + ', silakan menuju ' + layanan + '.';
-        var mySeq = ++ttsSeq;
+        var loket    = call.counter ? call.counter.name : 'Loket';
+        var ttsNomor = call.ticket_number
+            .replace(/[^A-Za-z0-9]/g, '')
+            .split('')
+            .map(function (c) { return c === '0' ? 'nol' : c; })
+            .join(', ');
+        var text = 'Nomor antrian, ' + ttsNomor + '. Silakan menuju, ' + loket + '.';
 
-        console.log('[TTS] playAnnouncer:', JSON.stringify({
-            ticket: call.ticket_number,
-            service: call.service ? call.service.name : 'null',
-            counter: call.counter ? call.counter.name : 'null',
-            text: text
-        }));
-
-
-        // Bersihkan state audio lama sebelum mulai announcement baru
-        clearPlayGuard();
-        revokeAudioObjectUrl();
-        
-        // Stop the current playing AudioContext if any
-        if (window._currentAudioSource) {
-            try { window._currentAudioSource.stop(); } catch(e) {}
-            window._currentAudioSource = null;
-        }
-        if (window._currentAudioContext && window._currentAudioContext.state !== 'closed') {
-            try { window._currentAudioContext.close(); } catch(e) {}
-            window._currentAudioContext = null;
-        }
-
-        audioPlayer.pause();
-        audioPlayer.removeAttribute('src');
-        audioPlayer.load();
-
-        tvPlayer.volume = TV_VIDEO_VOLUME_DURING_TTS;
+        tvPlayer.volume = 0.2;
         pendingAnnouncementText = text;
 
         $.ajax({
             url: '{{ route("tv-display.tts.announcement") }}',
             type: 'GET',
             dataType: 'json',
-            timeout: 15000,
+            timeout: 10000,
             data: {
                 text: text,
             },
             success: function (response) {
-                if (mySeq !== ttsSeq) {
-                    return;
-                }
-                if (response && response.audio_url) {
-                    console.log('[TTS] Audio URL:', response.audio_url, 'provider:', response.provider, 'cache_key:', response.cache_key);
+                if (response && response.provider === 'minimax' && response.audio_url) {
                     playMiniMaxAudio(response.audio_url, text);
+
                     return;
                 }
-                console.warn('[TTS] Browser TTS fallback - provider:', response ? response.provider : 'null');
+
+                // Provider browser: clear pending agar error handler tidak double-trigger
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(text);
             },
-            error: function (xhr, status, err) {
-                console.error('[TTS] API error:', status, err, 'xhr:', xhr.status, xhr.responseText);
+            error: function () {
+                // AJAX gagal (sesi habis, dll): clear pending sebelum fallback
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(text);
             }
