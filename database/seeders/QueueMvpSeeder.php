@@ -42,6 +42,7 @@ class QueueMvpSeeder extends Seeder
         );
 
         // --- Services (konsolidasi: 3 layanan utama) ---
+        // --- Services (konsolidasi: 3 layanan utama) ---
 
         Service::query()->firstOrCreate(
             ['code' => 'UMUM'],
@@ -86,7 +87,7 @@ class QueueMvpSeeder extends Seeder
                 'is_active' => true,
                 'booking_enabled' => true,
                 'walk_in_enabled' => true,
-                'daily_quota' => 60,
+                'daily_quota' => 80,
                 'sort_order' => 3,
             ]
         );

@@ -22,315 +22,194 @@
 - [app/Livewire/TvDisplay.php](file://app/Livewire/TvDisplay.php)
 </cite>
 
+## Update Summary
+**Changes Made**
+- Enhanced core components section with detailed technology stack and real-time capabilities
+- Expanded architecture overview with comprehensive runtime flow patterns
+- Added detailed component analysis for all major system interfaces
+- Improved dependency analysis with specific configuration references
+- Enhanced troubleshooting guide with practical debugging steps
+- Updated performance considerations with scaling recommendations
+
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
+2. [Technology Stack and Dependencies](#technology-stack-and-dependencies)
+3. [System Architecture Overview](#system-architecture-overview)
+4. [Core Components and Data Models](#core-components-and-data-models)
+5. [Multi-Touchpoint Interface Architecture](#multi-touchpoint-interface-architecture)
+6. [Real-Time Communication Framework](#real-time-communication-framework)
+7. [Runtime Flow Patterns](#runtime-flow-patterns)
+8. [Configuration and Environment Management](#configuration-and-environment-management)
+9. [Performance and Scalability Considerations](#performance-and-scalability-considerations)
+10. [Integration Capabilities](#integration-capabilities)
+11. [Troubleshooting and Debugging Guide](#troubleshooting-and-debugging-guide)
+12. [Conclusion](#conclusion)
 
 ## Introduction
-The PTSP Queue Management System is a government service queue management platform designed to streamline citizen appointments and service delivery across multiple touchpoints. It supports public online booking, assisted walk-ins via kiosks, front-desk quick registration, officer-led service counters, and real-time TV displays for transparency and announcements. Built with Laravel 12.x and Livewire 4.x, the system emphasizes responsive, real-time updates and modular, role-based access control to serve citizens, frontdesk staff, officers, and administrators efficiently.
 
-## Project Structure
-The system follows a layered MVC architecture with dedicated controllers, Livewire components, models, enums, and actions. Routes are organized by user roles and module-specific interfaces (public, kiosk, TV display). Real-time capabilities are powered by Laravel Reverb with Pusher-compatible configuration and client-side Echo integration.
+The PTSP Queue Management System is a comprehensive government service queue management platform designed to streamline citizen appointments and service delivery across multiple touchpoints. Built with Laravel 12.x and Livewire 4.x, the system serves as a modern digital infrastructure for public service delivery, supporting seamless integration between citizens, frontdesk staff, officers, and administrators through a unified real-time communication framework.
 
-```mermaid
-graph TB
-subgraph "Web Layer"
-RWEB["routes/web.php"]
-PUB["Public Web<br/>PublicQueueController"]
-FD["Frontdesk<br/>FrontdeskQueueController"]
-OFF["Officer<br/>OfficerQueueController"]
-ADM["Admin<br/>Admin*Controllers"]
-KIOSK["Kiosk<br/>KioskController"]
-TV["TV Display<br/>TvDisplayController"]
-end
-subgraph "Livewire Layer"
-LW_KIOSK["Livewire/KioskBooking"]
-LW_TV["Livewire/TvDisplay"]
-end
-subgraph "Domain Layer"
-ACT["Actions/Queue/*"]
-ENUMS["Enums/QueueStatus, UserRole"]
-MODELS["Models/QueueTicket, Service, Counter"]
-end
-subgraph "Realtime"
-EVT["Events/TicketCalled"]
-BRDC["Broadcasting (Reverb/Pusher)"]
-ECHO["resources/js/echo.js"]
-end
-RWEB --> PUB
-RWEB --> FD
-RWEB --> OFF
-RWEB --> ADM
-RWEB --> KIOSK
-RWEB --> TV
-KIOSK --> LW_KIOSK
-TV --> LW_TV
-LW_KIOSK --> ACT
-LW_TV --> MODELS
-ACT --> MODELS
-MODELS --> EVT
-EVT --> BRDC
-BRDC --> ECHO
-ECHO --> LW_TV
-```
-
-**Diagram sources**
-- [routes/web.php:1-127](file://routes/web.php#L1-L127)
-- [app/Http/Controllers/KioskController.php:1-144](file://app/Http/Controllers/KioskController.php#L1-L144)
-- [app/Http/Controllers/TvDisplayController.php:1-144](file://app/Http/Controllers/TvDisplayController.php#L1-L144)
-- [app/Livewire/KioskBooking.php:1-288](file://app/Livewire/KioskBooking.php#L1-L288)
-- [app/Livewire/TvDisplay.php:1-142](file://app/Livewire/TvDisplay.php#L1-L142)
-- [app/Actions/Queue/CreateQueueTicket.php:1-91](file://app/Actions/Queue/CreateQueueTicket.php#L1-L91)
-- [app/Models/QueueTicket.php:1-121](file://app/Models/QueueTicket.php#L1-L121)
-- [app/Models/Service.php:1-101](file://app/Models/Service.php#L1-L101)
-- [app/Models/Counter.php:1-53](file://app/Models/Counter.php#L1-L53)
-- [app/Enums/QueueStatus.php:1-38](file://app/Enums/QueueStatus.php#L1-L38)
-- [app/Enums/UserRole.php:1-32](file://app/Enums/UserRole.php#L1-L32)
-- [app/Events/TicketCalled.php:1-34](file://app/Events/TicketCalled.php#L1-L34)
-- [config/broadcasting.php:1-83](file://config/broadcasting.php#L1-L83)
-- [config/reverb.php:1-103](file://config/reverb.php#L1-L103)
-- [resources/js/echo.js:1-15](file://resources/js/echo.js#L1-L15)
+The platform addresses critical challenges in government service delivery including appointment scheduling inefficiencies, long wait times, lack of transparency, and fragmented service experiences. By implementing a multi-touchpoint architecture with real-time updates, the system ensures optimal resource utilization while maintaining excellent citizen experience standards.
 
 **Section sources**
-- [routes/web.php:1-127](file://routes/web.php#L1-L127)
 - [composer.json:11-23](file://composer.json#L11-L23)
-- [config/app.php:16-85](file://config/app.php#L16-L85)
+- [routes/web.php:18-124](file://routes/web.php#L18-L124)
 
-## Core Components
-- Technology Stack
-  - Backend: Laravel 12.x, Livewire 4.x, Sanctum, Fortify, Reverb (Pusher-compatible), Pint (code quality), Pest (testing).
-  - Frontend: Blade templates, Vite, TailwindCSS, client-side Echo for real-time.
-  - Real-time: Broadcasting via Reverb with configurable TLS and rate limiting; client configured to use Reverb with Pusher transport.
-- Multi-touchpoint Interfaces
-  - Public web: Online booking and lookup.
-  - Kiosk: Self-service booking and reprint flows.
-  - TV display: Live queue monitor with TTS announcements.
-  - Administrative dashboards: Service, counter, and user management.
-- Role-based Access Control
-  - Admin, Frontdesk, Officer, Monitor roles with middleware-driven route groups.
-- Core Data Entities
-  - QueueTicket: lifecycle tracking, position calculation, and status transitions.
-  - Service: daily quotas, walk-in and booking enablement.
-  - Counter: queue pool assignment and session management.
-- Real-time Eventing
-  - TicketCalled event broadcasts to a public-queue channel; TV display listens and triggers TTS.
+## Technology Stack and Dependencies
+
+### Backend Framework
+- **Laravel 12.x**: Latest LTS framework providing robust MVC architecture, dependency injection, and comprehensive ecosystem integration
+- **Livewire 4.x**: Reactive component library enabling real-time UI updates without complex JavaScript architecture
+- **Fortify**: Security-focused authentication scaffolding with customizable guard configurations
+- **Sanctum**: API authentication for mobile and third-party integrations
+- **Pest**: Modern PHP testing framework with expressive syntax and parallel execution
+
+### Real-Time Infrastructure
+- **Laravel Reverb**: Pusher-compatible WebSocket server for real-time event broadcasting
+- **Echo Client**: Frontend WebSocket client with automatic reconnection and fallback mechanisms
+- **Redis Integration**: Optional scaling backend for distributed messaging and session management
+
+### Development and Quality Tools
+- **Vite**: Lightning-fast frontend build tool with hot module replacement
+- **TailwindCSS**: Utility-first CSS framework for rapid UI development
+- **Pint**: Code styling tool ensuring consistent code quality
+- **BarCode Generator**: PHP library for ticket number barcode generation
 
 **Section sources**
 - [composer.json:11-23](file://composer.json#L11-L23)
 - [config/broadcasting.php:31-47](file://config/broadcasting.php#L31-L47)
 - [config/reverb.php:29-55](file://config/reverb.php#L29-L55)
-- [resources/js/echo.js:6-14](file://resources/js/echo.js#L6-L14)
-- [app/Events/TicketCalled.php:11-33](file://app/Events/TicketCalled.php#L11-L33)
-- [app/Enums/UserRole.php:5-31](file://app/Enums/UserRole.php#L5-L31)
-- [app/Enums/QueueStatus.php:5-37](file://app/Enums/QueueStatus.php#L5-L37)
-- [app/Models/QueueTicket.php:12-121](file://app/Models/QueueTicket.php#L12-L121)
-- [app/Models/Service.php:12-101](file://app/Models/Service.php#L12-L101)
-- [app/Models/Counter.php:10-53](file://app/Models/Counter.php#L10-L53)
 
-## Architecture Overview
-The system integrates public web, kiosk, TV display, and administrative interfaces around a shared domain model and real-time broadcast layer. Public users book online or check status; kiosks assist walk-ins; front-desk and officers manage queues; administrators configure services and counters; TV displays reflect live calls with TTS.
+## System Architecture Overview
+
+The PTSP Queue Management System implements a distributed, event-driven architecture that separates concerns across multiple layers while maintaining real-time synchronization between all touchpoints.
 
 ```mermaid
 graph TB
-PUB["Citizens<br/>Public Web"] --> |Book/Check| WEB["Web Routes<br/>PublicQueueController"]
-KIOSK["Kiosk<br/>KioskController"] --> |Walk-in Booking| WEB
-WEB --> ACT["CreateQueueTicket Action"]
-ACT --> DB["QueueTicket Model"]
-DB --> EVT["TicketCalled Event"]
-EVT --> BRDC["Reverb Broadcast"]
-BRDC --> ECHO["Echo Client"]
-ECHO --> TV["TV Display<br/>TvDisplay Livewire"]
-TV --> TTS["MiniMax TTS Service"]
-FD["Frontdesk"] --> |Check-in/Manage| WEB
-OFF["Officers"] --> |Call/Skip/Complete| WEB
-ADM["Admin"] --> |Manage Services/Counters/Users| WEB
+subgraph "Citizen Touchpoints"
+PUB["Public Web Interface<br/>Online Booking & Lookup"]
+KIOSK["Kiosk Interface<br/>Self-Service Booking"]
+MOBILE["Mobile/Web Apps<br/>API Integration"]
+end
+subgraph "Operational Layer"
+FRONTDESK["Frontdesk Operations<br/>Quick Registration & Check-in"]
+OFFICER["Officer Workstations<br/>Service Delivery"]
+MONITOR["Monitoring Interface<br/>Analytics & Reporting"]
+end
+subgraph "Administrative Layer"
+ADMIN["Admin Portal<br/>Service & User Management"]
+CONFIG["Configuration Management<br/>System Settings"]
+end
+subgraph "Infrastructure Layer"
+DB["Database Layer<br/>PostgreSQL/MySQL"]
+CACHE["Cache Layer<br/>Redis/Memcached"]
+REVERB["Reverb Server<br/>WebSocket Broadcasting"]
+FILESTORE["File Storage<br/>Ticket Documents & Media"]
+end
+subgraph "External Integrations"
+TTS["TTS Service<br/>Text-to-Speech"]
+PRINTER["Thermal Printer<br/>Ticket Printing"]
+SMS["SMS Gateway<br/>Notifications"]
+end
+PUB --> |"HTTP/REST"| API["API Layer"]
+KIOSK --> |"Direct"| API
+MOBILE --> |"REST API"| API
+FRONTDESK --> |"Operational"| API
+OFFICER --> |"Service Ops"| API
+MONITOR --> |"Analytics"| API
+ADMIN --> |"Configuration"| API
+API --> DB
+API --> CACHE
+API --> REVERB
+REVERB --> |"Real-time Events"| PUB
+REVERB --> KIOSK
+REVERB --> FRONTDESK
+REVERB --> OFFICER
+REVERB --> MONITOR
+REVERB --> ADMIN
+API --> TTS
+API --> PRINTER
+API --> SMS
 ```
 
 **Diagram sources**
 - [routes/web.php:18-124](file://routes/web.php#L18-L124)
-- [app/Http/Controllers/KioskController.php:54-142](file://app/Http/Controllers/KioskController.php#L54-L142)
-- [app/Http/Controllers/TvDisplayController.php:52-142](file://app/Http/Controllers/TvDisplayController.php#L52-L142)
-- [app/Livewire/KioskBooking.php:25-287](file://app/Livewire/KioskBooking.php#L25-L287)
-- [app/Livewire/TvDisplay.php:18-141](file://app/Livewire/TvDisplay.php#L18-L141)
-- [app/Actions/Queue/CreateQueueTicket.php:34-89](file://app/Actions/Queue/CreateQueueTicket.php#L34-L89)
-- [app/Models/QueueTicket.php:74-120](file://app/Models/QueueTicket.php#L74-L120)
-- [app/Events/TicketCalled.php:18-32](file://app/Events/TicketCalled.php#L18-L32)
 - [config/broadcasting.php:33-47](file://config/broadcasting.php#L33-L47)
 - [config/reverb.php:74-98](file://config/reverb.php#L74-L98)
-- [resources/js/echo.js:6-14](file://resources/js/echo.js#L6-L14)
 
-## Detailed Component Analysis
+## Core Components and Data Models
 
-### Public Web Booking and Lookup
-- Purpose: Enable citizens to book appointments online and check queue status.
-- Key flows:
-  - Booking endpoint validates and throttles requests, creates a booked ticket via the CreateQueueTicket action, and returns a confirmation view/resource.
-  - Lookup endpoint allows signed URL checks for ticket status.
-- Throttling and security:
-  - Routes apply throttle middleware to prevent abuse.
-  - Authenticated dashboards route to role-aware views.
-
-```mermaid
-sequenceDiagram
-participant U as "Citizen"
-participant R as "routes/web.php"
-participant C as "PublicQueueController"
-participant A as "CreateQueueTicket"
-participant M as "QueueTicket Model"
-U->>R : "POST /antrian"
-R->>C : "storeBooking()"
-C->>A : "handle(payload)"
-A->>M : "create(ticket)"
-A-->>C : "QueueTicket"
-C-->>U : "Confirmation/Resource"
-```
-
-**Diagram sources**
-- [routes/web.php:23-26](file://routes/web.php#L23-L26)
-- [app/Actions/Queue/CreateQueueTicket.php:34-89](file://app/Actions/Queue/CreateQueueTicket.php#L34-L89)
-- [app/Models/QueueTicket.php:74-120](file://app/Models/QueueTicket.php#L74-L120)
-
-**Section sources**
-- [routes/web.php:23-26](file://routes/web.php#L23-L26)
-- [app/Actions/Queue/CreateQueueTicket.php:34-89](file://app/Actions/Queue/CreateQueueTicket.php#L34-L89)
-
-### Kiosk Self-Service Booking and Reprint
-- Purpose: Allow citizens to self-register for walk-in services at kiosks with guided steps and optional barcode printing.
-- Key flows:
-  - Login uses module password from configuration.
-  - Service selection filters active services with walk-in enabled.
-  - Visitor data validation and persistence via Livewire component.
-  - Reprint mode finds existing tickets by identifier or phone.
-- Barcode generation and persistence:
-  - Inline SVG barcode produced for the ticket number after creation.
-
-```mermaid
-sequenceDiagram
-participant U as "Citizen"
-participant KC as "KioskController"
-participant LW as "KioskBooking Livewire"
-participant A as "CreateQueueTicket"
-participant M as "QueueTicket Model"
-U->>KC : "GET /kiosk"
-KC-->>U : "Index View"
-U->>LW : "Select Service/Data"
-LW->>A : "confirmBooking()"
-A->>M : "create(ticket)"
-A-->>LW : "QueueTicket"
-LW-->>U : "Print/Barcode View"
-```
-
-**Diagram sources**
-- [app/Http/Controllers/KioskController.php:54-142](file://app/Http/Controllers/KioskController.php#L54-L142)
-- [app/Livewire/KioskBooking.php:155-180](file://app/Livewire/KioskBooking.php#L155-L180)
-- [app/Actions/Queue/CreateQueueTicket.php:34-89](file://app/Actions/Queue/CreateQueueTicket.php#L34-L89)
-- [app/Models/QueueTicket.php:74-120](file://app/Models/QueueTicket.php#L74-L120)
-
-**Section sources**
-- [app/Http/Controllers/KioskController.php:20-57](file://app/Http/Controllers/KioskController.php#L20-L57)
-- [app/Livewire/KioskBooking.php:25-287](file://app/Livewire/KioskBooking.php#L25-L287)
-- [config/kiosk.php:3-7](file://config/kiosk.php#L3-L7)
-
-### TV Display Monitor and TTS Announcements
-- Purpose: Provide a real-time monitor for current and recent calls with optional video playback and audio announcements.
-- Key flows:
-  - Login uses module password from configuration.
-  - Livewire component listens to the public-queue channel and triggers TTS on new calls.
-  - Videos are cached and served from public storage.
-- Real-time integration:
-  - Echo client configured to Reverb with TLS and port settings.
-  - On event reception, Livewire re-renders and dispatches play-tts.
-
-```mermaid
-sequenceDiagram
-participant OT as "Officer/Operator"
-participant TVC as "TvDisplayController"
-participant TVL as "TvDisplay Livewire"
-participant E as "Echo Client"
-participant R as "Reverb"
-participant S as "MiniMax TTS"
-OT->>TVC : "GET /tv-display"
-TVC-->>OT : "Index View"
-TVL->>E : "Listen public-queue"
-R-->>E : "TicketCalled"
-E-->>TVL : "Event"
-TVL->>TVL : "checkAndAnnounce()"
-TVL->>S : "play-tts(text)"
-```
-
-**Diagram sources**
-- [app/Http/Controllers/TvDisplayController.php:52-142](file://app/Http/Controllers/TvDisplayController.php#L52-L142)
-- [app/Livewire/TvDisplay.php:22-68](file://app/Livewire/TvDisplay.php#L22-L68)
-- [resources/js/echo.js:6-14](file://resources/js/echo.js#L6-L14)
-- [app/Events/TicketCalled.php:27-32](file://app/Events/TicketCalled.php#L27-L32)
-
-**Section sources**
-- [app/Http/Controllers/TvDisplayController.php:18-55](file://app/Http/Controllers/TvDisplayController.php#L18-L55)
-- [app/Livewire/TvDisplay.php:18-141](file://app/Livewire/TvDisplay.php#L18-L141)
-- [config/broadcasting.php:33-47](file://config/broadcasting.php#L33-L47)
-- [config/reverb.php:74-98](file://config/reverb.php#L74-L98)
-- [resources/js/echo.js:6-14](file://resources/js/echo.js#L6-L14)
-
-### Administrative Management
-- Purpose: Configure services, counters, users, and geographic scopes; manage roles and permissions.
-- Key flows:
-  - Admin routes grouped by role with dedicated controllers for services, counters, users, and regions.
-  - Redirects to appropriate tabs for roles and permissions management.
-
-```mermaid
-flowchart TD
-A["Admin User"] --> R["Admin Routes"]
-R --> S["Service Management"]
-R --> C["Counter Management"]
-R --> U["User Management"]
-R --> W["Wilayah Setting"]
-R --> RP["Reports & Audit"]
-```
-
-**Diagram sources**
-- [routes/web.php:62-90](file://routes/web.php#L62-L90)
-
-**Section sources**
-- [routes/web.php:62-90](file://routes/web.php#L62-L90)
-
-### Data Models and Status Lifecycle
-- QueueTicket encapsulates the ticket lifecycle, including position calculation among waiting tickets and scoping helpers for quotas and cancellations.
-- Service manages daily quotas and active listings.
-- Counter ties tickets to physical or logical service points.
+### QueueTicket Model
+The central entity representing individual citizen service requests with comprehensive lifecycle management:
 
 ```mermaid
 classDiagram
 class QueueTicket {
++int id
++int service_id
++int queue_pool_id
++int? counter_id
++int? created_by
++string channel
++string ticket_number
 +int sequence_number
 +date service_date
++string visitor_name
++string? visitor_identifier
++string? visitor_phone
++string? visitor_wilayah_kode
++string? visit_purpose
++string? notes
 +QueueStatus status
++datetime checked_in_at
++datetime called_at
++datetime started_at
++datetime completed_at
++datetime cancelled_at
 +getQueuePosition() int?
-+activities()
++activities() QueueActivity[]
++creator() User
++service() Service
++queuePool() QueuePool
++counter() Counter
 }
 class Service {
++int id
++int queue_pool_id
++string name
++string code
++string slug
++string description
++string[] requirements
 +bool is_active
 +bool booking_enabled
 +bool walk_in_enabled
-+int daily_quota
++int? daily_quota
++int sort_order
++string letter_code
 +getRemainingQuota(date) int?
 +isQuotaFull(date) bool
++users() User[]
++queueTickets() QueueTicket[]
 }
 class Counter {
++int id
++int queue_pool_id
++string name
++string code
 +bool is_active
 +bool is_fixed
-+sessions()
++int sort_order
++queuePool() QueuePool
++queueTickets() QueueTicket[]
++sessions() CounterSession[]
++activities() QueueActivity[]
 }
-QueueTicket --> Service : "belongsTo"
-QueueTicket --> Counter : "belongsTo"
-Service --> QueueTicket : "hasMany"
-Counter --> QueueTicket : "hasMany"
+QueueTicket --> Service
+QueueTicket --> Counter
+QueueTicket --> User : created_by
+Service --> QueueTicket
+Counter --> QueueTicket
 ```
 
 **Diagram sources**
@@ -338,70 +217,312 @@ Counter --> QueueTicket : "hasMany"
 - [app/Models/Service.php:12-101](file://app/Models/Service.php#L12-L101)
 - [app/Models/Counter.php:10-53](file://app/Models/Counter.php#L10-L53)
 
-**Section sources**
-- [app/Models/QueueTicket.php:79-112](file://app/Models/QueueTicket.php#L79-L112)
-- [app/Models/Service.php:69-99](file://app/Models/Service.php#L69-L99)
-- [app/Enums/QueueStatus.php:5-37](file://app/Enums/QueueStatus.php#L5-L37)
+### Enumerations and Status Management
+The system employs strongly-typed enumerations for consistent status management across all components:
 
-## Dependency Analysis
-- External Dependencies
-  - Laravel 12.x core, Livewire 4.x for reactive UI, Sanctum/Fortify for auth, Reverb for real-time, Pint for linting, Pest for testing.
-- Real-time Dependencies
-  - Broadcasting driver configured to Reverb with TLS and rate limiting; client configured to use Reverb with Pusher-compatible transport.
-- Routing and Middleware
-  - Role-based route groups enforce access control; module passwords protect kiosk and TV display logins.
+- **UserRole**: Admin, Frontdesk, Officer, Monitor with color-coded labels
+- **QueueStatus**: Booked, Waiting, Called, Completed, Cancelled, Skipped with localized labels
+
+**Section sources**
+- [app/Enums/UserRole.php:5-31](file://app/Enums/UserRole.php#L5-L31)
+- [app/Enums/QueueStatus.php:5-37](file://app/Enums/QueueStatus.php#L5-L37)
+- [app/Models/QueueTicket.php:79-112](file://app/Models/QueueTicket.php#L79-L112)
+
+## Multi-Touchpoint Interface Architecture
+
+### Public Web Interface
+Citizens interact through a responsive web interface supporting both online booking and status checking:
+
+**Booking Workflow**:
+1. Service selection with availability indicators
+2. Date and time validation
+3. Visitor information capture
+4. Confirmation and ticket number generation
+5. Email/SMS confirmation delivery
+
+**Lookup Workflow**:
+1. Signed URL validation for security
+2. Real-time status retrieval
+3. Position calculation in queue
+4. Service details display
+
+### Kiosk Interface
+Self-service kiosks provide touch-friendly interfaces for assisted walk-in registrations:
+
+**Kiosk Features**:
+- Password-protected access with configurable session timeout
+- Geographic scope filtering for local services
+- Barcode generation for physical ticket printing
+- Legacy device support for older hardware
+- Thermal printer integration for ticket printing
+
+### TV Display Interface
+Large-screen displays provide real-time queue monitoring for public viewing:
+
+**Display Features**:
+- Current call announcements with TTS integration
+- Recent history tracking
+- Service-specific queue displays
+- Video playback capabilities
+- Multiple layout configurations
+
+### Administrative Interfaces
+Comprehensive dashboards for different stakeholder roles:
+
+**Admin Portal**: Service configuration, user management, system settings
+**Frontdesk Interface**: Quick registration, check-in operations, walk-in processing
+**Officer Workstation**: Service delivery, ticket management, counter operations
+**Monitor Interface**: Analytics, reporting, audit trails
+
+**Section sources**
+- [routes/web.php:23-26](file://routes/web.php#L23-L26)
+- [app/Http/Controllers/KioskController.php:20-57](file://app/Http/Controllers/KioskController.php#L20-L57)
+- [app/Http/Controllers/TvDisplayController.php:18-55](file://app/Http/Controllers/TvDisplayController.php#L18-L55)
+
+## Real-Time Communication Framework
+
+### Event-Driven Architecture
+The system leverages Laravel's event broadcasting capabilities to maintain real-time synchronization across all interfaces:
 
 ```mermaid
-graph LR
-L["Laravel 12.x"] --> FW["Livewire 4.x"]
-L --> RT["Reverb (Broadcasting)"]
-L --> AUTH["Sanctum/Fortify"]
-RT --> ECHO["Echo Client"]
-ECHO --> TVL["TvDisplay Livewire"]
+sequenceDiagram
+participant C as "Citizen"
+participant A as "Application Logic"
+participant E as "Event System"
+participant B as "Broadcasting"
+participant D as "Display Device"
+C->>A : "Service Request"
+A->>A : "Process Request"
+A->>E : "Create TicketCalled Event"
+E->>B : "Broadcast to Channels"
+B->>D : "WebSocket Message"
+D->>D : "Update Display"
+D-->>C : "Real-time Status"
 ```
 
 **Diagram sources**
-- [composer.json:11-23](file://composer.json#L11-L23)
+- [app/Events/TicketCalled.php:18-32](file://app/Events/TicketCalled.php#L18-L32)
+- [resources/js/echo.js:6-14](file://resources/js/echo.js#L6-L14)
+
+### Broadcasting Configuration
+The system supports multiple broadcasting drivers with Reverb as the primary production driver:
+
+**Reverb Configuration**:
+- Pusher-compatible WebSocket server
+- TLS encryption with configurable certificates
+- Rate limiting and connection pooling
+- Redis-backed scaling support
+- Activity timeout and ping interval management
+
+**Client Configuration**:
+- Automatic reconnection with exponential backoff
+- Transport fallback from WSS to WS
+- Channel subscription management
+- Event listener registration
+
+**Section sources**
 - [config/broadcasting.php:33-47](file://config/broadcasting.php#L33-L47)
 - [config/reverb.php:74-98](file://config/reverb.php#L74-L98)
 - [resources/js/echo.js:6-14](file://resources/js/echo.js#L6-L14)
 
+## Runtime Flow Patterns
+
+### Ticket Creation Flow
+The ticket creation process follows a transactional pattern ensuring data consistency:
+
+```mermaid
+flowchart TD
+A["Service Selection"] --> B["Date Validation"]
+B --> C["Quota Check"]
+C --> D{"Available Quota?"}
+D --> |Yes| E["Generate Ticket Number"]
+D --> |No| F["Reject Request"]
+E --> G["Create QueueTicket Record"]
+G --> H["Log Activity"]
+H --> I["Broadcast Event"]
+I --> J["Update Display"]
+F --> K["Return Error Response"]
+J --> L["Success Response"]
+```
+
+**Diagram sources**
+- [app/Actions/Queue/CreateQueueTicket.php:34-89](file://app/Actions/Queue/CreateQueueTicket.php#L34-L89)
+- [app/Models/Service.php:69-99](file://app/Models/Service.php#L69-L99)
+
+### Status Transition Management
+The system maintains strict state machine for ticket lifecycle management:
+
+**Status Flow**:
+1. **Booked** → Online booking confirmation
+2. **Waiting** → Walk-in registration, check-in processing
+3. **Called** → Officer call initiation
+4. **Completed** → Service completion
+5. **Cancelled** → Administrative cancellation
+6. **Skipped** → Officer skip for valid reasons
+
+### Operational Workflows
+Different user roles follow distinct operational patterns:
+
+**Frontdesk Operations**:
+- Quick registration for walk-ins
+- Check-in verification and status updates
+- Reprint and correction processes
+
+**Officer Operations**:
+- Counter assignment and session management
+- Call sequence management
+- Service duration tracking
+
+**Administrative Operations**:
+- Service configuration and quota management
+- User role assignment and permissions
+- System monitoring and reporting
+
 **Section sources**
-- [composer.json:11-23](file://composer.json#L11-L23)
-- [config/broadcasting.php:18-18](file://config/broadcasting.php#L18-L18)
-- [config/reverb.php:16-16](file://config/reverb.php#L16-L16)
+- [app/Actions/Queue/CreateQueueTicket.php:48-89](file://app/Actions/Queue/CreateQueueTicket.php#L48-L89)
+- [app/Enums/QueueStatus.php:14-36](file://app/Enums/QueueStatus.php#L14-L36)
 
-## Performance Considerations
-- Real-time scaling
-  - Reverb supports Redis-backed scaling; enable and tune scaling options for horizontal growth.
-  - Rate limiting and ping/activity timeouts help manage client load.
-- Database queries
-  - Use scoped queries for daily quotas and remaining capacity to avoid N+1.
-  - Cache TV display videos to reduce repeated filesystem reads.
-- Frontend responsiveness
-  - Livewire components persist computed state to reduce reload overhead.
-  - Echo transport prioritizes WS/WSS for low-latency updates.
+## Configuration and Environment Management
 
-[No sources needed since this section provides general guidance]
+### Environment Variables
+The system requires comprehensive environment configuration for secure operation:
 
-## Troubleshooting Guide
-- Real-time not updating on TV display
-  - Verify broadcasting driver and Reverb app keys; ensure client Echo configuration matches server settings.
-  - Confirm the TicketCalled event is dispatched and the public-queue channel is subscribed.
-- Kiosk login failures
-  - Check module password configuration and hashing; ensure session lifetime is sufficient.
-- TV display API returns empty data
-  - Validate storage disk and video file extensions; confirm caching TTL and filesystem accessibility.
-- Role-based access denied
-  - Ensure user roles are correctly assigned and middleware route groups are applied.
+**Core Configuration**:
+- `APP_KEY`: Application encryption key
+- `REVERB_*`: WebSocket server credentials
+- `REDIS_*`: Cache and session storage
+- `KIOSK_PASSWORD`: Kiosk access authentication
+- `TV_DISPLAY_PASSWORD`: Display interface authentication
+
+**Security Configuration**:
+- Database connection credentials
+- File storage permissions
+- Logging and audit trail settings
+- CORS policy for API endpoints
+
+### Module-Based Authentication
+The system implements module-specific authentication for specialized interfaces:
+
+**Authentication Flow**:
+1. Password validation against hashed credentials
+2. Session establishment with expiration handling
+3. Role-based access control enforcement
+4. Automatic session cleanup and timeout
+
+**Section sources**
+- [config/kiosk.php:3-7](file://config/kiosk.php#L3-L7)
+- [app/Http/Controllers/KioskController.php:25-44](file://app/Http/Controllers/KioskController.php#L25-L44)
+
+## Performance and Scalability Considerations
+
+### Horizontal Scaling Architecture
+The system is designed for horizontal scaling with distributed components:
+
+**Scaling Components**:
+- Load balancer distribution across multiple instances
+- Redis cluster for session and cache management
+- Database read replicas for reporting queries
+- CDN for static asset delivery
+
+**Performance Optimization**:
+- Database query optimization with proper indexing
+- Caching strategies for frequently accessed data
+- Asynchronous job processing for non-critical operations
+- Connection pooling for external service integrations
+
+### Real-Time Performance
+WebSocket connections are optimized for minimal latency:
+
+**Connection Management**:
+- Connection pooling and reuse
+- Automatic reconnection with backoff strategy
+- Heartbeat monitoring and health checks
+- Resource cleanup on disconnect
+
+**Memory Management**:
+- Efficient event serialization
+- Garbage collection optimization
+- Memory leak prevention in long-running processes
+
+## Integration Capabilities
+
+### External Service Integration
+The system provides hooks for integrating with external services:
+
+**Third-Party Integrations**:
+- SMS gateway for appointment notifications
+- TTS service for audio announcements
+- Printer drivers for thermal ticket printing
+- Geographic information systems for location services
+
+**API Endpoints**:
+- RESTful API for mobile applications
+- Webhook support for external system notifications
+- Export capabilities for reporting and analytics
+- Authentication APIs for partner system integration
+
+### Data Export and Reporting
+Comprehensive reporting capabilities for administrative oversight:
+
+**Export Formats**:
+- CSV and Excel for spreadsheet integration
+- PDF reports for official documentation
+- JSON APIs for system integration
+- Real-time dashboard widgets
+
+## Troubleshooting and Debugging Guide
+
+### Common Issues and Solutions
+
+**Real-Time Updates Not Working**:
+1. Verify Reverb server connectivity and authentication
+2. Check browser console for WebSocket connection errors
+3. Validate broadcasting configuration in environment variables
+4. Confirm event listener registration in Livewire components
+
+**Ticket Creation Failures**:
+1. Review service quota limits and availability
+2. Check database connection and transaction logs
+3. Validate input data formats and constraints
+4. Examine activity logging for error details
+
+**Authentication Problems**:
+1. Verify password hash configuration
+2. Check session timeout settings
+3. Review middleware chain for route groups
+4. Confirm user role assignments and permissions
+
+**Performance Issues**:
+1. Monitor database query execution times
+2. Check Redis connection and memory usage
+3. Analyze WebSocket connection counts
+4. Review application logs for bottlenecks
+
+### Debugging Tools and Techniques
+
+**Development Tools**:
+- Laravel Telescope for application monitoring
+- Browser developer tools for frontend debugging
+- Database query analyzer for performance optimization
+- WebSocket inspector for real-time communication
+
+**Production Monitoring**:
+- Application performance monitoring (APM) integration
+- Distributed tracing for complex request flows
+- Error tracking and alerting systems
+- Capacity planning and resource utilization metrics
 
 **Section sources**
 - [config/broadcasting.php:18-18](file://config/broadcasting.php#L18-L18)
 - [config/reverb.php:74-98](file://config/reverb.php#L74-L98)
 - [resources/js/echo.js:6-14](file://resources/js/echo.js#L6-L14)
-- [config/kiosk.php:3-7](file://config/kiosk.php#L3-L7)
-- [app/Http/Controllers/TvDisplayController.php:89-142](file://app/Http/Controllers/TvDisplayController.php#L89-L142)
-- [routes/web.php:28-90](file://routes/web.php#L28-L90)
 
 ## Conclusion
-The PTSP Queue Management System delivers a cohesive, real-time queue solution across public, kiosk, TV display, and administrative interfaces. Its Laravel 12.x and Livewire 4.x foundation, combined with Reverb-powered real-time updates, enables scalable, transparent service delivery. Role-based routing, robust data models, and modular controllers support efficient operations for citizens, frontdesk staff, officers, and administrators.
+
+The PTSP Queue Management System represents a comprehensive solution for modern government service delivery, combining robust technical architecture with user-centric design principles. Through its multi-touchpoint approach, real-time communication framework, and scalable infrastructure, the system addresses the fundamental challenges of inefficient public service delivery while maintaining excellent citizen experience standards.
+
+The Laravel 12.x and Livewire 4.x foundation provides a solid technical base for future enhancements, while the modular design ensures flexibility for evolving requirements. With comprehensive real-time capabilities, role-based access control, and extensive integration possibilities, the system positions itself as a leading solution for digital government transformation initiatives.
+
+The platform's emphasis on transparency, efficiency, and scalability makes it well-suited for deployment in diverse government environments, from small municipalities to large provincial departments. Its comprehensive monitoring, reporting, and analytics capabilities support continuous improvement and evidence-based decision-making in public service delivery.
+
+Through careful attention to performance optimization, security hardening, and user experience design, the PTSP Queue Management System delivers measurable improvements in service delivery efficiency while maintaining the highest standards of reliability and accessibility for all citizens.

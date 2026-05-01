@@ -641,4 +641,45 @@
             </form>
         </flux:modal>
     @endforeach
+
+    {{-- Assign Officer Modals --}}
+    @foreach ($counters->where('is_active', true) as $counter)
+        <flux:modal name="assign-counter-{{ $counter->id }}" class="w-full max-w-md">
+            <form method="POST" action="{{ route('admin.loket.assign', $counter) }}" class="space-y-4">
+                @csrf
+
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
+                        <flux:icon.user-plus class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Tugaskan Petugas ke {{ $counter->name }}</flux:heading>
+                </div>
+
+                <flux:field>
+                    <flux:label>Pilih Petugas</flux:label>
+                    <flux:select name="user_id" required>
+                        <flux:select.option value="">Pilih petugas...</flux:select.option>
+                        @foreach ($officers as $officer)
+                            <flux:select.option value="{{ $officer->id }}">
+                                {{ $officer->name }}
+                                @if ($officer->services->isNotEmpty())
+                                    ({{ $officer->services->pluck('name')->join(', ') }})
+                                @endif
+                            </flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="user_id" />
+                </flux:field>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <flux:modal.close>
+                        <flux:button type="button" variant="ghost">
+                            Batal
+                        </flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="primary" color="violet">Tugaskan</flux:button>
+                </div>
+            </form>
+        </flux:modal>
+    @endforeach
 </x-layouts::app>
