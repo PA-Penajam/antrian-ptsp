@@ -57,6 +57,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Officer->value])->group
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Monitor->value])->group(function () {
     Route::get('/laporan/antrian', [QueueReportController::class, 'index']);
     Route::get('/laporan/audit', [App\Http\Controllers\Report\AuditTrailController::class, 'index'])->name('laporan.audit');
+    Route::get('/laporan/bulanan', \App\Livewire\Reports\LaporanBulanan::class)->name('laporan.bulanan');
 });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(function () {
@@ -71,6 +72,8 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(f
     Route::post('/admin/loket', [CounterManagementController::class, 'store'])->name('admin.loket.store');
     Route::put('/admin/loket/{counter}', [CounterManagementController::class, 'update'])->name('admin.loket.update');
     Route::delete('/admin/loket/{counter}', [CounterManagementController::class, 'destroy'])->name('admin.loket.destroy');
+    Route::post('/admin/loket/{counter}/assign', [CounterManagementController::class, 'assignOfficer'])->name('admin.loket.assign');
+    Route::post('/admin/loket/{counter}/release', [CounterManagementController::class, 'releaseOfficer'])->name('admin.loket.release');
 
     // Admin - Queue Pool
     Route::post('/admin/loket/pool', [CounterManagementController::class, 'storePool'])->name('admin.loket.pool.store');

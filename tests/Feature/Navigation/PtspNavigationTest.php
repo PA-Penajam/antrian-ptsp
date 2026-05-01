@@ -34,7 +34,8 @@ test('dashboard shows role-aware navigation links', function () {
         ->assertOk()
         ->assertSee('/frontdesk/antrian')
         ->assertSee('Modul Panggilan Petugas')
-        ->assertDontSee('/admin/layanan');
+        ->assertDontSee('/admin/layanan')
+        ->assertDontSee('/laporan/bulanan');
 
     actingAs($monitor);
 
@@ -42,12 +43,15 @@ test('dashboard shows role-aware navigation links', function () {
         ->assertOk()
         ->assertSee('/laporan/antrian')
         ->assertSee('Ringkasan Monitoring')
-        ->assertDontSee('/admin/layanan');
+        ->assertDontSee('/admin/layanan')
+        ->assertSee('/laporan/bulanan');
 
     actingAs($admin);
 
     get('/dashboard')
         ->assertOk()
         ->assertSee('/admin/layanan')
-        ->assertSee('Health Aplikasi');
+        ->assertSee('Health Aplikasi')
+        ->assertSee('Shortcut Manajemen')
+        ->assertSee('/laporan/bulanan');
 });

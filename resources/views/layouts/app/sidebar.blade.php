@@ -58,6 +58,9 @@
                         <flux:sidebar.item icon="clock" :href="route('laporan.audit')" :current="request()->routeIs('laporan.audit')" wire:navigate.hover>
                             {{ __('Audit Trail') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="calendar-days" :href="route('laporan.bulanan')" :current="request()->routeIs('laporan.bulanan')" wire:navigate>
+                            {{ __('Laporan Bulanan') }}
+                        </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>
 
@@ -176,6 +179,22 @@
                             </div>
                         </div>
                     </flux:menu.radio.group>
+
+                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Monitor) || auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
+                        <flux:menu.separator />
+
+                        <flux:menu.radio.group>
+                            <flux:menu.item icon="chart-bar" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate>
+                                {{ __('Laporan') }}
+                            </flux:menu.item>
+                            <flux:menu.item icon="clock" :href="route('laporan.audit')" :current="request()->routeIs('laporan.audit')" wire:navigate>
+                                {{ __('Audit Trail') }}
+                            </flux:menu.item>
+                            <flux:menu.item icon="calendar-days" :href="route('laporan.bulanan')" :current="request()->routeIs('laporan.bulanan')" wire:navigate>
+                                {{ __('Laporan Bulanan') }}
+                            </flux:menu.item>
+                        </flux:menu.radio.group>
+                    @endif
 
                     @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
                         <flux:menu.separator />

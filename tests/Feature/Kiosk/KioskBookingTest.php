@@ -206,7 +206,7 @@ it('creates ticket with walk_in_kiosk channel on confirm', function () {
     ]);
 });
 
-it('allows optional identifier and phone to be empty', function () {
+it('stores identifier and phone when provided', function () {
     $service = Service::factory()->create([
         'is_active' => true,
         'walk_in_enabled' => true,
@@ -219,6 +219,8 @@ it('allows optional identifier and phone to be empty', function () {
 
     $component->call('selectService', $service->id)
         ->set('visitorName', 'Anonymous User')
+        ->set('visitorIdentifier', '1234567890123456')
+        ->set('visitorPhone', '081234567890')
         ->set('visitorWilayahKode', $wilayah['kode'])
         ->set('visitorWilayahNama', $wilayah['nama'])
         ->call('submitData')
@@ -230,8 +232,8 @@ it('allows optional identifier and phone to be empty', function () {
         'service_id' => $service->id,
         'channel' => 'walk_in_kiosk',
         'visitor_name' => 'Anonymous User',
-        'visitor_identifier' => null,
-        'visitor_phone' => null,
+        'visitor_identifier' => '1234567890123456',
+        'visitor_phone' => '081234567890',
         'visitor_wilayah_kode' => $wilayah['kode'],
     ]);
 });
@@ -266,10 +268,14 @@ it('resets wizard to initial state', function () {
 
     $component->call('selectService', $service->id)
         ->set('visitorName', 'Test User')
+        ->set('visitorIdentifier', '1234567890123456')
+        ->set('visitorPhone', '081234567890')
         ->set('visitorWilayahKode', $wilayah['kode'])
         ->set('visitorWilayahNama', $wilayah['nama'])
         ->call('submitData')
+        ->assertHasNoErrors()
         ->call('confirmBooking')
+        ->assertHasNoErrors()
         ->assertSet('step', 4)
         ->call('resetWizard')
         ->assertSet('step', 1)
@@ -395,6 +401,8 @@ it('generates barcode SVG on ticket confirmation', function () {
 
     $component->call('selectService', $service->id)
         ->set('visitorName', 'Barcode Test User')
+        ->set('visitorIdentifier', '1234567890123456')
+        ->set('visitorPhone', '081234567890')
         ->set('visitorWilayahKode', $wilayah['kode'])
         ->set('visitorWilayahNama', $wilayah['nama'])
         ->call('submitData')

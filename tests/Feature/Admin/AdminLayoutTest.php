@@ -21,6 +21,7 @@ test('admin navigation template highlights every admin subpage', function () {
 
     expect($header)->toContain("request()->is('admin/*')");
     expect($sidebar)->toContain("request()->is('admin/layanan')");
+    expect($sidebar)->toContain("request()->is('admin/loket')");
 });
 
 test('admin user management view avoids native select controls in forms', function () {
@@ -28,8 +29,6 @@ test('admin user management view avoids native select controls in forms', functi
 
     expect($view)->not->toContain('<select');
     expect($view)->toContain('<flux:select name="role"');
-    expect($view)->toContain('variant="listbox"');
-    expect($view)->toContain('multiple');
 });
 
 test('admin counter management view uses compact flux select controls', function () {

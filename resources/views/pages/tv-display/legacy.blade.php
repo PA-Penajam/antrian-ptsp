@@ -355,6 +355,8 @@
                     </div>
                     <div class="fw-semibold fs-3 text-uppercase slide-up" style="color:rgba(255,255,255,0.7);" id="activeServiceName">
                     </div>
+                    <div class="fw-semibold fs-4 text-uppercase slide-up mt-2" style="color:rgba(255,255,255,0.5);" id="activeVisitPurpose">
+                    </div>
                 </div>
             </div>
 
@@ -652,7 +654,8 @@
 
             activeTicketNumber.addClass('call-animate');
             $('#activeCounterName').text(active.counter ? active.counter.name.toUpperCase() : 'LOKET');
-            $('#activeServiceName').text('');
+            $('#activeServiceName').text(active.service ? active.service.name : '');
+            $('#activeVisitPurpose').text(active.visit_purpose ? formatVisitPurpose(active.visit_purpose) : '');
             /* Aktifkan pulse glow pada hero card */
             $('.queue-hero').addClass('hero-pulse-anim');
 
@@ -683,10 +686,24 @@
         }
     }
 
+    function formatVisitPurpose(purpose) {
+        var map = {
+            'pendaftaran': 'Pendaftaran',
+            'informasi_pengaduan': 'Informasi & Pengaduan',
+            'produk_hukum': 'Pengambilan Produk Hukum',
+            'ecourt': 'eCourt'
+        };
+        return map[purpose] || purpose;
+    }
+
     function renderRecentCallItem(call, opacity) {
         var serviceName = call.service ? call.service.name : '';
         var counterName = call.counter ? call.counter.name : '-';
         var initial     = call.ticket_number.charAt(0);
+        var visitPurpose = call.visit_purpose ? formatVisitPurpose(call.visit_purpose) : '';
+        var purposeHtml = visitPurpose
+            ? '<div class="visit-purpose fw-semibold fs-7 text-uppercase" style="color:rgba(255,255,255,0.5);">' + visitPurpose + '</div>'
+            : '';
 
         return '<div class="recent-call-item" id="call-' + call.id + '" style="opacity:' + opacity + ';">' +
             '<div class="d-flex align-items-center gap-4">' +
@@ -701,6 +718,7 @@
                     '<div class="service-name fw-semibold fs-6 text-uppercase" style="color:rgba(255,255,255,0.7);">' +
                         serviceName +
                     '</div>' +
+                    purposeHtml +
                 '</div>' +
             '</div>' +
             '<div class="counter-name badge badge-light-primary fs-4 fw-boldest px-5 py-2 rounded-pill text-uppercase">' +
@@ -735,14 +753,18 @@
                 var currentTicket = existingItem.querySelector('.ticket-number');
                 var currentService = existingItem.querySelector('.service-name');
                 var currentCounter = existingItem.querySelector('.counter-name');
+                var currentPurpose = existingItem.querySelector('.visit-purpose');
 
                 var serviceName = call.service ? call.service.name : '';
                 var counterName = call.counter ? call.counter.name : '-';
+                var visitPurpose = call.visit_purpose ? formatVisitPurpose(call.visit_purpose) : '';
+                var currentPurposeText = currentPurpose ? currentPurpose.textContent.trim() : '';
 
                 var hasChanged = (
                     (currentTicket && currentTicket.textContent.trim() !== call.ticket_number) ||
                     (currentService && currentService.textContent.trim() !== serviceName) ||
-                    (currentCounter && currentCounter.textContent.trim() !== counterName)
+                    (currentCounter && currentCounter.textContent.trim() !== counterName) ||
+                    (currentPurposeText !== visitPurpose)
                 );
 
                 if (hasChanged) {

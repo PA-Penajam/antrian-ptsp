@@ -622,6 +622,97 @@
         </div>
     </div>
 
+    {{-- ═══ LAYAR 1b: SUB-LAYANAN (hanya untuk Layanan Umum) ═══ --}}
+    <div id="screenSubService" class="flex-grow-1 d-flex flex-column flex-center px-10 pb-8 d-none">
+        <div class="text-center mb-12">
+            <h1 class="text-white fw-boldest text-uppercase mb-5"
+                style="font-size:3.5rem; font-size:clamp(2.5rem,5vw,4.5rem); letter-spacing:-3px; line-height:1.1;">
+                PILIH TUJUAN LAYANAN
+            </h1>
+            <div class="d-inline-flex align-items-center">
+                <span class="bullet bullet-dot bg-primary" style="width:8px;height:8px;"></span>
+                <span class="text-white fw-semibold fs-3 text-uppercase ms-3 me-3"
+                      style="opacity:0.5;letter-spacing:1px;">Sentuh pada tujuan yang Anda butuhkan</span>
+                <span class="bullet bullet-dot bg-primary" style="width:8px;height:8px;"></span>
+            </div>
+        </div>
+
+        <div class="kiosk-service-grid">
+            <div class="kiosk-service-col">
+                <div data-visit-purpose="pendaftaran"
+                     onclick="selectSubService(this.dataset.visitPurpose)"
+                     class="card service-card svc-purple shadow-lg">
+                    <div class="card-body d-flex flex-column flex-center text-center p-10">
+                        <div class="d-flex align-items-center justify-content-center mb-6 svc-illustration" style="height:115px;">
+                            <i class="fa-solid fa-file-lines text-white" style="font-size:72px;"></i>
+                        </div>
+                        <h3 class="text-white fw-boldest fs-2 text-uppercase mb-4 lh-sm" style="letter-spacing:-0.5px;">Pendaftaran</h3>
+                        <div class="d-inline-flex align-items-center gap-2 py-3 px-5 rounded-pill fw-bold fs-6 text-uppercase text-white" style="background:rgba(255,255,255,0.18);letter-spacing:0.5px;">
+                            <i class="ki-duotone ki-arrow-right fs-6 text-white"><span class="path1"></span><span class="path2"></span></i>
+                            PILIH
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="kiosk-service-col">
+                <div data-visit-purpose="informasi_pengaduan"
+                     onclick="selectSubService(this.dataset.visitPurpose)"
+                     class="card service-card svc-red shadow-lg">
+                    <div class="card-body d-flex flex-column flex-center text-center p-10">
+                        <div class="d-flex align-items-center justify-content-center mb-6 svc-illustration" style="height:115px;">
+                            <i class="fa-solid fa-folder-open text-white" style="font-size:72px;"></i>
+                        </div>
+                        <h3 class="text-white fw-boldest fs-2 text-uppercase mb-4 lh-sm" style="letter-spacing:-0.5px;">Informasi & Pengaduan</h3>
+                        <div class="d-inline-flex align-items-center gap-2 py-3 px-5 rounded-pill fw-bold fs-6 text-uppercase text-white" style="background:rgba(255,255,255,0.18);letter-spacing:0.5px;">
+                            <i class="ki-duotone ki-arrow-right fs-6 text-white"><span class="path1"></span><span class="path2"></span></i>
+                            PILIH
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="kiosk-service-col">
+                <div data-visit-purpose="produk_hukum"
+                     onclick="selectSubService(this.dataset.visitPurpose)"
+                     class="card service-card svc-green shadow-lg">
+                    <div class="card-body d-flex flex-column flex-center text-center p-10">
+                        <div class="d-flex align-items-center justify-content-center mb-6 svc-illustration" style="height:115px;">
+                            <i class="fa-solid fa-briefcase text-white" style="font-size:72px;"></i>
+                        </div>
+                        <h3 class="text-white fw-boldest fs-2 text-uppercase mb-4 lh-sm" style="letter-spacing:-0.5px;">Pengambilan Produk Hukum</h3>
+                        <div class="d-inline-flex align-items-center gap-2 py-3 px-5 rounded-pill fw-bold fs-6 text-uppercase text-white" style="background:rgba(255,255,255,0.18);letter-spacing:0.5px;">
+                            <i class="ki-duotone ki-arrow-right fs-6 text-white"><span class="path1"></span><span class="path2"></span></i>
+                            PILIH
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="kiosk-service-col">
+                <div data-visit-purpose="ecourt"
+                     onclick="selectSubService(this.dataset.visitPurpose)"
+                     class="card service-card svc-yellow shadow-lg">
+                    <div class="card-body d-flex flex-column flex-center text-center p-10">
+                        <div class="d-flex align-items-center justify-content-center mb-6 svc-illustration" style="height:115px;">
+                            <i class="fa-solid fa-laptop text-white" style="font-size:72px;"></i>
+                        </div>
+                        <h3 class="text-white fw-boldest fs-2 text-uppercase mb-4 lh-sm" style="letter-spacing:-0.5px;">eCourt</h3>
+                        <div class="d-inline-flex align-items-center gap-2 py-3 px-5 rounded-pill fw-bold fs-6 text-uppercase text-white" style="background:rgba(255,255,255,0.18);letter-spacing:0.5px;">
+                            <i class="ki-duotone ki-arrow-right fs-6 text-white"><span class="path1"></span><span class="path2"></span></i>
+                            PILIH
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-8">
+            <button type="button" onclick="backToServices()"
+                    class="btn btn-light btn-lg fs-2 fw-bold px-12 py-6 rounded-pill">
+                <i class="ki-duotone ki-arrow-left fs-2 me-2"><span class="path1"></span><span class="path2"></span></i>
+                KEMBALI
+            </button>
+        </div>
+    </div>
+
     {{-- ═══ LAYAR 2: BOOKING FORM ═══ --}}
     <div id="screenForm" class="flex-grow-1 d-flex flex-center px-10 d-none">
         <div class="booking-card card w-100" style="max-width:880px;">
@@ -640,6 +731,7 @@
                 <form id="bookingForm">
                     @csrf
                     <input type="hidden" id="service_id" name="service_id">
+                    <input type="hidden" id="visit_purpose" name="visit_purpose">
 
                     <div class="mb-8">
                         <label class="fs-3 fw-bold text-gray-700 mb-3 ms-2 text-uppercase d-block">
@@ -808,7 +900,13 @@
     <div id="kioskLegacyConfig"
          class="d-none"
          data-print-url="{{ route('kiosk.legacy.print') }}"
-         data-status-url="{{ route('kiosk.legacy.printer-status') }}"></div>
+         data-status-url="{{ route('kiosk.legacy.printer-status') }}"
+         data-printer-enabled="{{ config('services.thermal_printer.enabled') ? '1' : '0' }}"
+         data-printer-ip="{{ config('services.thermal_printer.ip', '127.0.0.1') }}"
+         data-printer-port="{{ config('services.thermal_printer.port', '8008') }}"
+         data-printer-device-id="{{ config('services.thermal_printer.device_id', 'local_printer') }}"
+         data-institution-name="{{ e(config('institution.name')) }}"
+         data-umum-service-id="{{ $umumServiceId }}"></div>
 
 </div>
 </div>
@@ -828,6 +926,12 @@
     var kioskLegacyConfig = document.getElementById('kioskLegacyConfig');
     var kioskPrintUrl = kioskLegacyConfig ? kioskLegacyConfig.dataset.printUrl : '';
     var kioskStatusUrl = kioskLegacyConfig ? kioskLegacyConfig.dataset.statusUrl : '';
+    var kioskPrinterEnabled = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerEnabled === '1' : false;
+    var kioskPrinterIp = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerIp : '127.0.0.1';
+    var kioskPrinterPort = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerPort : '8008';
+    var kioskPrinterDeviceId = kioskLegacyConfig ? kioskLegacyConfig.dataset.printerDeviceId : 'local_printer';
+    var kioskInstitutionName = kioskLegacyConfig ? kioskLegacyConfig.dataset.institutionName : '';
+    var kioskUmumServiceId = kioskLegacyConfig ? parseInt(kioskLegacyConfig.dataset.umumServiceId, 10) || 0 : 0;
 
     $(document).ready(function () {
         updateKioskClock();
@@ -1023,6 +1127,20 @@
         $('#service_id').val(id);
         $('#selectedServiceName').text(name);
         $('#selectedServiceBadge').text(name);
+
+        var serviceId = parseInt(id, 10);
+        if (kioskUmumServiceId && serviceId === kioskUmumServiceId) {
+            switchScreen('screenSubService');
+        } else {
+            $('#visit_purpose').val('');
+            switchScreen('screenForm');
+            if ($.fn.select2) $('#visitor_wilayah_kode').val(null).trigger('change');
+            setTimeout(function () { $('#visitor_name').focus(); }, 500);
+        }
+    }
+
+    function selectSubService(purpose) {
+        $('#visit_purpose').val(purpose);
         switchScreen('screenForm');
         if ($.fn.select2) $('#visitor_wilayah_kode').val(null).trigger('change');
         setTimeout(function () { $('#visitor_name').focus(); }, 500);
@@ -1035,12 +1153,13 @@
     function resetKiosk() {
         clearCountdown();
         $('#bookingForm')[0].reset();
+        $('#visit_purpose').val('');
         if ($.fn.select2) $('#visitor_wilayah_kode').val(null).trigger('change');
         backToServices();
     }
 
     function switchScreen(screenId) {
-        $('#screenServices, #screenForm, #screenSuccess').addClass('d-none').hide();
+        $('#screenServices, #screenSubService, #screenForm, #screenSuccess').addClass('d-none').hide();
         $('#' + screenId).removeClass('d-none').hide().fadeIn(350);
     }
 

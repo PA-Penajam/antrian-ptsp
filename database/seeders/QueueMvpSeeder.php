@@ -14,9 +14,9 @@ class QueueMvpSeeder extends Seeder
         $umumPool = QueuePool::query()->firstOrCreate(
             ['code' => 'UMUM'],
             [
-                'name' => 'Pool Umum',
+                'name' => 'Pool Layanan Umum',
                 'letter_code' => 'A',
-                'description' => 'Pool untuk layanan umum PTSP.',
+                'description' => 'Pool untuk layanan umum (gabungan pendaftaran, informasi, pengaduan, produk hukum, eCourt). Satu pool ini digunakan oleh semua officer layanan umum.',
                 'is_active' => true,
             ]
         );
@@ -41,56 +41,26 @@ class QueueMvpSeeder extends Seeder
             ]
         );
 
+        // --- Services (konsolidasi: 3 layanan utama) ---
+
         Service::query()->firstOrCreate(
-            ['code' => 'A'],
+            ['code' => 'UMUM'],
             [
                 'queue_pool_id' => $umumPool->id,
-                'name' => 'Pendaftaran',
-                'slug' => 'pendaftaran',
-                'description' => 'Layanan pendaftaran perkara.',
+                'name' => 'Layanan Umum',
+                'slug' => 'layanan-umum',
+                'description' => 'Layanan umum mencakup Pendaftaran, Informasi/Pengaduan, Pengambilan Produk Hukum, dan eCourt.',
                 'requirements' => 'Dokumen identitas dan berkas permohonan.',
                 'is_active' => true,
                 'booking_enabled' => true,
                 'walk_in_enabled' => true,
-                'daily_quota' => 100,
+                'daily_quota' => 200,
                 'sort_order' => 1,
             ]
         );
 
         Service::query()->firstOrCreate(
-            ['code' => 'B'],
-            [
-                'queue_pool_id' => $umumPool->id,
-                'name' => 'Informasi/Pengaduan',
-                'slug' => 'informasi-pengaduan',
-                'description' => 'Layanan informasi dan pengaduan.',
-                'requirements' => 'Sampaikan kebutuhan atau pengaduan secara jelas.',
-                'is_active' => true,
-                'booking_enabled' => true,
-                'walk_in_enabled' => true,
-                'daily_quota' => 100,
-                'sort_order' => 2,
-            ]
-        );
-
-        Service::query()->firstOrCreate(
-            ['code' => 'C'],
-            [
-                'queue_pool_id' => $umumPool->id,
-                'name' => 'Pengambilan Produk Hukum',
-                'slug' => 'pengambilan-produk-hukum',
-                'description' => 'Layanan pengambilan produk hukum.',
-                'requirements' => 'Bawa identitas dan bukti pengambilan.',
-                'is_active' => true,
-                'booking_enabled' => true,
-                'walk_in_enabled' => true,
-                'daily_quota' => 100,
-                'sort_order' => 3,
-            ]
-        );
-
-        Service::query()->firstOrCreate(
-            ['code' => 'D'],
+            ['code' => 'BYR'],
             [
                 'queue_pool_id' => $bayarPool->id,
                 'name' => 'Pembayaran',
@@ -100,13 +70,13 @@ class QueueMvpSeeder extends Seeder
                 'is_active' => true,
                 'booking_enabled' => true,
                 'walk_in_enabled' => true,
-                'daily_quota' => 80,
-                'sort_order' => 4,
+                'daily_quota' => 100,
+                'sort_order' => 2,
             ]
         );
 
         Service::query()->firstOrCreate(
-            ['code' => 'E'],
+            ['code' => 'POSBAKUM'],
             [
                 'queue_pool_id' => $posbakumPool->id,
                 'name' => 'Posbakum',
@@ -117,33 +87,40 @@ class QueueMvpSeeder extends Seeder
                 'booking_enabled' => true,
                 'walk_in_enabled' => true,
                 'daily_quota' => 60,
-                'sort_order' => 5,
+                'sort_order' => 3,
             ]
         );
 
+        // --- Counters (6 loket fisik: Pendaftaran, Informasi & Pengaduan, Produk Hukum, eCourt = pool UMUM, Pembayaran & Posbakum = fixed) --
+
         Counter::query()->firstOrCreate(
-            ['code' => 'U1'],
-            ['queue_pool_id' => $umumPool->id, 'name' => 'Loket Umum 1', 'is_active' => true, 'sort_order' => 1]
+            ['code' => 'PENDAFTARAN'],
+            ['queue_pool_id' => $umumPool->id, 'name' => 'Loket Pendaftaran', 'is_active' => true, 'is_fixed' => false, 'sort_order' => 1]
         );
 
         Counter::query()->firstOrCreate(
-            ['code' => 'U2'],
-            ['queue_pool_id' => $umumPool->id, 'name' => 'Loket Umum 2', 'is_active' => true, 'sort_order' => 2]
+            ['code' => 'INFORMASI'],
+            ['queue_pool_id' => $umumPool->id, 'name' => 'Loket Informasi & Pengaduan', 'is_active' => true, 'is_fixed' => false, 'sort_order' => 2]
         );
 
         Counter::query()->firstOrCreate(
-            ['code' => 'U3'],
-            ['queue_pool_id' => $umumPool->id, 'name' => 'Loket Umum 3', 'is_active' => true, 'sort_order' => 3]
+            ['code' => 'PRODUK_HUKUM'],
+            ['queue_pool_id' => $umumPool->id, 'name' => 'Loket Pengambilan Produk Hukum', 'is_active' => true, 'is_fixed' => false, 'sort_order' => 3]
+        );
+
+        Counter::query()->firstOrCreate(
+            ['code' => 'ECOURT'],
+            ['queue_pool_id' => $umumPool->id, 'name' => 'Loket eCourt', 'is_active' => true, 'is_fixed' => false, 'sort_order' => 4]
         );
 
         Counter::query()->firstOrCreate(
             ['code' => 'BYR'],
-            ['queue_pool_id' => $bayarPool->id, 'name' => 'Loket Pembayaran', 'is_active' => true, 'sort_order' => 4]
+            ['queue_pool_id' => $bayarPool->id, 'name' => 'Loket Pembayaran', 'is_active' => true, 'is_fixed' => true, 'sort_order' => 5]
         );
 
         Counter::query()->firstOrCreate(
             ['code' => 'PBK'],
-            ['queue_pool_id' => $posbakumPool->id, 'name' => 'Loket Posbakum', 'is_active' => true, 'sort_order' => 5]
+            ['queue_pool_id' => $posbakumPool->id, 'name' => 'Loket Posbakum', 'is_active' => true, 'is_fixed' => true, 'sort_order' => 6]
         );
     }
 }

@@ -1,5 +1,5 @@
 <x-layouts::app :title="__('Manajemen Loket')">
-    <div class="mx-auto w-full max-w-6xl space-y-6">
+    <div class="mx-auto w-full max-w-6xl space-y-6" x-data="{ tab: '{{ request('tab', 'list') }}' }">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div class="space-y-3">
                 <flux:badge color="amber" rounded>Admin Panel</flux:badge>
@@ -39,8 +39,31 @@
             </flux:callout>
         @endif
 
-        <flux:card class="space-y-4">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {{-- Tabs Navigation --}}
+        <div class="flex gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-800/50 max-w-fit">
+            <button
+                type="button"
+                x-on:click="tab = 'list'"
+                :class="tab === 'list' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'"
+                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+            >
+                <flux:icon.building-office class="size-4" />
+                Daftar Loket
+            </button>
+            <button
+                type="button"
+                x-on:click="tab = 'assignment'"
+                :class="tab === 'assignment' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'"
+                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+            >
+                <flux:icon.users class="size-4" />
+                Penugasan Petugas
+            </button>
+        </div>
+
+        {{-- Tab 1: Daftar Loket --}}
+        <div x-show="tab === 'list'" x-cloak>
+            <flux:card class="space-y-4">
                 <div class="flex items-center gap-3">
                     <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
                         <flux:icon.building-office class="size-5" />
@@ -56,7 +79,6 @@
                         class="w-full sm:w-64"
                     />
                 </form>
-            </div>
 
             <flux:table>
                 <flux:table.columns>
@@ -149,6 +171,90 @@
                 </div>
             @endif
         </flux:card>
+        </div>
+
+        {{-- Tab 2: Penugasan Petugas --}}
+        <div x-show="tab === 'assignment'" x-cloak>
+            <flux:card class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
+                        <flux:icon.users class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Penugasan Petugas ke Loket</flux:heading>
+                </div>
+
+                <flux:table>
+                    <flux:table.columns>
+                        <flux:table.column>Loket</flux:table.column>
+                        <flux:table.column>Pool</flux:table.column>
+                        <flux:table.column>Petugas Aktif</flux:table.column>
+                        <flux:table.column>Jenis Penugasan</flux:table.column>
+                        <flux:table.column>Aksi</flux:table.column>
+                    </flux:table.columns>
+                    <flux:table.rows>
+                        @forelse ($counters->where('is_active', true) as $counter)
+                            @php
+                                $session = $activeSessions->get($counter->id);
+                            @endphp
+                            <flux:table.row>
+                                <flux:table.cell class="font-medium">{{ $counter->name }}</flux:table.cell>
+                                <flux:table.cell>{{ $counter->queuePool?->name ?? '-' }}</flux:table.cell>
+                                <flux:table.cell>
+                                    @if ($session)
+                                        <div class="flex items-center gap-2">
+                                            <div class="h-6 w-6 rounded-full bg-zinc-200 text-xs font-bold leading-6 text-center dark:bg-zinc-700">
+                                                {{ $session->user->initials() }}
+                                            </div>
+                                            <span>{{ $session->user->name }}</span>
+                                        </div>
+                                    @else
+                                        <flux:text class="text-zinc-500">-</flux:text>
+                                    @endif
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    @if ($session)
+                                        @if ($session->assigned_by)
+                                            <flux:badge size="sm" color="violet">Ditunjuk Admin</flux:badge>
+                                        @else
+                                            <flux:badge size="sm" color="emerald">Dipilih Sendiri</flux:badge>
+                                        @endif
+                                    @else
+                                        <flux:text class="text-zinc-500">-</flux:text>
+                                    @endif
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    <div class="flex items-center gap-2">
+                                        @if ($session)
+                                            <form method="POST" action="{{ route('admin.loket.release', $counter) }}" class="inline">
+                                                @csrf
+                                                <flux:button type="submit" size="sm" variant="ghost" icon="x-mark" class="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400">
+                                                    Lepas
+                                                </flux:button>
+                                            </form>
+                                        @else
+                                            <flux:modal.trigger name="assign-counter-{{ $counter->id }}">
+                                                <flux:button size="sm" variant="filled" icon="user-plus" color="violet">
+                                                    Tugaskan
+                                                </flux:button>
+                                            </flux:modal.trigger>
+                                        @endif
+                                    </div>
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @empty
+                            <flux:table.row>
+                                <flux:table.cell colspan="5">
+                                    <div class="flex flex-col items-center justify-center py-8 text-center">
+                                        <flux:icon name="inbox" class="h-12 w-12 text-zinc-300 dark:text-zinc-600" />
+                                        <p class="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">Belum ada loket aktif</p>
+                                    </div>
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @endforelse
+                    </flux:table.rows>
+                </flux:table>
+            </flux:card>
+        </div>
     </div>
 
     {{-- Pool Manager Modal (Winbox-style: list + create, no edit) --}}
@@ -324,7 +430,7 @@
 
             <flux:field>
                 <flux:label>Queue Pool</flux:label>
-                <flux:select name="queue_pool_id" placeholder="Pilih Pool Loket" required>
+                <flux:select name="queue_pool_id" placeholder="Pilih Pool Loket" size="sm" required>
                     @foreach($queuePools as $pool)
                         <flux:select.option value="{{ $pool->id }}" :selected="old('queue_pool_id') == $pool->id">
                             {{ $pool->name }} ({{ $pool->letter_code ?? '-' }})
@@ -397,7 +503,7 @@
 
                 <flux:field>
                     <flux:label>Queue Pool</flux:label>
-                    <flux:select name="queue_pool_id" required>
+                    <flux:select name="queue_pool_id" size="sm" required>
                         @foreach($queuePools as $pool)
                             <flux:select.option value="{{ $pool->id }}" :selected="old('queue_pool_id', $counter->queue_pool_id) == $pool->id">
                                 {{ $pool->name }} ({{ $pool->letter_code ?? '-' }})
@@ -492,6 +598,47 @@
                     <flux:button type="submit" variant="danger" icon="trash">Hapus</flux:button>
                 </form>
             </div>
+        </flux:modal>
+    @endforeach
+
+    {{-- Assign Officer Modals --}}
+    @foreach ($counters->where('is_active', true) as $counter)
+        <flux:modal name="assign-counter-{{ $counter->id }}" class="w-full max-w-md">
+            <form method="POST" action="{{ route('admin.loket.assign', $counter) }}" class="space-y-4">
+                @csrf
+
+                <div class="flex items-center gap-3">
+                    <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
+                        <flux:icon.user-plus class="size-5" />
+                    </div>
+                    <flux:heading size="lg">Tugaskan Petugas ke {{ $counter->name }}</flux:heading>
+                </div>
+
+                <flux:field>
+                    <flux:label>Pilih Petugas</flux:label>
+                    <flux:select name="user_id" required>
+                        <flux:select.option value="">Pilih petugas...</flux:select.option>
+                        @foreach ($officers as $officer)
+                            <flux:select.option value="{{ $officer->id }}">
+                                {{ $officer->name }}
+                                @if ($officer->services->isNotEmpty())
+                                    ({{ $officer->services->pluck('name')->join(', ') }})
+                                @endif
+                            </flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="user_id" />
+                </flux:field>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <flux:modal.close>
+                        <flux:button type="button" variant="ghost">
+                            Batal
+                        </flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="primary" color="violet">Tugaskan</flux:button>
+                </div>
+            </form>
         </flux:modal>
     @endforeach
 </x-layouts::app>

@@ -30,9 +30,12 @@
                             {{ __('Frontdesk') }}
                         </flux:navbar.item>
                     @endif
-                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Monitor))
+                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Monitor) || auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
                         <flux:navbar.item icon="chart-bar" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate>
                             {{ __('Laporan') }}
+                        </flux:navbar.item>
+                        <flux:navbar.item icon="calendar-days" :href="route('laporan.bulanan')" :current="request()->routeIs('laporan.bulanan')" wire:navigate>
+                            {{ __('Laporan Bulanan') }}
                         </flux:navbar.item>
                     @endif
                     @if (auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
@@ -87,12 +90,15 @@
                             {{ __('Frontdesk') }}
                         </flux:sidebar.item>
                     @endif
-                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Monitor))
+                    @if (auth()->user()?->hasRole(\App\Enums\UserRole::Monitor) || auth()->user()?->hasRole(\App\Enums\UserRole::Admin))
                         <flux:sidebar.item icon="chart-bar" href="/laporan/antrian" :current="request()->is('laporan/antrian')" wire:navigate>
                             {{ __('Laporan') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="clock" :href="route('laporan.audit')" :current="request()->routeIs('laporan.audit')" wire:navigate>
                             {{ __('Audit Trail') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="calendar-days" :href="route('laporan.bulanan')" :current="request()->routeIs('laporan.bulanan')" wire:navigate>
+                            {{ __('Laporan Bulanan') }}
                         </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>

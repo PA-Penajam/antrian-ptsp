@@ -38,6 +38,7 @@ class CancelTicket
                 'to_status' => QueueStatus::Cancelled->value,
                 'service_id' => $queueTicket->service_id,
                 'queue_pool_id' => $queueTicket->queue_pool_id,
+                'visit_purpose' => $queueTicket->visit_purpose,
             ]
         );
 

@@ -27,6 +27,7 @@ class StorePublicQueueBookingRequest extends FormRequest
             'visitor_name' => ['required', 'string', 'max:255'],
             'visitor_identifier' => ['required', 'string', 'max:64'],
             'visitor_phone' => ['required', 'string', 'max:30'],
+            'visit_purpose' => ['nullable', 'string', 'in:pendaftaran,informasi_pengaduan,produk_hukum,ecourt'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
