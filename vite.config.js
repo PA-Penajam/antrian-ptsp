@@ -27,7 +27,7 @@ export default defineConfig({
             host: '127.0.0.1',
         },
         watch: {
-            ignored: ['**/storage/framework/views/**'],
+            ignored: ['**/vendor/**', '**/node_modules/**', '**/storage/framework/views/**'],
         },
     },
     build: {
