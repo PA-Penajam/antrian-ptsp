@@ -365,6 +365,10 @@
     var currentAudioObjectUrl = null;
     var playGuardTimer = null;
 
+    var VIDEO_VOLUME            = {{ config('tv.video_volume') }};
+    var VIDEO_VOLUME_DURING_TTS = {{ config('tv.video_volume_during_tts') }};
+    var TTS_VOLUME              = {{ config('tv.tts_volume') }};
+
     $(document).ready(function () {
         updateClock();
         setInterval(updateClock, 1000);
@@ -386,7 +390,7 @@
         audioPlayer.addEventListener('ended', function () {
             clearPlayGuard();
             revokeAudioObjectUrl();
-            tvPlayer.volume = 1;
+            tvPlayer.volume = VIDEO_VOLUME;
         });
 
         audioPlayer.addEventListener('error', function () {
@@ -400,7 +404,7 @@
                 return;
             }
 
-            tvPlayer.volume = 1;
+            tvPlayer.volume = VIDEO_VOLUME;
         });
 
         document.addEventListener('click', unlockAudioIfNeeded, { once: true });
@@ -440,6 +444,9 @@
         var unlockAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
         unlockAudio.volume = 0;
         unlockAudio.play().catch(function () {});
+
+        tvPlayer.muted = false;
+        tvPlayer.volume = VIDEO_VOLUME;
     }
 
     function clearPlayGuard() {
@@ -498,6 +505,7 @@
         }
 
         tvPlayer.src = playlist[currentVideoIdx];
+        tvPlayer.volume = VIDEO_VOLUME;
         tvPlayer.play().catch(function () {
             /* Autoplay diblokir browser — menunggu interaksi pengguna */
         });
@@ -693,7 +701,7 @@
         revokeAudioObjectUrl();
 
         if (!('speechSynthesis' in window)) {
-            tvPlayer.volume = 1;
+            tvPlayer.volume = VIDEO_VOLUME;
             return;
         }
 
@@ -703,12 +711,12 @@
         utterance.lang = 'id-ID';
         utterance.rate = 0.95;
         utterance.pitch = 1;
-        utterance.volume = 1;
+        utterance.volume = TTS_VOLUME;
         utterance.onend = function () {
-            tvPlayer.volume = 1;
+            tvPlayer.volume = VIDEO_VOLUME;
         };
         utterance.onerror = function () {
-            tvPlayer.volume = 1;
+            tvPlayer.volume = VIDEO_VOLUME;
         };
 
         window.speechSynthesis.speak(utterance);
@@ -751,6 +759,7 @@
                     }
                 }, 2500);
 
+                audioPlayer.volume = TTS_VOLUME;
                 var playPromise = audioPlayer.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
                     playPromise.catch(function () {
@@ -776,7 +785,7 @@
             .join(', ');
         var text = 'Nomor antrian, ' + ttsNomor + '. Silakan menuju, ' + loket + '.';
 
-        tvPlayer.volume = 0.2;
+        tvPlayer.volume = VIDEO_VOLUME_DURING_TTS;
         pendingAnnouncementText = text;
 
         $.ajax({
@@ -788,7 +797,7 @@
                 text: text,
             },
             success: function (response) {
-                if (response && response.provider === 'minimax' && response.audio_url) {
+                if (response && response.audio_url) {
                     playMiniMaxAudio(response.audio_url, text);
 
                     return;
