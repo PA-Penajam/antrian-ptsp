@@ -25,14 +25,13 @@ test('admin can list users with role management page', function () {
         ->assertSee('name="service_id"', false);
 });
 
-test('admin can update user role and allowed services', function () {
+test('admin can update user role and assign a service', function () {
     $admin = User::factory()->create([
         'role' => UserRole::Admin->value,
         'email_verified_at' => now(),
     ]);
     $pool = QueuePool::factory()->create(['code' => 'UMUM']);
-    $serviceA = Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
-    $serviceB = Service::factory()->for($pool)->create(['name' => 'Informasi']);
+    $service = Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
     $officer = User::factory()->create([
         'role' => UserRole::Monitor->value,
         'email_verified_at' => now(),
@@ -42,7 +41,7 @@ test('admin can update user role and allowed services', function () {
         'name' => $officer->name,
         'email' => $officer->email,
         'role' => UserRole::Officer->value,
-        'service_id' => $serviceA->id,
+        'service_id' => $service->id,
     ]);
 
     $response->assertRedirect('/admin/users');
@@ -50,8 +49,8 @@ test('admin can update user role and allowed services', function () {
     $officer->refresh();
 
     expect($officer->role)->toBe(UserRole::Officer)
-        ->and($officer->services()->pluck('services.id')->all())
-        ->toBe([$serviceA->id]);
+        ->and($officer->services)->toHaveCount(1)
+        ->and($officer->services->first()->id)->toBe($service->id);
 });
 
 test('non admin cannot access user management pages', function () {
@@ -76,7 +75,6 @@ test('admin can create user', function () {
         'email' => 'newuser@example.com',
         'role' => UserRole::Officer->value,
         'password' => 'password123',
-        'services' => [],
     ]);
 
     $response->assertRedirect('/admin/users');
@@ -190,21 +188,21 @@ test('admin can create officer with services', function () {
     ]);
 
     $pool = \App\Models\QueuePool::factory()->create(['code' => 'UMUM']);
-    $serviceA = \App\Models\Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
+    $service = \App\Models\Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
 
     $response = $this->actingAs($admin)->post('/admin/users', [
         'name' => 'Officer Dengan Layanan',
         'email' => 'officerservices@example.com',
         'role' => UserRole::Officer->value,
         'password' => 'password123',
-        'service_id' => $serviceA->id,
+        'service_id' => $service->id,
     ]);
 
     $response->assertRedirect('/admin/users');
 
     $officer = User::where('email', 'officerservices@example.com')->first();
     expect($officer->services)->toHaveCount(1)
-        ->and($officer->services->first()->id)->toBe($serviceA->id);
+        ->and($officer->services->first()->id)->toBe($service->id);
 });
 
 test('admin can update user to non-officer and detach services', function () {
@@ -214,7 +212,7 @@ test('admin can update user to non-officer and detach services', function () {
     ]);
 
     $pool = \App\Models\QueuePool::factory()->create(['code' => 'UMUM']);
-    $serviceA = \App\Models\Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
+    $service = \App\Models\Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
 
     $officer = User::factory()->create([
         'role' => UserRole::Officer->value,
@@ -222,13 +220,13 @@ test('admin can update user to non-officer and detach services', function () {
     ]);
 
     // Attach service initially
-    $officer->services()->attach($serviceA->id);
+    $officer->services()->attach($service->id);
 
     $response = $this->actingAs($admin)->put("/admin/users/{$officer->id}", [
         'name' => $officer->name,
         'email' => $officer->email,
         'role' => UserRole::Monitor->value,
-        'services' => [$serviceA->id], // Intentionally send services even when monitor to test detaching
+        'service_id' => $service->id, // Intentionally send service_id even when monitor to test detaching
     ]);
 
     $response->assertRedirect('/admin/users');

@@ -15,6 +15,7 @@ class QueueMvpSeeder extends Seeder
             ['code' => 'UMUM'],
             [
                 'name' => 'Pool Layanan Umum',
+                'letter_code' => 'A',
                 'description' => 'Pool untuk layanan umum (gabungan pendaftaran, informasi, pengaduan, produk hukum, eCourt). Satu pool ini digunakan oleh semua officer layanan umum.',
                 'is_active' => true,
             ]
@@ -40,7 +41,8 @@ class QueueMvpSeeder extends Seeder
             ]
         );
 
-        // --- Services (konsolidasi: 3 layanan) ---
+        // --- Services (konsolidasi: 3 layanan utama) ---
+        // --- Services (konsolidasi: 3 layanan utama) ---
 
         Service::query()->firstOrCreate(
             ['code' => 'UMUM'],

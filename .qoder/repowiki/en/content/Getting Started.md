@@ -6,325 +6,596 @@
 - [package.json](file://package.json)
 - [config/app.php](file://config/app.php)
 - [config/database.php](file://config/database.php)
+- [config/kiosk.php](file://config/kiosk.php)
+- [config/institution.php](file://config/institution.php)
 - [bootstrap/app.php](file://bootstrap/app.php)
 - [routes/web.php](file://routes/web.php)
 - [vendor/laravel/sail/bin/sail](file://vendor/laravel/sail/bin/sail)
 - [database/seeders/DatabaseSeeder.php](file://database/seeders/DatabaseSeeder.php)
 - [database/seeders/QueueMvpSeeder.php](file://database/seeders/QueueMvpSeeder.php)
+- [database/seeders/WilayahSeeder.php](file://database/seeders/WilayahSeeder.php)
 - [vite.config.js](file://vite.config.js)
 </cite>
 
+## Update Summary
+**Changes Made**
+- Enhanced installation instructions with comprehensive step-by-step setup procedure
+- Added detailed environment configuration guidelines with database and module password setup
+- Expanded database migration and seeding process documentation
+- Improved asset compilation and development server setup instructions
+- Added comprehensive troubleshooting section for common installation issues
+- Updated first-run verification procedures with module-specific access checks
+
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Project Structure](#project-structure)
-3. [Core Components](#core-components)
-4. [Architecture Overview](#architecture-overview)
-5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+2. [Prerequisites](#prerequisites)
+3. [Installation Steps](#installation-steps)
+4. [Environment Configuration](#environment-configuration)
+5. [Development Environment Setup](#development-environment-setup)
+6. [Database Setup](#database-setup)
+7. [Asset Compilation](#asset-compilation)
+8. [First Run Verification](#first-run-verification)
+9. [Troubleshooting Common Issues](#troubleshooting-common-issues)
+10. [Module Access Guide](#module-access-guide)
 
 ## Introduction
-This guide helps you install, configure, and run the PTSP Queue Management System locally. It covers prerequisites, environment setup with Laravel Sail, database migration and seeding, asset compilation, and first-run verification. It also includes troubleshooting tips for common issues.
+This comprehensive guide helps you install, configure, and run the PTSP Queue Management System locally. The system is built with Laravel 12, featuring Livewire UI components, Vite-powered frontend assets, and modular routing for Admin, Frontdesk, Officer, Kiosk, and TV Display modules. Laravel Sail provides a Docker-based local development environment with support for multiple database backends.
 
-## Project Structure
-The application is a Laravel 12 project with Livewire UI components, Vite-powered frontend assets, and modular routing for Admin, Frontdesk, Officer, Kiosk, and TV Display modules. Laravel Sail provides a Docker-based local environment.
+## Prerequisites
+Before installing the PTSP Queue Management System, ensure you have the following prerequisites:
 
-```mermaid
-graph TB
-A["Laravel App<br/>bootstrap/app.php"] --> B["HTTP Routes<br/>routes/web.php"]
-A --> C["Configuration<br/>config/*.php"]
-C --> C1["App<br/>config/app.php"]
-C --> C2["Database<br/>config/database.php"]
-A --> D["Frontend Assets<br/>vite.config.js"]
-A --> E["Package Scripts<br/>composer.json scripts"]
-A --> F["Sail CLI<br/>vendor/laravel/sail/bin/sail"]
-A --> G["Seeders<br/>database/seeders/*.php"]
-```
+### System Requirements
+- **PHP**: Version 8.2 or higher (required by Composer)
+- **Node.js**: Required for asset compilation and development server
+- **Docker**: Essential for Laravel Sail containerized environment
+- **Operating System**: macOS, Linux, or Windows with WSL2 support
 
-**Diagram sources**
-- [bootstrap/app.php:1-32](file://bootstrap/app.php#L1-L32)
-- [routes/web.php:1-127](file://routes/web.php#L1-L127)
-- [config/app.php:1-127](file://config/app.php#L1-L127)
-- [config/database.php:1-185](file://config/database.php#L1-L185)
-- [vite.config.js:1-37](file://vite.config.js#L1-L37)
-- [composer.json:53-99](file://composer.json#L53-L99)
-- [vendor/laravel/sail/bin/sail:1-633](file://vendor/laravel/sail/bin/sail#L1-L633)
-- [database/seeders/DatabaseSeeder.php:1-47](file://database/seeders/DatabaseSeeder.php#L1-L47)
-- [database/seeders/QueueMvpSeeder.php:1-130](file://database/seeders/QueueMvpSeeder.php#L1-L130)
-
-**Section sources**
-- [bootstrap/app.php:1-32](file://bootstrap/app.php#L1-L32)
-- [routes/web.php:1-127](file://routes/web.php#L1-L127)
-- [config/app.php:1-127](file://config/app.php#L1-L127)
-- [config/database.php:1-185](file://config/database.php#L1-L185)
-- [vite.config.js:1-37](file://vite.config.js#L1-L37)
-- [composer.json:53-99](file://composer.json#L53-L99)
-- [vendor/laravel/sail/bin/sail:1-633](file://vendor/laravel/sail/bin/sail#L1-L633)
-- [database/seeders/DatabaseSeeder.php:1-47](file://database/seeders/DatabaseSeeder.php#L1-L47)
-- [database/seeders/QueueMvpSeeder.php:1-130](file://database/seeders/QueueMvpSeeder.php#L1-L130)
-
-## Core Components
-- Backend framework: Laravel 12 with Livewire UI components.
-- Package manager: Composer for PHP dependencies and NPM for Node.js packages.
-- Asset pipeline: Vite with Laravel Vite Plugin and TailwindCSS.
-- Local environment: Laravel Sail (Docker) with optional database choices (SQLite, MySQL, MariaDB, PostgreSQL, SQL Server).
-- Routing: Modular routes for Admin, Frontdesk, Officer, Kiosk, and TV Display modules.
-- Seeding: Demo users and initial services/counters/pools for MVP.
-
-**Section sources**
-- [composer.json:11-34](file://composer.json#L11-L34)
-- [package.json:1-28](file://package.json#L1-L28)
-- [config/database.php:20-116](file://config/database.php#L20-L116)
-- [routes/web.php:1-127](file://routes/web.php#L1-L127)
-- [database/seeders/DatabaseSeeder.php:15-45](file://database/seeders/DatabaseSeeder.php#L15-L45)
-- [database/seeders/QueueMvpSeeder.php:15-128](file://database/seeders/QueueMvpSeeder.php#L15-L128)
-
-## Architecture Overview
-High-level runtime flow for local development and first-run tasks.
-
-```mermaid
-sequenceDiagram
-participant Dev as "Developer"
-participant Sail as "Sail CLI<br/>vendor/laravel/sail/bin/sail"
-participant PHP as "Laravel App<br/>bootstrap/app.php"
-participant DB as "DB Connection<br/>config/database.php"
-participant Assets as "Vite Build<br/>vite.config.js"
-Dev->>Sail : "Run setup scripts"
-Sail->>PHP : "Composer install + key : generate"
-Sail->>DB : "Migrate database"
-Sail->>Assets : "Install deps + build assets"
-Dev->>Sail : "Start dev stack"
-Sail->>PHP : "php artisan serve"
-Sail->>PHP : "php artisan queue : listen"
-Sail->>Assets : "npm run dev"
-Dev->>PHP : "Open home route"
-```
-
-**Diagram sources**
-- [composer.json:53-65](file://composer.json#L53-L65)
-- [vendor/laravel/sail/bin/sail:264-286](file://vendor/laravel/sail/bin/sail#L264-L286)
-- [config/database.php:20-116](file://config/database.php#L20-L116)
-- [vite.config.js:1-37](file://vite.config.js#L1-L37)
-
-## Detailed Component Analysis
-
-### Prerequisites
-- PHP: ^8.2 (required by Composer)
-- Node.js: Required for asset compilation and dev server
-- Docker: Required for Laravel Sail
-- Operating system: Sail supports macOS, Linux, and Windows WSL2
-
-Environment variables and defaults:
-- Application name, environment, debug, URL, timezone, locale, encryption key, maintenance driver/store
-- Database default connection is SQLite by default; MySQL/MariaDB/PostgreSQL/SQL Server supported
-- Redis client, port, database indices, and retry/backoff options
+### Required Dependencies
+- Composer 2.x+ for PHP dependency management
+- NPM (Node Package Manager) for JavaScript dependencies
+- Git for version control and project initialization
 
 **Section sources**
 - [composer.json:12](file://composer.json#L12)
-- [vendor/laravel/sail/bin/sail:1-16](file://vendor/laravel/sail/bin/sail#L1-L16)
-- [config/app.php:16-124](file://config/app.php#L16-L124)
-- [config/database.php:20-182](file://config/database.php#L20-L182)
+- [vendor/laravel/sail/bin/sail:13](file://vendor/laravel/sail/bin/sail#L13)
 
-### Step-by-Step Installation
-1. Install dependencies
-   - Composer: Install PHP dependencies
-   - NPM: Install Node.js dependencies
-2. Generate application key
-3. Run database migrations
-4. Compile assets
-5. Start the development stack
+## Installation Steps
 
-```mermaid
-flowchart TD
-Start(["Start"]) --> Cmp["Install PHP deps<br/>composer install"]
-Cmp --> Env["Create .env if missing<br/>.env.example -> .env"]
-Env --> Key["Generate APP_KEY<br/>artisan key:generate"]
-Key --> Mig["Run migrations<br/>artisan migrate --force"]
-Mig --> Npm["Install Node deps<br/>npm install"]
-Npm --> Build["Build assets<br/>npm run build"]
-Build --> Dev["Start dev stack<br/>composer dev script"]
-Dev --> End(["Ready"])
+### Step 1: Clone and Initialize the Project
+```bash
+# Clone the repository
+git clone <repository-url>
+cd antrian-ptsp
+
+# Copy environment configuration
+cp .env.example .env
 ```
 
-**Diagram sources**
-- [composer.json:53-65](file://composer.json#L53-L65)
-- [composer.json:54-60](file://composer.json#L54-L60)
+### Step 2: Install PHP Dependencies
+```bash
+# Install PHP dependencies via Composer
+composer install
+```
+
+### Step 3: Generate Application Key
+```bash
+# Generate encryption key
+php artisan key:generate
+```
+
+### Step 4: Configure Environment Variables
+Edit your `.env` file with the following essential configurations:
+
+```env
+# Application Configuration
+APP_NAME="PTSP Queue System"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
+
+# Database Configuration (SQLite default)
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+
+# Kiosk and TV Display Module Passwords
+KIOSK_PASSWORD=password
+TV_DISPLAY_PASSWORD=password
+
+# Institution Configuration
+INSTITUTION_NAME="PTSP Office"
+INSTITUTION_ADDRESS="Jl. PTSP No. 1"
+INSTITUTION_PHONE="(021) 1234567"
+OPERATING_HOURS="Monday - Friday, 08:00 - 16:00 WIB"
+```
+
+### Step 5: Run Database Migrations
+```bash
+# Run database migrations
+php artisan migrate --force
+```
+
+### Step 6: Install Frontend Dependencies
+```bash
+# Install Node.js dependencies
+npm install
+```
+
+### Step 7: Compile Assets
+```bash
+# Compile frontend assets
+npm run build
+```
+
+### Step 8: Start Development Server
+```bash
+# Start development server with concurrent processes
+composer dev
+```
 
 **Section sources**
-- [composer.json:53-65](file://composer.json#L53-L65)
-- [composer.json:54-60](file://composer.json#L54-L60)
+- [composer.json:54-65](file://composer.json#L54-L65)
+- [composer.json:53-61](file://composer.json#L53-L61)
 
-### Environment Configuration
-- Default database connection is SQLite unless overridden by environment variables.
-- Supported drivers: sqlite, mysql, mariadb, pgsql, sqlsrv.
-- Redis options include client type, cluster, prefix, persistence, and retry/backoff settings.
-- Application configuration keys include name, environment, debug, URL, timezone, locale, cipher/key, and maintenance settings.
+## Environment Configuration
 
-Set these in your environment:
-- DB_CONNECTION, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
-- APP_URL, APP_ENV, APP_DEBUG, APP_KEY
-- REDIS_* variables as needed
+### Database Configuration
+The system supports multiple database backends. By default, SQLite is configured for simplicity:
+
+```env
+# SQLite (Default)
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+
+# MySQL Alternative
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=ptsp_queue
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+
+# PostgreSQL Alternative
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=ptsp_queue
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+
+### Module Password Configuration
+Configure authentication passwords for specialized modules:
+
+```env
+# Module passwords (can be overridden individually)
+MODULE_PASSWORD=password
+KIOSK_PASSWORD=password
+TV_DISPLAY_PASSWORD=password
+
+# Session lifetime in minutes
+MODULE_SESSION_LIFETIME=1440
+```
+
+### Institution Configuration
+Customize institutional branding:
+
+```env
+INSTITUTION_NAME="PTSP Office"
+INSTITUTION_ADDRESS="Jl. PTSP No. 1"
+INSTITUTION_PHONE="(021) 1234567"
+OPERATING_HOURS="Monday - Friday, 08:00 - 16:00 WIB"
+INSTITUTION_LOGO_PATH=""
+```
 
 **Section sources**
 - [config/database.php:20-116](file://config/database.php#L20-L116)
-- [config/database.php:146-182](file://config/database.php#L146-L182)
-- [config/app.php:16-124](file://config/app.php#L16-L124)
+- [config/kiosk.php:4-6](file://config/kiosk.php#L4-L6)
+- [config/institution.php:4-8](file://config/institution.php#L4-L8)
 
-### Development Environment Setup with Laravel Sail
-- Start the stack: use Sail to bring up the application and related services.
-- Access the app via configured APP_URL or Sail’s exposed port.
-- Use Sail to run Artisan commands, Composer, Node/npm, and database clients.
+## Development Environment Setup
 
-Common Sail commands:
-- Start/stop/restart services
-- Run Artisan commands inside the container
-- Run tests via Artisan
-- Open the site in a browser
-- Connect to MySQL/MariaDB/PostgreSQL/Redis/MongoDB/Valkey shells
+### Using Laravel Sail (Recommended)
+Laravel Sail provides a Docker-based development environment with pre-configured services:
+
+```bash
+# Start all services
+./vendor/bin/sail up -d
+
+# Stop all services
+./vendor/bin/sail stop
+
+# Execute commands within the Sail environment
+./vendor/bin/sail artisan migrate
+./vendor/bin/sail npm install
+./vendor/bin/sail php artisan db:seed
+```
+
+### Sail Command Reference
+Common Sail operations for development:
+
+- **Start/Stop Services**: `./vendor/bin/sail up -d`, `./vendor/bin/sail stop`
+- **Run Artisan Commands**: `./vendor/bin/sail artisan [command]`
+- **Database Operations**: `./vendor/bin/sail mysql`, `./vendor/bin/sail psql`
+- **Testing**: `./vendor/bin/sail test`, `./vendor/bin/sail pest`
+- **Open Browser**: `./vendor/bin/sail open`
+
+### Alternative: Direct Local Setup
+If you prefer not to use Docker:
+
+```bash
+# Install dependencies
+composer install
+npm install
+
+# Start services manually
+php artisan serve
+php artisan queue:listen
+npm run dev
+```
 
 **Section sources**
 - [vendor/laravel/sail/bin/sail:41-122](file://vendor/laravel/sail/bin/sail#L41-L122)
 - [vendor/laravel/sail/bin/sail:264-286](file://vendor/laravel/sail/bin/sail#L264-L286)
-- [vendor/laravel/sail/bin/sail:388-422](file://vendor/laravel/sail/bin/sail#L388-L422)
-- [vendor/laravel/sail/bin/sail:484-521](file://vendor/laravel/sail/bin/sail#L484-L521)
-- [vendor/laravel/sail/bin/sail:559-581](file://vendor/laravel/sail/bin/sail#L559-L581)
 
-### Database Migration and Seeding
-- Migrations: Run during setup to create and update schema.
-- Seeders:
-  - QueueMvpSeeder: Creates queue pools, services, and counters for MVP.
-  - WilayahSeeder: Region-related data (conditionally runs outside unit tests).
-  - Demo users: Creates default Administrator, Frontdesk Demo, Officer Demo, Monitor Demo with a shared password.
+## Database Setup
 
-```mermaid
-flowchart TD
-MStart(["Migration"]) --> MRun["Run migrations<br/>artisan migrate"]
-MRun --> Seed["Run seeders<br/>DatabaseSeeder"]
-Seed --> MVP["QueueMvpSeeder<br/>Pools/Services/Counters"]
-Seed --> Wilayah["WilayahSeeder (non-test)"]
-Seed --> Users["Demo Users<br/>admin/frontdesk/officer/monitor"]
-MVP --> MEnd(["Ready"])
-Wilayah --> MEnd
-Users --> MEnd
+### Migration Process
+The system uses Laravel's migration system to create and update database schemas:
+
+```bash
+# Run all migrations
+php artisan migrate
+
+# Run migrations with force (non-interactive)
+php artisan migrate --force
+
+# Rollback last batch of migrations
+php artisan migrate:rollback
+
+# Fresh database (drops all tables and re-runs all migrations)
+php artisan migrate:fresh
 ```
 
-**Diagram sources**
-- [composer.json:58](file://composer.json#L58)
-- [database/seeders/DatabaseSeeder.php:15-45](file://database/seeders/DatabaseSeeder.php#L15-L45)
-- [database/seeders/QueueMvpSeeder.php:15-128](file://database/seeders/QueueMvpSeeder.php#L15-L128)
+### Data Seeding
+The system includes comprehensive seeders for initial data:
 
-**Section sources**
-- [composer.json:58](file://composer.json#L58)
-- [database/seeders/DatabaseSeeder.php:15-45](file://database/seeders/DatabaseSeeder.php#L15-L45)
-- [database/seeders/QueueMvpSeeder.php:15-128](file://database/seeders/QueueMvpSeeder.php#L15-L128)
+```bash
+# Run all seeders
+php artisan db:seed
 
-### Asset Compilation
-- Vite configuration registers inputs for app, TV display, kiosk, and thermal printer assets.
-- Development server exposes HMR and CORS for frontend iteration.
-- Production build is handled by Vite with Laravel Vite Plugin.
-
-```mermaid
-flowchart TD
-VC["Vite Config<br/>vite.config.js"] --> Inputs["Inputs:<br/>app.css/js, tv-display.*, kiosk.*, thermal-printer.js"]
-VC --> DevServer["Dev Server<br/>host=true, cors=true"]
-VC --> Build["Build<br/>emptyOutDir=false"]
+# Run specific seeder
+php artisan db:seed --class=QueueMvpSeeder
+php artisan db:seed --class=WilayahSeeder
 ```
 
-**Diagram sources**
-- [vite.config.js:1-37](file://vite.config.js#L1-L37)
+### Seeders Breakdown
+
+#### QueueMvpSeeder
+Creates essential queue infrastructure:
+- **Queue Pools**: UMUM (General Services), BAYAR (Payment), POSBAKUM (Legal Aid)
+- **Services**: General Registration, Payment, Legal Aid services
+- **Counters**: Physical service counters (Registration, Information, Product Retrieval, eCourt, Payment, Legal Aid)
+
+#### WilayahSeeder
+Populates regional administrative data (only runs outside unit tests):
+- Province, city, district, and village data
+- Regional boundaries and hierarchies
+
+#### DatabaseSeeder
+Main seeder orchestrator that coordinates other seeders
+
+**Section sources**
+- [database/seeders/QueueMvpSeeder.php:15-128](file://database/seeders/QueueMvpSeeder.php#L15-L128)
+- [database/seeders/WilayahSeeder.php:14-31](file://database/seeders/WilayahSeeder.php#L14-L31)
+- [database/seeders/DatabaseSeeder.php:15-45](file://database/seeders/DatabaseSeeder.php#L15-L45)
+
+## Asset Compilation
+
+### Vite Configuration
+The system uses Vite for modern asset compilation with Laravel integration:
+
+```javascript
+// vite.config.js
+export default defineConfig({
+    plugins: [
+        tailwindcss(),
+        laravel({
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/css/tv-display.css',
+                'resources/js/tv-display.js',
+                'resources/css/kiosk.css',
+                'resources/js/kiosk.js',
+                'resources/js/thermal-printer.js',
+            ],
+            refresh: true,
+        }),
+    ],
+    server: {
+        host: true,
+        cors: true,
+        hmr: { host: '127.0.0.1' },
+        watch: { ignored: ['**/storage/framework/views/**'] },
+    },
+    build: { emptyOutDir: false },
+});
+```
+
+### Available Assets
+- **Main Application**: `resources/css/app.css`, `resources/js/app.js`
+- **TV Display Interface**: `resources/css/tv-display.css`, `resources/js/tv-display.js`
+- **Kiosk Interface**: `resources/css/kiosk.css`, `resources/js/kiosk.js`
+- **Thermal Printer**: `resources/js/thermal-printer.js`
+
+### Build Commands
+```bash
+# Development build with hot module replacement
+npm run dev
+
+# Production build
+npm run build
+
+# Watch mode for development
+npm run watch
+```
 
 **Section sources**
 - [vite.config.js:1-37](file://vite.config.js#L1-L37)
 
-### First-Run Instructions
-- Default credentials:
-  - Administrator: admin@example.com / password
-  - Frontdesk Demo: frontdesk@example.com / password
-  - Officer Demo: officer@example.com / password
-  - Monitor Demo: monitor@example.com / password
-- Initial data:
-  - Queue pools, services, counters, and regions are seeded automatically during setup.
-- Basic system verification:
-  - Visit the home route to confirm the public queue interface.
-  - Navigate to module-specific routes (Admin, Frontdesk, Officer, Kiosk, TV Display) after logging in.
-  - Confirm TV Display and Kiosk login routes are accessible.
+## First Run Verification
+
+### Default Credentials
+Use these demo accounts for initial system access:
+
+| Role | Email | Password | Description |
+|------|-------|----------|-------------|
+| Administrator | admin@example.com | password | Full system access |
+| Frontdesk Demo | frontdesk@example.com | password | Front desk operations |
+| Officer Demo | officer@example.com | password | Service counter operations |
+| Monitor Demo | monitor@example.com | password | Reporting and monitoring |
+
+### Initial Data Verification
+After setup completion, verify the following:
+
+1. **Database Tables**: Check that all migration tables exist
+2. **Queue Infrastructure**: Verify queue pools, services, and counters are created
+3. **Demo Users**: Confirm all four demo user accounts exist
+4. **Regional Data**: Validate Wilayah (regional) data if applicable
+
+### Module Access Verification
+Test access to different system modules:
+
+#### Public Queue Interface
+- **URL**: `/`
+- **Functionality**: Public ticket booking, status checking
+
+#### Admin Module
+- **URL**: `/admin/` (requires Admin role)
+- **Features**: Service management, counter management, user administration
+
+#### Frontdesk Module
+- **URL**: `/frontdesk/antrian` (requires Frontdesk/Admin role)
+- **Features**: Walk-in registration, queue management
+
+#### Officer Module
+- **URL**: `/petugas/loket/{counter}` (requires Officer role)
+- **Features**: Counter operations, ticket calling
+
+#### Kiosk Module
+- **Login**: `/kiosk/login` (uses module password)
+- **Interface**: `/kiosk` (ticket booking interface)
+
+#### TV Display Module
+- **Login**: `/tv-display/login` (uses module password)
+- **Interface**: `/tv-display` (display interface)
 
 **Section sources**
 - [database/seeders/DatabaseSeeder.php:27-44](file://database/seeders/DatabaseSeeder.php#L27-L44)
 - [routes/web.php:18-124](file://routes/web.php#L18-L124)
 
-## Dependency Analysis
-- PHP dependencies managed by Composer (e.g., Laravel framework, Livewire, Sanctum, Reverb, Fortify).
-- Dev dependencies include Laravel Sail, testing frameworks, linting, and debugging tools.
-- Node dependencies include Vite, Laravel Vite Plugin, TailwindCSS, Axios, and concurrency helpers.
+## Troubleshooting Common Issues
 
-```mermaid
-graph LR
-PHP["PHP Runtime ^8.2"] --> CF["Composer Packages"]
-CF --> L["Laravel Framework"]
-CF --> LW["Livewire"]
-CF --> SEC["Sanctum / Fortify / Reverb"]
-CF --> DEV["Sail / Testing / Linting"]
-Node["Node.js"] --> NP["NPM Packages"]
-NP --> Vite["Vite + Laravel Vite Plugin"]
-NP --> TW["TailwindCSS"]
-NP --> AX["Axios / Concurrency"]
+### Docker and Sail Issues
+
+#### Docker Not Running
+**Problem**: Sail commands fail with Docker errors
+**Solution**:
+```bash
+# Start Docker daemon
+sudo systemctl start docker
+# or on macOS, start Docker Desktop
+
+# Verify Docker is running
+docker --version
+docker info
 ```
 
-**Diagram sources**
-- [composer.json:11-34](file://composer.json#L11-L34)
-- [composer.json:24-34](file://composer.json#L24-L34)
-- [package.json:1-28](file://package.json#L1-L28)
+#### Port Conflicts
+**Problem**: Application fails to start due to port conflicts
+**Solution**:
+```bash
+# Check for port usage
+netstat -tulpn | grep :80
+lsof -i :80
 
-**Section sources**
-- [composer.json:11-34](file://composer.json#L11-L34)
-- [composer.json:24-34](file://composer.json#L24-L34)
-- [package.json:1-28](file://package.json#L1-L28)
+# Update .env with different ports
+APP_PORT=8080
+```
 
-## Performance Considerations
-- Use Sail for consistent environments and avoid local drift.
-- Keep asset builds optimized; avoid unnecessary rebuilds by leveraging Vite HMR.
-- Prefer SQLite for local development simplicity; switch to MySQL/MariaDB/PostgreSQL for production-like testing.
-- Tune Redis settings (client, retries, backoff) for queue and caching workloads.
+#### Permission Issues
+**Problem**: File permission errors during setup
+**Solution**:
+```bash
+# Fix directory permissions
+chmod -R 755 storage
+chmod -R 755 bootstrap/cache
+chmod 666 database/database.sqlite
 
-## Troubleshooting Guide
-- Docker not running
-  - Sail requires Docker to be installed and running. Start Docker and retry Sail commands.
-- Sail is not running
-  - Use Sail to start the stack; Sail will print helpful guidance if the service is not up.
-- Port conflicts
-  - Adjust APP_PORT or stop conflicting services if the default port is in use.
-- Database connection errors
-  - Verify DB_CONNECTION and related DB_* variables match your chosen backend.
-  - For SQLite, ensure the database file path is writable.
-- Asset build failures
-  - Reinstall Node dependencies and rebuild assets.
-- Queue worker not processing jobs
-  - Ensure the queue listener is running alongside the server in dev mode.
-- Authentication and roles
-  - Use the seeded demo users and verify role middleware allows access to intended routes.
+# Or use Sail to fix permissions
+./vendor/bin/sail shell
+chown -R sail:sail /var/www/html
+```
+
+### Database Issues
+
+#### SQLite File Permissions
+**Problem**: SQLite database write errors
+**Solution**:
+```bash
+# Ensure database file is writable
+touch database/database.sqlite
+chmod 666 database/database.sqlite
+
+# Or use absolute path in .env
+DB_DATABASE=/var/www/html/database/database.sqlite
+```
+
+#### Migration Failures
+**Problem**: Migration errors during setup
+**Solution**:
+```bash
+# Clear cached migrations
+php artisan cache:clear
+php artisan config:clear
+
+# Re-run migrations
+php artisan migrate:fresh --seed
+```
+
+### Asset Compilation Issues
+
+#### Node.js Version Compatibility
+**Problem**: Vite build fails with Node.js version errors
+**Solution**:
+```bash
+# Check Node.js version
+node --version
+
+# Use LTS version recommended for Laravel projects
+# Install via nvm if needed
+nvm install --lts
+nvm use --lts
+```
+
+#### Missing Dependencies
+**Problem**: Vite compilation errors
+**Solution**:
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Clear npm cache
+npm cache clean --force
+```
+
+### Authentication and Authorization Issues
+
+#### Role-Based Access Control
+**Problem**: Cannot access certain modules despite login
+**Solution**:
+```bash
+# Verify user roles in database
+./vendor/bin/sail php artisan tinker
+>>> App\Models\User::all()->pluck('name', 'email', 'role')
+
+# Manually assign roles if needed
+>>> $user = App\Models\User::where('email', 'admin@example.com')->first()
+>>> $user->role = 'admin'
+>>> $user->save()
+```
+
+#### Module Password Issues
+**Problem**: Kiosk/TV Display login failures
+**Solution**:
+```bash
+# Check module passwords in configuration
+./vendor/bin/sail php artisan tinker
+>>> config('kiosk.kiosk_password')
+>>> config('kiosk.tv_display_password')
+
+# Update passwords in .env if needed
+KIOSK_PASSWORD=new_password
+TV_DISPLAY_PASSWORD=new_password
+```
+
+### Development Server Issues
+
+#### Concurrent Processes
+**Problem**: Development server not starting properly
+**Solution**:
+```bash
+# Use Composer script instead
+composer dev
+
+# Or start manually with proper ordering
+# Terminal 1: php artisan serve
+# Terminal 2: php artisan queue:listen
+# Terminal 3: npm run dev
+```
+
+#### Hot Module Replacement (HMR)
+**Problem**: Frontend changes not reflecting
+**Solution**:
+```bash
+# Clear Vite cache
+rm -rf node_modules/.vite
+
+# Restart development server
+npm run dev
+```
 
 **Section sources**
 - [vendor/laravel/sail/bin/sail:157-164](file://vendor/laravel/sail/bin/sail#L157-L164)
 - [vendor/laravel/sail/bin/sail:190-208](file://vendor/laravel/sail/bin/sail#L190-L208)
 - [config/database.php:20-116](file://config/database.php#L20-L116)
-- [package.json:1-28](file://package.json#L1-L28)
-- [composer.json:62-65](file://composer.json#L62-L65)
-- [routes/web.php:28-90](file://routes/web.php#L28-L90)
 
-## Conclusion
-You now have the prerequisites, environment setup, and first-run steps to launch the PTSP Queue Management System locally. Use Laravel Sail for a reproducible environment, run migrations and seeders for initial data, compile assets, and verify module access with the provided demo credentials.
+## Module Access Guide
 
-## Appendices
-- Quick commands
-  - Install deps and run setup: composer install, copy .env.example to .env, generate key, migrate, npm install, npm run build
-  - Start dev stack: composer dev script (runs server, queue listener, and Vite dev)
-  - Run tests: composer test
-  - Open site: Sail open
+### Role-Based Navigation
+The system implements role-based access control with different interfaces for each user type:
+
+#### Administrator (Admin)
+- **Dashboard**: Full system overview
+- **Services Management**: CRUD operations for services
+- **Counter Management**: Counter configuration and assignment
+- **User Management**: User account administration
+- **Regional Settings**: Administrative region configuration
+
+#### Frontdesk (Frontdesk/Admin)
+- **Walk-in Registration**: Quick registration for walk-in customers
+- **Queue Management**: View and manage current queue
+- **Check-in Operations**: Customer check-in procedures
+
+#### Officer (Officer)
+- **Counter Interface**: Service counter operations
+- **Ticket Management**: Call, recall, skip, complete, cancel tickets
+- **Real-time Updates**: Live queue status monitoring
+
+#### Monitor (Monitor)
+- **Reporting Interface**: Comprehensive reporting dashboard
+- **Audit Trail**: System activity monitoring
+- **Performance Analytics**: Queue performance metrics
+
+#### Public Users
+- **Online Booking**: Web-based ticket reservation
+- **Status Checking**: Real-time queue status
+- **Confirmation**: Booking confirmation and instructions
+
+### Module-Specific Features
+Each module has dedicated functionality:
+
+#### Kiosk Module
+- **Touchscreen Interface**: Optimized for kiosk devices
+- **Barcode Printing**: Ticket barcode generation
+- **Offline Capability**: Minimal connectivity requirements
+
+#### TV Display Module
+- **Large Screen Display**: Optimized for TV screens
+- **Audio Announcements**: Text-to-speech integration
+- **Multi-area Support**: Multiple display areas
 
 **Section sources**
-- [composer.json:54-65](file://composer.json#L54-L65)
-- [vendor/laravel/sail/bin/sail:604-628](file://vendor/laravel/sail/bin/sail#L604-L628)
+- [routes/web.php:28-90](file://routes/web.php#L28-L90)

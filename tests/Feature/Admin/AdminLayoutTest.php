@@ -29,7 +29,6 @@ test('admin user management view avoids native select controls in forms', functi
 
     expect($view)->not->toContain('<select');
     expect($view)->toContain('<flux:select name="role"');
-    expect($view)->toContain('name="service_id"');
 });
 
 test('admin counter management view uses compact flux select controls', function () {

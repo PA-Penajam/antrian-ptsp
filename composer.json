@@ -10,6 +10,7 @@
   "license": "MIT",
   "require": {
     "php": "^8.2",
+    "barryvdh/laravel-dompdf": "^3.1",
     "laravel/fortify": "^1.30",
     "laravel/framework": "^12.0",
     "laravel/reverb": "^1.0",
@@ -19,6 +20,7 @@
     "livewire/flux": "^2.9.0",
     "livewire/flux-pro": "^2.13",
     "livewire/livewire": "^4.0",
+    "maatwebsite/excel": "^3.1",
     "picqer/php-barcode-generator": "^3.2"
   },
   "require-dev": {
@@ -81,7 +83,7 @@
     "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
       "@php artisan package:discover --ansi",
-      "@php -r \"@mkdir('public/flux', 0755, true); foreach (['flux.js','flux.min.js','editor.js','editor.min.js','editor.css'] as $f) { $src = file_exists('vendor/livewire/flux-pro/dist/'.$f) ? 'vendor/livewire/flux-pro/dist/'.$f : 'vendor/livewire/flux/dist/'.$f; if (file_exists($src)) copy($src, 'public/flux/'.$f); }\""
+      "@php -r \"@mkdir('public/flux', 0755, true); foreach (['flux.js','flux.min.js','editor.js','editor.min.js','editor.css'] as \\$f) { \\$src = file_exists('vendor/livewire/flux-pro/dist/'.\\$f) ? 'vendor/livewire/flux-pro/dist/'.\\$f : 'vendor/livewire/flux/dist/'.\\$f; if (file_exists(\\$src)) { copy(\\$src, 'public/flux/'.\\$f); } }\""
     ],
     "post-update-cmd": [
       "@php artisan vendor:publish --tag=laravel-assets --ansi --force",

@@ -9,10 +9,13 @@ use App\Http\Controllers\FrontdeskQueueController;
 use App\Http\Controllers\KioskController;
 use App\Http\Controllers\OfficerQueueController;
 use App\Http\Controllers\PublicQueueController;
+use App\Http\Controllers\Report\AuditTrailController;
 use App\Http\Controllers\Report\QueueReportController;
 use App\Http\Controllers\TvDisplayController;
 use App\Http\Controllers\TvDisplayTtsController;
+use App\Livewire\Reports\LaporanBulanan;
 use Flux\AssetManager;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicQueueController::class, 'index'])->name('home');
@@ -26,7 +29,7 @@ Route::get('/antrian/cek', [PublicQueueController::class, 'lookup'])->name('queu
 Route::get('/antrian/konfirmasi/{ticket}', [PublicQueueController::class, 'confirmation'])->name('queue.confirmation')->middleware('signed');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function (\Illuminate\Http\Request $request) {
+    Route::get('dashboard', function (Request $request) {
         return view('dashboard', [
             'activeRole' => $request->user()?->role,
         ]);
@@ -56,7 +59,8 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Officer->value])->group
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Monitor->value])->group(function () {
     Route::get('/laporan/antrian', [QueueReportController::class, 'index']);
-    Route::get('/laporan/audit', [App\Http\Controllers\Report\AuditTrailController::class, 'index'])->name('laporan.audit');
+    Route::get('/laporan/audit', [AuditTrailController::class, 'index'])->name('laporan.audit');
+    Route::get('/laporan/bulanan', LaporanBulanan::class)->name('laporan.bulanan');
 });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])->group(function () {

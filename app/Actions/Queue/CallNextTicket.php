@@ -35,6 +35,17 @@ class CallNextTicket
                         return null;
                     }
 
+                    // Pool-level access check: officer must have at least one service
+                    // in the same pool as the counter they're trying to access.
+                    $allowedPoolIds = $actor->services()
+                        ->pluck('queue_pool_id')
+                        ->unique()
+                        ->values();
+
+                    if ($allowedPoolIds->isNotEmpty() && ! $allowedPoolIds->contains($counter->queue_pool_id)) {
+                        return null;
+                    }
+
                     // Do not filter by specific service_id.
                     // The officer should serve ALL tickets that belong to the Counter's Queue Pool.
                 }
