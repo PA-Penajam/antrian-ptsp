@@ -59,6 +59,33 @@ it('returns cached result when audio already exists', function () {
         ->and($result['path'])->toBe($path);
 });
 
+it('returns legacy voice cached result before calling api', function () {
+    config([
+        'services.google_tts.api_key' => 'test-key',
+        'services.google_tts.language_code' => 'id-ID',
+        'services.google_tts.voice_name' => 'id-ID-Wavenet-A',
+        'services.google_tts.legacy_voice_names' => ['id-ID-Standard-D'],
+        'services.google_tts.cache_disk' => 'public',
+        'services.google_tts.cache_prefix' => 'tts/google',
+    ]);
+
+    $text = 'Nomor antrian A7, silakan menuju Loket Layanan Informasi dan Pengaduan.';
+    $cacheKey = sha1(implode('|', ['id-ID', 'id-ID-Standard-D', mb_strtolower($text)]));
+    $path = 'tts/google/'.$cacheKey.'.mp3';
+
+    Storage::disk('public')->put($path, 'legacy-fake-audio-data');
+
+    $service = new GoogleTtsService;
+    $result = $service->getOrCreateAnnouncement($text);
+
+    Http::assertNothingSent();
+
+    expect($result)
+        ->not->toBeNull()
+        ->and($result['cache_key'])->toBe($cacheKey)
+        ->and($result['path'])->toBe($path);
+});
+
 it('calls google tts api and caches the audio', function () {
     config([
         'services.google_tts.api_key' => 'test-key',

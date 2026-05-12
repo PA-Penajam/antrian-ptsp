@@ -4,40 +4,194 @@
          audioUnlocked: false,
          videos: @js($videos),
          currentIndex: 0,
+         videoElement: null,
+         videoPausedForTts: false,
+         wasVideoPlayingBeforeTts: false,
+         isSamsungTv: /Tizen|SMART-TV|SamsungBrowser|Maple/i.test(navigator.userAgent),
+         videoVolume: @js((float) config('tv.video_volume')),
+         videoVolumeDuringTts: @js((float) config('tv.video_volume_during_tts')),
+         ttsVolume: @js((float) config('tv.tts_volume')),
+         silentAudio: 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA',
          get hasVideos() { return this.videos.length > 0 },
+         get currentVideo() { return this.hasVideos ? this.videos[this.currentIndex] : '' },
+         audio() {
+             return this.$refs.ttsAudio;
+         },
+         video() {
+             return this.videoElement || this.$refs.videoPlayer;
+         },
+         registerVideo(element) {
+             this.videoElement = element;
+             this.playCurrentVideo();
+         },
          unlockAudio() {
              if (this.audioUnlocked) return;
-             this.audioUnlocked = true;
-             // Play silent audio to unlock browser audio context
-             let dummy = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
-             dummy.play().catch(e => console.log('Dummy audio play skipped'));
+             const audio = this.audio();
+             if (!audio) {
+                 this.audioUnlocked = true;
+                 return;
+             }
+
+             const vid = this.video();
+             const shouldResumeVideo = this.isSamsungTv && vid && !vid.paused && !vid.ended;
+
+             if (this.isSamsungTv && vid && !vid.paused) {
+                 vid.pause();
+             }
+
+             const finishUnlock = () => {
+                 audio.pause();
+                 audio.removeAttribute('src');
+                 audio.load();
+                 audio.volume = this.ttsVolume;
+                 this.audioUnlocked = true;
+
+                 if (!this.isSamsungTv || shouldResumeVideo || this.hasVideos) {
+                     this.playCurrentVideo();
+                 }
+             };
+
+             audio.pause();
+             audio.src = this.silentAudio;
+             audio.volume = this.ttsVolume;
+             audio.load();
+
+             const unlockPromise = audio.play();
+             if (unlockPromise && typeof unlockPromise.then === 'function') {
+                 unlockPromise
+                     .then(() => finishUnlock())
+                     .catch((error) => {
+                         console.error('Audio unlock failed:', error);
+                         finishUnlock();
+                     });
+
+                 return;
+             }
+
+             finishUnlock();
+         },
+         playCurrentVideo() {
+             const vid = this.video();
+             if (!vid || !this.hasVideos) return;
+
+             if (vid.getAttribute('src') !== this.currentVideo) {
+                 vid.src = this.currentVideo;
+                 vid.load();
+             }
+
+             vid.muted = !this.audioUnlocked;
+             vid.volume = this.videoVolume;
+             vid.play().catch(() => {});
          },
          playNext() {
+             if (!this.hasVideos) return;
              this.currentIndex = (this.currentIndex + 1) % this.videos.length;
-             this.$nextTick(() => {
-                 const vid = this.$refs.videoPlayer;
-                 if (vid) {
-                     vid.src = this.videos[this.currentIndex];
-                     vid.play().catch(() => {});
+             this.$nextTick(() => this.playCurrentVideo());
+         },
+         restoreVideoVolume() {
+             const vid = this.video();
+             if (!vid) return;
+
+             if (this.isSamsungTv) {
+                 if (this.videoPausedForTts && this.wasVideoPlayingBeforeTts) {
+                     this.playCurrentVideo();
                  }
-             });
+
+                 this.videoPausedForTts = false;
+                 this.wasVideoPlayingBeforeTts = false;
+
+                 return;
+             }
+
+             vid.volume = this.videoVolume;
+         },
+         lowerVideoVolume() {
+             const vid = this.video();
+             if (!vid) return;
+
+             if (this.isSamsungTv) {
+                 if (!this.videoPausedForTts) {
+                     this.wasVideoPlayingBeforeTts = !vid.paused && !vid.ended;
+
+                     if (!vid.paused) {
+                         vid.pause();
+                     }
+
+                     this.videoPausedForTts = true;
+                 }
+
+                 return;
+             }
+
+             vid.volume = this.videoVolumeDuringTts;
+         },
+         speakWithBrowserTts(text) {
+             this.lowerVideoVolume();
+
+             if (!('speechSynthesis' in window)) {
+                 this.restoreVideoVolume();
+                 return;
+             }
+
+             window.speechSynthesis.cancel();
+
+             const utterance = new SpeechSynthesisUtterance(text.replace(/,/g, ' '));
+             utterance.lang = 'id-ID';
+             utterance.rate = 0.95;
+             utterance.pitch = 1;
+             utterance.volume = this.ttsVolume;
+             utterance.onend = () => this.restoreVideoVolume();
+             utterance.onerror = () => this.restoreVideoVolume();
+
+             window.speechSynthesis.speak(utterance);
+         },
+         playTts(text) {
+             fetch('/tv-display/tts/announcement?text=' + encodeURIComponent(text))
+                 .then(res => res.json())
+                 .then(data => {
+                     if (!data.audio_url) {
+                         this.speakWithBrowserTts(text);
+                         return;
+                     }
+
+                     const audio = this.audio();
+                     if (!audio) {
+                         this.speakWithBrowserTts(text);
+                         return;
+                     }
+
+                     audio.pause();
+                     audio.src = data.audio_url;
+                     audio.volume = this.ttsVolume;
+                     audio.load();
+                     audio.onended = () => this.restoreVideoVolume();
+                     audio.onerror = () => {
+                         this.speakWithBrowserTts(text);
+                     };
+
+                     this.lowerVideoVolume();
+
+                     const playPromise = audio.play();
+                     if (playPromise && typeof playPromise.catch === 'function') {
+                         playPromise.catch((error) => {
+                             console.error('TTS Playback failed:', error);
+                             this.speakWithBrowserTts(text);
+                         });
+                     }
+                 })
+                 .catch((error) => {
+                     console.error('TTS Fetch failed:', error);
+                     this.speakWithBrowserTts(text);
+                 });
          }
      }"
      x-on:online.window="connected = true"
      x-on:offline.window="connected = false"
      x-on:click.window="unlockAudio()"
      x-on:keydown.window="unlockAudio()"
-     x-on:play-tts.window="
-         fetch('/tv-display/tts/announcement?text=' + encodeURIComponent($event.detail.text))
-             .then(res => res.json())
-             .then(data => {
-                 if (data.audio_url) {
-                     let audio = new Audio(data.audio_url);
-                     audio.play().catch(e => console.error('TTS Playback failed:', e));
-                 }
-             })
-             .catch(e => console.error('TTS Fetch failed:', e));
-     ">
+     x-on:play-tts.window="playTts($event.detail.text)">
+
+    <audio x-ref="ttsAudio" preload="auto"></audio>
 
     {{-- Audio Unlock Overlay --}}
     <div x-show="!audioUnlocked"
@@ -176,24 +330,25 @@
         </div>
 
         {{-- Right Panel: Video (40%) --}}
-        <div class="w-[40%] h-full border-l border-slate-200 bg-slate-100 flex items-center justify-center rounded-xl overflow-hidden">
-            <template x-if="hasVideos">
-                <video x-ref="videoPlayer"
-                       x-init="if (videos.length > 0) { $refs.videoPlayer.src = videos[0]; $refs.videoPlayer.play().catch(() => {}); }"
-                       x-on:ended="playNext()"
-                       muted
-                       playsinline
-                       class="h-full w-full object-contain rounded-xl m-4">
-                </video>
-            </template>
-            <template x-if="!hasVideos">
-                <iframe src="https://www.youtube.com/embed/videoseries?list=PLillGF-RfqbZ2ybcoD2OaabW2P7Ws8CWu&autoplay=1&mute=1&loop=1"
-                        class="h-full w-full"
-                        frameborder="0"
-                        allow="autoplay; encrypted-media"
-                        allowfullscreen>
-                </iframe>
-            </template>
+        <div wire:ignore class="w-[40%] h-full border-l border-slate-200 bg-black flex items-center justify-center rounded-xl overflow-hidden">
+            <video x-show="hasVideos"
+                   x-ref="videoPlayer"
+                   x-init="registerVideo($el)"
+                   x-on:ended="playNext()"
+                   autoplay
+                   muted
+                   playsinline
+                   preload="auto"
+                   class="block h-full w-full object-contain">
+            </video>
+
+            <iframe x-show="!hasVideos"
+                    src="https://www.youtube.com/embed/videoseries?list=PLillGF-RfqbZ2ybcoD2OaabW2P7Ws8CWu&autoplay=1&mute=1&loop=1"
+                    class="block h-full w-full"
+                    frameborder="0"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen>
+            </iframe>
         </div>
 
     </div>

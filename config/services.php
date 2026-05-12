@@ -51,6 +51,7 @@ return [
         'volume_gain_db' => (float) env('GOOGLE_TTS_VOLUME_GAIN_DB', 0.0),
         'cache_disk' => env('GOOGLE_TTS_CACHE_DISK', 'public'),
         'cache_prefix' => env('GOOGLE_TTS_CACHE_PREFIX', 'tts/google'),
+        'legacy_voice_names' => array_filter(explode(',', env('GOOGLE_TTS_LEGACY_VOICE_NAMES', 'id-ID-Standard-D,id-ID-Wavenet-A'))),
     ],
 
 ];

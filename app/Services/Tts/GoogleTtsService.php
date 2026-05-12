@@ -34,8 +34,9 @@ class GoogleTtsService
 
         $disk = (string) config('services.google_tts.cache_disk', 'public');
         $prefix = trim((string) config('services.google_tts.cache_prefix', 'tts/google'), '/');
-        $cacheKey = sha1(implode('|', [$languageCode, $voiceName, mb_strtolower($text)]));
-        $path = $prefix.'/'.$cacheKey.'.mp3';
+        $cachedAnnouncement = $this->findCachedAnnouncement($disk, $prefix, $languageCode, $voiceName, $text);
+        $cacheKey = $cachedAnnouncement['cache_key'];
+        $path = $cachedAnnouncement['path'];
 
         Log::debug('[TTS] Processing', [
             'text' => $text,
@@ -45,13 +46,33 @@ class GoogleTtsService
             'disk' => $disk,
         ]);
 
-        if (! Storage::disk($disk)->exists($path)) {
+        if ($cachedAnnouncement['exists']) {
+            Log::debug('[TTS] Cache hit', ['path' => $path]);
+        } else {
             Log::info('[TTS] Cache miss, request Google TTS API', ['text' => $text]);
-            $audio = $this->requestSpeech($apiKey, $languageCode, $voiceName, $text);
+
+            try {
+                $audio = $this->requestSpeech($apiKey, $languageCode, $voiceName, $text);
+            } catch (RuntimeException $exception) {
+                $cachedAnnouncement = $this->findCachedAnnouncement($disk, $prefix, $languageCode, $voiceName, $text);
+
+                if ($cachedAnnouncement['exists']) {
+                    Log::warning('[TTS] Google TTS gagal, memakai cache lama', [
+                        'path' => $cachedAnnouncement['path'],
+                        'error' => $exception->getMessage(),
+                    ]);
+
+                    return [
+                        'cache_key' => $cachedAnnouncement['cache_key'],
+                        'path' => $cachedAnnouncement['path'],
+                    ];
+                }
+
+                throw $exception;
+            }
+
             Storage::disk($disk)->put($path, $audio);
             Log::info('[TTS] Audio saved', ['path' => $path, 'audio_size' => strlen($audio)]);
-        } else {
-            Log::debug('[TTS] Cache hit', ['path' => $path]);
         }
 
         return [
@@ -65,6 +86,42 @@ class GoogleTtsService
         $prefix = trim((string) config('services.google_tts.cache_prefix', 'tts/google'), '/');
 
         return $prefix.'/'.$cacheKey.'.mp3';
+    }
+
+    /**
+     * @return array{cache_key:string,path:string,exists:bool}
+     */
+    private function findCachedAnnouncement(string $disk, string $prefix, string $languageCode, string $voiceName, string $text): array
+    {
+        $voiceNames = collect([
+            $voiceName,
+            ...((array) config('services.google_tts.legacy_voice_names', [])),
+        ])
+            ->map(fn (string $voice): string => trim($voice))
+            ->filter()
+            ->unique()
+            ->values();
+
+        foreach ($voiceNames as $candidateVoiceName) {
+            $cacheKey = sha1(implode('|', [$languageCode, $candidateVoiceName, mb_strtolower($text)]));
+            $path = $prefix.'/'.$cacheKey.'.mp3';
+
+            if (Storage::disk($disk)->exists($path)) {
+                return [
+                    'cache_key' => $cacheKey,
+                    'path' => $path,
+                    'exists' => true,
+                ];
+            }
+        }
+
+        $cacheKey = sha1(implode('|', [$languageCode, $voiceName, mb_strtolower($text)]));
+
+        return [
+            'cache_key' => $cacheKey,
+            'path' => $prefix.'/'.$cacheKey.'.mp3',
+            'exists' => false,
+        ];
     }
 
     private function requestSpeech(string $apiKey, string $languageCode, string $voiceName, string $text): string

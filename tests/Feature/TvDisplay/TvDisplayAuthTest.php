@@ -106,3 +106,20 @@ it('serves cached audio payload for authenticated tv legacy session', function (
 
     expect($response->getContent())->toBe($audioPayload);
 });
+
+it('allows tv legacy video audio after samsung sound activation', function () {
+    $response = withSession([
+        'tv_display_authenticated' => true,
+        'tv_display_authenticated_at' => now()->timestamp,
+    ])->get(route('tv-display.legacy'));
+
+    $response->assertOk()
+        ->assertSee('var isSamsungTv', false)
+        ->assertSee('if (isSamsungTv)', false)
+        ->assertSee('audioPlayer.src = SILENT_AUDIO', false)
+        ->assertSee('beginTtsPlayback', false)
+        ->assertSee('object-fit: contain', false)
+        ->assertSee('tvPlayer.muted = !soundActivated', false)
+        ->assertSee('tvPlayer.volume = soundActivated ? volume : 0', false)
+        ->assertDontSee("tvPlayer.removeAttribute('src')", false);
+});

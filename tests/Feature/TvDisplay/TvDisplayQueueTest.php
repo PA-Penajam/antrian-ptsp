@@ -5,6 +5,8 @@ use App\Models\Counter;
 use App\Models\QueuePool;
 use App\Models\QueueTicket;
 use App\Models\Service;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\get;
 
@@ -119,6 +121,45 @@ it('tv display includes connection status indicator', function () {
     $response->assertOk()
         ->assertSee('online.window', false)
         ->assertSee('offline.window', false);
+});
+
+it('tv display reuses a persistent audio element for tts playback', function () {
+    $this->withSession([
+        'tv_display_authenticated' => true,
+        'tv_display_authenticated_at' => now()->timestamp,
+    ]);
+
+    $response = get(route('tv-display.index'));
+
+    $response->assertOk()
+        ->assertSee('x-ref="ttsAudio"', false)
+        ->assertSee('isSamsungTv', false)
+        ->assertSee('vid.muted = !this.audioUnlocked', false)
+        ->assertSee('this.videoPausedForTts = true', false)
+        ->assertSee('x-on:play-tts.window="playTts($event.detail.text)"', false)
+        ->assertDontSee('new Audio(data.audio_url)', false);
+});
+
+it('tv display renders a persistent contained video player when videos exist', function () {
+    Storage::fake('public');
+    Cache::forget('tv-display:videos');
+    Storage::disk('public')->put('videos/demo.mp4', 'fake-video');
+
+    $this->withSession([
+        'tv_display_authenticated' => true,
+        'tv_display_authenticated_at' => now()->timestamp,
+    ]);
+
+    $response = get(route('tv-display.index'));
+
+    $response->assertOk()
+        ->assertSee('demo.mp4', false)
+        ->assertSee('wire:ignore', false)
+        ->assertSee('x-ref="videoPlayer"', false)
+        ->assertSee('object-contain', false)
+        ->assertDontSee('<template x-if="hasVideos">', false);
+
+    Cache::forget('tv-display:videos');
 });
 
 it('tv display uses alpine js for live clock', function () {

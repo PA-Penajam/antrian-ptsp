@@ -99,7 +99,7 @@
     }
 
     .tv-video-card {
-        background-color: #1e293b;
+        background-color: #000000;
         border-radius: 1.25rem;
         overflow: hidden;
         background-size: cover;
@@ -117,7 +117,8 @@
         inset: 0;
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
+        background-color: #000000;
         display: block;
     }
 
@@ -403,7 +404,7 @@
     <div class="sound-overlay-subtitle">untuk Mengaktifkan Suara</div>
 </div>
 
-<audio id="ttsAudio" style="display:none;"></audio>
+<audio id="ttsAudio" preload="auto"></audio>
 @endsection
 
 @push('scripts')
@@ -419,10 +420,14 @@
     var pendingAnnouncementText = '';
     var currentAudioObjectUrl = null;
     var playGuardTimer = null;
+    var videoPausedForTts = false;
+    var wasVideoPlayingBeforeTts = false;
 
     var VIDEO_VOLUME            = {{ config('tv.video_volume') }};
     var VIDEO_VOLUME_DURING_TTS = {{ config('tv.video_volume_during_tts') }};
     var TTS_VOLUME              = {{ config('tv.tts_volume') }};
+    var SILENT_AUDIO            = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+    var isSamsungTv             = /Tizen|SMART-TV|SamsungBrowser|Maple/i.test(navigator.userAgent);
 
     $(document).ready(function () {
         updateClock();
@@ -445,7 +450,7 @@
         audioPlayer.addEventListener('ended', function () {
             clearPlayGuard();
             revokeAudioObjectUrl();
-            tvPlayer.volume = VIDEO_VOLUME;
+            endTtsPlayback();
         });
 
         audioPlayer.addEventListener('error', function () {
@@ -459,7 +464,7 @@
                 return;
             }
 
-            tvPlayer.volume = VIDEO_VOLUME;
+            endTtsPlayback();
         });
 
         document.addEventListener('click', activateSound);
@@ -505,26 +510,44 @@
         document.removeEventListener('click', activateSound);
         document.removeEventListener('keydown', activateSound);
 
-        // Unmute video player
-        tvPlayer.muted = false;
-        tvPlayer.volume = VIDEO_VOLUME;
+        setVideoAmbientVolume(VIDEO_VOLUME);
+
+        if (tvPlayer && playlist.length > 0 && tvPlayer.paused) {
+            tvPlayer.play().catch(function () {
+                /* Video autoplay retry failed. */
+            });
+        }
 
         // Unlock audio element yang SEBENARNYA dipakai (#ttsAudio) dengan silent WAV.
-        // Ini diperlukan di WebKit lama (WebOS) karena unlock bersifat per-element.
-        audioPlayer.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-        audioPlayer.volume = 0;
+        // Pada Samsung/Tizen, video dipause sebentar agar audio element bisa di-unlock tanpa membuat video plane blank.
+        var shouldResumeVideo = isSamsungTv && tvPlayer && !tvPlayer.paused && !tvPlayer.ended;
+        if (isSamsungTv && tvPlayer && !tvPlayer.paused) {
+            tvPlayer.pause();
+        }
+
+        audioPlayer.pause();
+        audioPlayer.src = SILENT_AUDIO;
+        audioPlayer.volume = TTS_VOLUME;
+        audioPlayer.load();
+
+        var finishAudioUnlock = function () {
+            audioPlayer.pause();
+            audioPlayer.removeAttribute('src');
+            audioPlayer.load();
+            audioPlayer.volume = TTS_VOLUME;
+
+            if ((!isSamsungTv || shouldResumeVideo) && playlist.length > 0) {
+                playCurrentVideo();
+            }
+        };
+
         var unlockPromise = audioPlayer.play();
         if (unlockPromise && typeof unlockPromise.catch === 'function') {
             unlockPromise
-                .then(function () {
-                    audioPlayer.pause();
-                    audioPlayer.src = '';
-                    audioPlayer.volume = TTS_VOLUME;
-                })
-                .catch(function () {
-                    audioPlayer.src = '';
-                    audioPlayer.volume = TTS_VOLUME;
-                });
+                .then(finishAudioUnlock)
+                .catch(finishAudioUnlock);
+        } else {
+            finishAudioUnlock();
         }
 
         // Fade-out dan hapus overlay
@@ -537,6 +560,53 @@
                 }
             }, 400);
         }
+    }
+
+    function setVideoAmbientVolume(volume) {
+        if (!tvPlayer) { return; }
+
+        if (isSamsungTv) {
+            tvPlayer.muted = !soundActivated;
+            tvPlayer.volume = soundActivated ? volume : 0;
+
+            return;
+        }
+
+        tvPlayer.muted = !soundActivated;
+        tvPlayer.volume = volume;
+    }
+
+    function beginTtsPlayback() {
+        if (isSamsungTv) {
+            if (!videoPausedForTts) {
+                wasVideoPlayingBeforeTts = tvPlayer && !tvPlayer.paused && !tvPlayer.ended;
+
+                if (tvPlayer && !tvPlayer.paused) {
+                    tvPlayer.pause();
+                }
+
+                videoPausedForTts = true;
+            }
+
+            return;
+        }
+
+        setVideoAmbientVolume(VIDEO_VOLUME_DURING_TTS);
+    }
+
+    function endTtsPlayback() {
+        if (isSamsungTv) {
+            if (videoPausedForTts && wasVideoPlayingBeforeTts && playlist.length > 0) {
+                playCurrentVideo();
+            }
+
+            videoPausedForTts = false;
+            wasVideoPlayingBeforeTts = false;
+
+            return;
+        }
+
+        setVideoAmbientVolume(VIDEO_VOLUME);
     }
 
     function clearPlayGuard() {
@@ -587,15 +657,12 @@
     function playCurrentVideo() {
         if (playlist.length === 0) { return; }
 
-        // Cleanup video sebelumnya untuk mencegah memory leak
-        if (tvPlayer.src) {
-            tvPlayer.pause();
-            tvPlayer.removeAttribute('src');
+        if (tvPlayer.getAttribute('src') !== playlist[currentVideoIdx]) {
+            tvPlayer.src = playlist[currentVideoIdx];
             tvPlayer.load();
         }
 
-        tvPlayer.src = playlist[currentVideoIdx];
-        tvPlayer.volume = VIDEO_VOLUME;
+        setVideoAmbientVolume(VIDEO_VOLUME);
         tvPlayer.play().catch(function () {
             /* Autoplay diblokir browser — menunggu interaksi pengguna */
         });
@@ -789,9 +856,10 @@
     function speakWithBrowserTts(text) {
         clearPlayGuard();
         revokeAudioObjectUrl();
+        beginTtsPlayback();
 
         if (!('speechSynthesis' in window)) {
-            tvPlayer.volume = VIDEO_VOLUME;
+            endTtsPlayback();
             return;
         }
 
@@ -803,10 +871,10 @@
         utterance.pitch = 1;
         utterance.volume = TTS_VOLUME;
         utterance.onend = function () {
-            tvPlayer.volume = VIDEO_VOLUME;
+            endTtsPlayback();
         };
         utterance.onerror = function () {
-            tvPlayer.volume = VIDEO_VOLUME;
+            endTtsPlayback();
         };
 
         window.speechSynthesis.speak(utterance);
@@ -850,6 +918,7 @@
                 }, 2500);
 
                 audioPlayer.volume = TTS_VOLUME;
+                beginTtsPlayback();
                 var playPromise = audioPlayer.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
                     playPromise.catch(function () {
@@ -868,14 +937,9 @@
 
     function playAnnouncer(call) {
         var loket    = call.counter ? call.counter.name : 'Loket';
-        var ttsNomor = call.ticket_number
-            .replace(/[^A-Za-z0-9]/g, '')
-            .split('')
-            .map(function (c) { return c === '0' ? 'nol' : c; })
-            .join(', ');
-        var text = 'Nomor antrian, ' + ttsNomor + '. Silakan menuju, ' + loket + '.';
+        var ttsNomor = call.ticket_number.replace(/^([A-Za-z]+)0+(.*)$/, '$1$2');
+        var text = 'Nomor antrian ' + ttsNomor + ', silakan menuju ' + loket + '.';
 
-        tvPlayer.volume = VIDEO_VOLUME_DURING_TTS;
         pendingAnnouncementText = text;
 
         $.ajax({
