@@ -39,6 +39,18 @@ test('admin counter management view uses compact flux select controls', function
     expect($view)->toContain('size="sm"');
 });
 
+test('workstation page loads flux script from the Laravel route', function () {
+    $officer = User::factory()->create([
+        'role' => UserRole::Officer->value,
+    ]);
+
+    $this->actingAs($officer)
+        ->get(route('workstation'))
+        ->assertOk()
+        ->assertSee(route('flux.script'), false)
+        ->assertDontSee('/flux/flux.js', false);
+});
+
 test('remaining admin summary pages rely on the shared app content wrapper', function () {
     $serviceView = file_get_contents(resource_path('views/pages/admin/layanan/index.blade.php'));
     $rolesView = file_get_contents(resource_path('views/pages/admin/roles/index.blade.php'));

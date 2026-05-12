@@ -38,6 +38,6 @@
                 </div>
             </div>
         </div>
-        @fluxScripts
+        @include('partials.flux-scripts')
     </body>
 </html>

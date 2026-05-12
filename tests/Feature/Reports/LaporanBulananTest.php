@@ -3,12 +3,17 @@
 use App\Enums\QueueStatus;
 use App\Enums\UserRole;
 use App\Exports\LaporanBulananExport;
+use App\Livewire\Reports\LaporanBulanan;
 use App\Models\QueuePool;
 use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
 use App\Support\Reports\LaporanBulananReportBuilder;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use function Pest\Laravel\actingAs;
 
@@ -75,13 +80,13 @@ test('export excel menghasilkan file xlsx yang valid', function () {
     $report = app(LaporanBulananReportBuilder::class)->build(4, 2026);
     $export = new LaporanBulananExport($report);
 
-    $response = \Maatwebsite\Excel\Facades\Excel::download($export, 'test.xlsx');
+    $response = Excel::download($export, 'test.xlsx');
 
     expect($response->getFile()->getExtension())->toBe('xlsx');
 });
 
 test('export pdf menghasilkan file pdf yang valid', function () {
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.laporan-bulanan', [
+    $pdf = Pdf::loadView('pdf.laporan-bulanan', [
         'judulBulan' => 'April 2026',
         'ringkasan' => ['total' => 1, 'completed' => 1, 'waiting' => 0, 'cancelled' => 0],
         'perLayanan' => [['name' => 'Layanan Uji', 'total' => 1, 'completed' => 1, 'cancelled' => 0]],
@@ -118,7 +123,7 @@ test('filter bulan menampilkan data yang sesuai', function () {
     ]);
 
     Livewire::actingAs($user)
-        ->test(\App\Livewire\Reports\LaporanBulanan::class)
+        ->test(LaporanBulanan::class)
         ->set('tahun', 2026)
         ->set('bulan', 1)
         ->assertSee('Layanan Januari')
@@ -193,15 +198,15 @@ test('per channel menggunakan label terpusat', function () {
 });
 
 test('export action excel dan pdf memvalidasi input sebelum download', function () {
-    $component = app(\App\Livewire\Reports\LaporanBulanan::class);
+    $component = app(LaporanBulanan::class);
     $component->bulan = 13;
     $component->tahun = 2026;
 
     expect(fn () => $component->downloadExcel())
-        ->toThrow(\Illuminate\Validation\ValidationException::class);
+        ->toThrow(ValidationException::class);
 
     expect(fn () => $component->downloadPdf())
-        ->toThrow(\Illuminate\Validation\ValidationException::class);
+        ->toThrow(ValidationException::class);
 });
 
 test('action export excel berhasil dipanggil', function () {
@@ -215,15 +220,15 @@ test('action export excel berhasil dipanggil', function () {
         'completed_at' => '2026-04-14 10:00:00',
     ]);
 
-    \Maatwebsite\Excel\Facades\Excel::fake();
-    \Maatwebsite\Excel\Facades\Excel::matchByRegex();
+    Excel::fake();
+    Excel::matchByRegex();
 
-    $component = app(\App\Livewire\Reports\LaporanBulanan::class);
+    $component = app(LaporanBulanan::class);
     $component->bulan = 4;
     $component->tahun = 2026;
     $component->downloadExcel();
 
-    \Maatwebsite\Excel\Facades\Excel::assertDownloaded('/\.xlsx$/');
+    Excel::assertDownloaded('/\.xlsx$/');
 });
 
 test('action export pdf mengembalikan response pdf valid', function () {
@@ -237,13 +242,37 @@ test('action export pdf mengembalikan response pdf valid', function () {
         'completed_at' => '2026-04-14 10:00:00',
     ]);
 
-    $component = app(\App\Livewire\Reports\LaporanBulanan::class);
+    $component = app(LaporanBulanan::class);
     $component->bulan = 4;
     $component->tahun = 2026;
     $response = $component->downloadPdf();
 
-    expect($response)->toBeInstanceOf(\Illuminate\Http\Response::class)
+    expect($response)->toBeInstanceOf(StreamedResponse::class)
         ->and($response->headers->get('content-type'))->toContain('application/pdf');
+});
+
+test('action export pdf lewat livewire menghasilkan file download', function () {
+    $user = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+
+    $pool = QueuePool::factory()->create();
+    $service = Service::factory()->for($pool)->create();
+
+    QueueTicket::factory()->for($service)->for($pool)->create([
+        'service_date' => '2026-04-14',
+        'status' => QueueStatus::Completed,
+        'channel' => 'online_booking',
+        'completed_at' => '2026-04-14 10:00:00',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(LaporanBulanan::class)
+        ->set('tahun', 2026)
+        ->set('bulan', 4)
+        ->call('downloadPdf')
+        ->assertFileDownloaded('Laporan_Bulanan_April_2026.pdf', null, 'application/pdf');
 });
 
 test('halaman laporan menampilkan tombol export excel dan pdf', function () {
@@ -263,7 +292,7 @@ test('halaman laporan menampilkan tombol export excel dan pdf', function () {
     ]);
 
     $response = Livewire::actingAs($user)
-        ->test(\App\Livewire\Reports\LaporanBulanan::class);
+        ->test(LaporanBulanan::class);
 
     expect($response->html())->toContain('Excel');
     expect($response->html())->toContain('PDF');

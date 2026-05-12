@@ -142,6 +142,6 @@
 
         {{ $slot }}
 
-        @fluxScripts
+        @include('partials.flux-scripts')
     </body>
 </html>

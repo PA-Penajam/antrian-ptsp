@@ -25,6 +25,6 @@
             </main>
         </div>
 
-        @fluxScripts
+        @include('partials.flux-scripts')
     </body>
 </html>

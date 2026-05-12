@@ -5,12 +5,12 @@ namespace App\Livewire\Reports;
 use App\Exports\LaporanBulananExport;
 use App\Support\Reports\LaporanBulananReportBuilder;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Laporan Bulanan Pendaftar Layanan')]
 class LaporanBulanan extends Component
@@ -45,11 +45,12 @@ class LaporanBulanan extends Component
         );
     }
 
-    public function downloadPdf(): Response
+    public function downloadPdf(): StreamedResponse
     {
         $this->validate();
 
         $report = app(LaporanBulananReportBuilder::class)->build($this->bulan, $this->tahun);
+        $filename = 'Laporan_Bulanan_'.str($report['judul_bulan'])->replace(' ', '_').'.pdf';
 
         $pdf = Pdf::loadView('pdf.laporan-bulanan', [
             'judulBulan' => $report['judul_bulan'],
@@ -59,7 +60,13 @@ class LaporanBulanan extends Component
             'perChannel' => $report['per_channel'],
         ]);
 
-        return $pdf->download('Laporan_Bulanan_'.str($report['judul_bulan'])->replace(' ', '_').'.pdf');
+        return response()->streamDownload(
+            function () use ($pdf): void {
+                echo $pdf->output();
+            },
+            $filename,
+            ['Content-Type' => 'application/pdf'],
+        );
     }
 
     public function render(): View

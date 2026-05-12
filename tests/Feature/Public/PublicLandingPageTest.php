@@ -17,6 +17,8 @@ test('public user can open landing page and see primary guidance', function () {
             'Isi Data Diri',
             'Tunjukkan Nomor Antrian',
         ])
+        ->assertSee(route('flux.script'), false)
+        ->assertDontSee('/flux/flux.js', false)
         ->assertSeeText(config('institution.operating_hours'));
 });
 
