@@ -130,10 +130,48 @@ test('officer only claims eligible oldest ticket and claimed ticket is not reuse
     $secondClaim = $this->actingAs($officerB)->post("/petugas/loket/{$counter->id}/call-next");
     $secondClaim->assertOk()->assertSee('UMUM-0002');
 
-    expect($olderBlocked->fresh()->status)->toBe(QueueStatus::Called)
+    expect($olderBlocked->fresh()->status)->toBe(QueueStatus::Completed)
         ->and($olderAllowed->fresh()->status)->toBe(QueueStatus::Called)
         ->and($nextAllowed->fresh()->status)->toBe(QueueStatus::Waiting)
         ->and($olderBlocked->fresh()->id)->not->toBe($olderAllowed->fresh()->id);
+});
+
+test('calling next ticket auto-completes the previously active ticket on the same counter', function () {
+    $officer = User::factory()->create([
+        'role' => UserRole::Officer->value,
+        'email_verified_at' => now(),
+    ]);
+
+    $pool = QueuePool::factory()->create(['code' => 'AUTO']);
+    $service = Service::factory()->for($pool)->create();
+    $counter = Counter::factory()->for($pool)->create(['code' => 'A1']);
+    $officer->services()->attach($service);
+
+    $firstTicket = QueueTicket::factory()->for($service)->for($pool)->create([
+        'status' => QueueStatus::Waiting,
+        'counter_id' => null,
+        'service_date' => today(),
+        'sequence_number' => 1,
+        'ticket_number' => 'AUTO-0001',
+    ]);
+    $secondTicket = QueueTicket::factory()->for($service)->for($pool)->create([
+        'status' => QueueStatus::Waiting,
+        'counter_id' => null,
+        'service_date' => today(),
+        'sequence_number' => 2,
+        'ticket_number' => 'AUTO-0002',
+    ]);
+
+    $this->actingAs($officer)->post("/petugas/loket/{$counter->id}/call-next")->assertOk();
+
+    expect($firstTicket->fresh()->status)->toBe(QueueStatus::Called);
+
+    $this->actingAs($officer)->post("/petugas/loket/{$counter->id}/call-next")->assertOk();
+
+    expect($firstTicket->fresh()->status)->toBe(QueueStatus::Completed)
+        ->and($firstTicket->fresh()->completed_at)->not->toBeNull()
+        ->and($secondTicket->fresh()->status)->toBe(QueueStatus::Called)
+        ->and($secondTicket->fresh()->counter_id)->toBe($counter->id);
 });
 
 test('officer dashboard entry shows workstation context', function () {

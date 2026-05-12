@@ -13,12 +13,15 @@ use Illuminate\Support\Facades\DB;
 class CallNextTicket
 {
     public function __construct(
-        private readonly LogQueueActivity $logQueueActivity
+        private readonly LogQueueActivity $logQueueActivity,
+        private readonly CompleteTicket $completeTicket,
     ) {}
 
     public function handle(Counter $counter, ?int $userId = null): ?QueueTicket
     {
         return DB::transaction(function () use ($counter, $userId): ?QueueTicket {
+            $this->autoCompleteActiveTicket($counter, $userId);
+
             $query = QueueTicket::query()
                 ->whereDate('service_date', CarbonImmutable::today())
                 ->where('queue_pool_id', $counter->queue_pool_id)
@@ -88,5 +91,26 @@ class CallNextTicket
 
             return $queueTicket->refresh();
         });
+    }
+
+    /**
+     * Mark any currently-called ticket on this counter as completed before
+     * calling the next one. This keeps the workflow tidy so officers do not
+     * have to manually click "Selesai Dilayani" before every call.
+     */
+    private function autoCompleteActiveTicket(Counter $counter, ?int $userId): void
+    {
+        $activeTicket = QueueTicket::query()
+            ->where('counter_id', $counter->id)
+            ->where('status', QueueStatus::Called)
+            ->whereDate('service_date', CarbonImmutable::today())
+            ->lockForUpdate()
+            ->first();
+
+        if ($activeTicket === null) {
+            return;
+        }
+
+        $this->completeTicket->handle($activeTicket, $counter, $userId);
     }
 }
