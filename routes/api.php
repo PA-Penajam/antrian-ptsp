@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\PublicQueueController;
 use App\Http\Controllers\Api\PublicServiceController;
+use App\Http\Controllers\Api\ServedCountController;
 use App\Http\Controllers\Api\TimeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('queue/lookup', [PublicQueueController::class, 'lookup'])->name('api.queue.lookup');
     Route::get('queue/ticket-by-id/{encryptedId}', [PublicQueueController::class, 'showById'])->name('api.queue.showById');
     Route::get('time', [TimeController::class, 'index'])->name('api.time');
+    Route::get('served-counts', [ServedCountController::class, 'index'])->name('api.served-counts');
 });
 
 Route::middleware('throttle:10,1')->group(function () {
