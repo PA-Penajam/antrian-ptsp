@@ -3,11 +3,14 @@
 use App\Enums\QueueStatus;
 use App\Models\QueueTicket;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\withHeaders;
 
 uses(RefreshDatabase::class);
+
+beforeEach(fn () => $this->withoutMiddleware(ThrottleRequests::class));
 
 beforeEach(function () {
     // Set shared secret untuk endpoint (dibaca controller via env()).
@@ -60,4 +63,23 @@ test('menolak rentang tanggal terbalik', function () {
     withHeaders(['X-Api-Key' => 'secret-test-key'])
         ->getJson('/api/served-counts?start=2026-06-10&end=2026-06-01')
         ->assertStatus(422);
+});
+
+test('menerima rentang tepat 92 hari', function () {
+    withHeaders(['X-Api-Key' => 'secret-test-key'])
+        ->getJson('/api/served-counts?start=2026-01-01&end=2026-04-03')
+        ->assertOk();
+});
+
+test('menolak rentang lebih dari 92 hari', function () {
+    withHeaders(['X-Api-Key' => 'secret-test-key'])
+        ->getJson('/api/served-counts?start=2026-01-01&end=2026-04-04')
+        ->assertStatus(422);
+});
+
+test('mengembalikan data kosong untuk rentang tanpa tiket', function () {
+    withHeaders(['X-Api-Key' => 'secret-test-key'])
+        ->getJson('/api/served-counts?start=2026-07-01&end=2026-07-05')
+        ->assertOk()
+        ->assertJsonPath('data', []);
 });
