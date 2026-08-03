@@ -8,19 +8,19 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-class PerLayananSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTitle
+class DetailPengunjungSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTitle
 {
     use SanitizesCellValues;
 
     /**
-     * Data per layanan dari report builder.
+     * Data detail pengunjung dari report builder.
      *
-     * @var array<int, array{id: int, name: string, total: int, completed: int, cancelled: int}>
+     * @var array<int, array{no: int, nama: string, alamat: string, layanan: string}>
      */
     protected array $data;
 
     /**
-     * @param  array<int, array{id: int, name: string, total: int, completed: int, cancelled: int}>  $data
+     * @param  array<int, array{no: int, nama: string, alamat: string, layanan: string}>  $data
      */
     public function __construct(array $data)
     {
@@ -30,10 +30,10 @@ class PerLayananSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTi
     public function array(): array
     {
         return array_map(fn (array $item): array => [
-            $this->sanitizeCellValue($item['name']),
-            $item['total'],
-            $item['completed'],
-            $item['cancelled'],
+            $item['no'],
+            $this->sanitizeCellValue($item['nama']),
+            $this->sanitizeCellValue($item['alamat']),
+            $this->sanitizeCellValue($item['layanan']),
         ], $this->data);
     }
 
@@ -45,10 +45,10 @@ class PerLayananSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTi
     public function headings(): array
     {
         return [
-            'Layanan',
-            'Total',
-            'Selesai',
-            'Dibatalkan',
+            'No',
+            'Nama Pengunjung',
+            'Alamat/Wilayah',
+            'Layanan yang diambil',
         ];
     }
 
@@ -57,6 +57,6 @@ class PerLayananSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTi
      */
     public function title(): string
     {
-        return 'Per Layanan';
+        return 'Detail Pengunjung';
     }
 }

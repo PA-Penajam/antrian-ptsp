@@ -1087,10 +1087,11 @@
     }
 
     function renderRecentCallItem(call, opacity) {
-        var serviceName = call.service ? call.service.name : '';
-        var counterName = call.counter ? call.counter.name : '-';
-        var initial     = call.ticket_number.charAt(0);
-        var visitPurpose = call.visit_purpose ? formatVisitPurpose(call.visit_purpose) : '';
+        var serviceName = escapeDebugHtml(call.service ? call.service.name : '');
+        var counterName = escapeDebugHtml(call.counter ? call.counter.name : '-');
+        var initial     = escapeDebugHtml(call.ticket_number.charAt(0));
+        var ticketNumber = escapeDebugHtml(call.ticket_number);
+        var visitPurpose = escapeDebugHtml(call.visit_purpose ? formatVisitPurpose(call.visit_purpose) : '');
         var purposeHtml = visitPurpose
             ? '<div class="visit-purpose fw-semibold fs-7 text-uppercase" style="color:rgba(255,255,255,0.5);">' + visitPurpose + '</div>'
             : '';
@@ -1103,7 +1104,7 @@
                 '</div>' +
                 '<div>' +
                     '<div class="ticket-number text-white fw-boldest fs-1 ls-n1" style="line-height:1.1;">' +
-                        call.ticket_number +
+                        ticketNumber +
                     '</div>' +
                     '<div class="service-name fw-semibold fs-6 text-uppercase" style="color:rgba(255,255,255,0.7);">' +
                         serviceName +

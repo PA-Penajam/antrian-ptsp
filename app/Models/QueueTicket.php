@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\QueueStatus;
+use Database\Factories\QueueTicketFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class QueueTicket extends Model
 {
-    /** @use HasFactory<\Database\Factories\QueueTicketFactory> */
+    /** @use HasFactory<QueueTicketFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -69,6 +70,11 @@ class QueueTicket extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function wilayah(): BelongsTo
+    {
+        return $this->belongsTo(Wilayah::class, 'visitor_wilayah_kode', 'kode');
     }
 
     public function activities(): HasMany

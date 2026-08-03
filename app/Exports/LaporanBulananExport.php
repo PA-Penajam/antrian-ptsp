@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Exports\Sheets\DetailPengunjungSheet;
 use App\Exports\Sheets\PerChannelSheet;
 use App\Exports\Sheets\PerHariSheet;
 use App\Exports\Sheets\PerLayananSheet;
@@ -15,12 +16,12 @@ class LaporanBulananExport implements WithMultipleSheets
     /**
      * Dataset laporan dari LaporanBulananReportBuilder.
      *
-     * @var array{judul_bulan: string, ringkasan: array, per_layanan: array, per_hari: array, per_channel: array}
+     * @var array{judul_bulan: string, ringkasan: array, per_layanan: array, per_hari: array, per_channel: array, detail_pengunjung: array}
      */
     protected array $report;
 
     /**
-     * @param  array{judul_bulan: string, ringkasan: array, per_layanan: array, per_hari: array, per_channel: array}  $report
+     * @param  array{judul_bulan: string, ringkasan: array, per_layanan: array, per_hari: array, per_channel: array, detail_pengunjung: array}  $report
      */
     public function __construct(array $report)
     {
@@ -38,6 +39,7 @@ class LaporanBulananExport implements WithMultipleSheets
             new PerLayananSheet($this->report['per_layanan']),
             new PerHariSheet($this->report['per_hari']),
             new PerChannelSheet($this->report['per_channel']),
+            new DetailPengunjungSheet($this->report['detail_pengunjung']),
         ];
     }
 }

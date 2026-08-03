@@ -24,6 +24,7 @@ class LaporanBulananReportBuilder
      *     per_layanan: array<int, array{id: int, name: string, total: int, completed: int, cancelled: int}>,
      *     per_hari: array<int, array{date: string, hari: int, nama_hari: string, total: int, online: int, kiosk: int, assisted: int}>,
      *     per_channel: array<int, array{channel: string, total: int, persen: float}>,
+     *     detail_pengunjung: array<int, array{no: int, nama: string, alamat: string, layanan: string}>,
      * }
      */
     public function build(int $bulan, int $tahun): array
@@ -136,12 +137,28 @@ class LaporanBulananReportBuilder
             ];
         }
 
+        $detailPengunjung = (clone $baseQuery)
+            ->with(['service', 'wilayah'])
+            ->orderBy('service_date')
+            ->orderBy('ticket_number')
+            ->get()
+            ->values()
+            ->map(fn (QueueTicket $ticket, int $index): array => [
+                'no' => $index + 1,
+                'nama' => $ticket->visitor_name ?: '-',
+                'alamat' => $ticket->wilayah?->nama ?: 'Tidak tersedia',
+                'layanan' => $ticket->service?->name ?: 'Tidak tersedia',
+            ])
+            ->values()
+            ->all();
+
         return [
             'judul_bulan' => Carbon::create($tahun, $bulan, 1)->locale('id')->translatedFormat('F Y'),
             'ringkasan' => $ringkasan,
             'per_layanan' => $perLayanan,
             'per_hari' => $perHari,
             'per_channel' => $perChannelFormatted,
+            'detail_pengunjung' => $detailPengunjung,
         ];
     }
 }

@@ -8,6 +8,7 @@ use App\Models\QueuePool;
 use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\Wilayah;
 use App\Support\Reports\LaporanBulananReportBuilder;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Validation\ValidationException;
@@ -296,6 +297,123 @@ test('halaman laporan menampilkan tombol export excel dan pdf', function () {
 
     expect($response->html())->toContain('Excel');
     expect($response->html())->toContain('PDF');
+});
+
+test('builder mengembalikan detail pengunjung dengan kolom no nama alamat layanan', function () {
+    $pool = QueuePool::factory()->create();
+    $service = Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
+    $wilayah = Wilayah::factory()->create(['kode' => '640102', 'nama' => 'Penajam']);
+
+    QueueTicket::factory()->for($service)->for($pool)->create([
+        'service_date' => '2026-04-14',
+        'status' => QueueStatus::Completed,
+        'channel' => 'online_booking',
+        'visitor_name' => 'Budi Santoso',
+        'visitor_wilayah_kode' => '640102',
+        'completed_at' => '2026-04-14 10:00:00',
+    ]);
+
+    $report = app(LaporanBulananReportBuilder::class)->build(4, 2026);
+
+    expect($report)->toHaveKey('detail_pengunjung');
+    expect($report['detail_pengunjung'])->toHaveCount(1);
+    expect($report['detail_pengunjung'][0])->toMatchArray([
+        'no' => 1,
+        'nama' => 'Budi Santoso',
+        'alamat' => 'Penajam',
+        'layanan' => 'Pendaftaran',
+    ]);
+});
+
+test('export excel mengandung sheet detail pengunjung', function () {
+    $pool = QueuePool::factory()->create();
+    $service = Service::factory()->for($pool)->create();
+
+    QueueTicket::factory()->count(2)->for($service)->for($pool)->create([
+        'service_date' => '2026-04-14',
+        'status' => QueueStatus::Completed,
+        'channel' => 'online_booking',
+        'completed_at' => '2026-04-14 10:00:00',
+    ]);
+
+    $report = app(LaporanBulananReportBuilder::class)->build(4, 2026);
+    $export = new LaporanBulananExport($report);
+    $sheets = $export->sheets();
+
+    $titles = array_map(fn ($sheet) => $sheet->title(), $sheets);
+
+    expect($titles)->toContain('Detail Pengunjung');
+});
+
+test('export excel detail pengunjung menghindari formula injection', function () {
+    $pool = QueuePool::factory()->create();
+    $service = Service::factory()->for($pool)->create();
+
+    QueueTicket::factory()->for($service)->for($pool)->create([
+        'service_date' => '2026-04-14',
+        'status' => QueueStatus::Completed,
+        'channel' => 'online_booking',
+        'visitor_name' => ' =HYPERLINK("http://evil","Budi")',
+        'completed_at' => '2026-04-14 10:00:00',
+    ]);
+
+    $report = app(LaporanBulananReportBuilder::class)->build(4, 2026);
+    $export = new LaporanBulananExport($report);
+    $sheets = $export->sheets();
+
+    $detailSheet = collect($sheets)->first(fn ($sheet) => $sheet->title() === 'Detail Pengunjung');
+    $rows = $detailSheet->array();
+
+    expect($rows[0][1])->toBe("' =HYPERLINK(\"http://evil\",\"Budi\")");
+});
+
+test('export excel per layanan menghindari formula injection', function () {
+    $pool = QueuePool::factory()->create();
+    $service = Service::factory()->for($pool)->create(['name' => '=SUM(A1:A10)']);
+
+    QueueTicket::factory()->for($service)->for($pool)->create([
+        'service_date' => '2026-04-14',
+        'status' => QueueStatus::Completed,
+        'channel' => 'online_booking',
+        'completed_at' => '2026-04-14 10:00:00',
+    ]);
+
+    $report = app(LaporanBulananReportBuilder::class)->build(4, 2026);
+    $export = new LaporanBulananExport($report);
+    $sheets = $export->sheets();
+
+    $perLayananSheet = collect($sheets)->first(fn ($sheet) => $sheet->title() === 'Per Layanan');
+    $rows = $perLayananSheet->array();
+
+    expect($rows[0][0])->toBe("'=SUM(A1:A10)");
+});
+
+test('nomor urut detail pengunjung bersifat sequential', function () {
+    $pool = QueuePool::factory()->create();
+    $service = Service::factory()->for($pool)->create();
+
+    $ticket2 = QueueTicket::factory()->for($service)->for($pool)->create([
+        'service_date' => '2026-04-14',
+        'status' => QueueStatus::Completed,
+        'channel' => 'online_booking',
+        'visitor_name' => 'Andi Wijaya',
+        'completed_at' => '2026-04-14 10:00:00',
+    ]);
+
+    $ticket1 = QueueTicket::factory()->for($service)->for($pool)->create([
+        'service_date' => '2026-04-14',
+        'status' => QueueStatus::Completed,
+        'channel' => 'online_booking',
+        'visitor_name' => 'Budi Santoso',
+        'ticket_number' => 'A000',
+        'completed_at' => '2026-04-14 11:00:00',
+    ]);
+
+    $report = app(LaporanBulananReportBuilder::class)->build(4, 2026);
+
+    expect($report['detail_pengunjung'])->toHaveCount(2);
+    expect($report['detail_pengunjung'][0])->toMatchArray(['no' => 1, 'nama' => 'Budi Santoso']);
+    expect($report['detail_pengunjung'][1])->toMatchArray(['no' => 2, 'nama' => 'Andi Wijaya']);
 });
 
 test('builder mengembalikan judul bulan dalam bahasa indonesia', function () {
