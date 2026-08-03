@@ -1,67 +1,151 @@
 <div class="h-screen bg-slate-50 text-slate-900 overflow-hidden p-5"
      x-data="{
          connected: navigator.onLine,
+         debugEnabled: window.location.search.indexOf('debug=1') !== -1 || window.location.hash.indexOf('debug') !== -1,
+         debugLines: [],
          audioUnlocked: false,
+         pendingTtsText: '',
          videos: @js($videos),
          currentIndex: 0,
          videoElement: null,
          videoPausedForTts: false,
          wasVideoPlayingBeforeTts: false,
          isSamsungTv: /Tizen|SMART-TV|SamsungBrowser|Maple/i.test(navigator.userAgent),
+         isLgTv: /Web0S|WebOS|webOS|LG Browser|NetCast/i.test(navigator.userAgent),
          videoVolume: @js((float) config('tv.video_volume')),
          videoVolumeDuringTts: @js((float) config('tv.video_volume_during_tts')),
          ttsVolume: @js((float) config('tv.tts_volume')),
          silentAudio: 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA',
          get hasVideos() { return this.videos.length > 0 },
          get currentVideo() { return this.hasVideos ? this.videos[this.currentIndex] : '' },
+         get shouldIsolateTtsAudio() { return false },
+         debugLog(message, context) {
+             let detail = '';
+             if (context) {
+                 try {
+                     detail = ' ' + JSON.stringify(context);
+                 } catch (error) {
+                     detail = ' [context unavailable]';
+                 }
+             }
+
+             const line = new Date().toLocaleTimeString('id-ID', { hour12: false }) + ' ' + message + detail;
+             if (window.console && window.console.log) {
+                 window.console.log('[TV]', message, context || '');
+             }
+
+             if (!this.debugEnabled) return;
+
+             this.debugLines.unshift(line);
+             this.debugLines = this.debugLines.slice(0, 20);
+         },
+         debugError(error) {
+             if (!error) return null;
+
+             return {
+                 name: error.name || '',
+                 message: error.message || String(error),
+                 code: error.code || '',
+             };
+         },
+         shortUrl(value) {
+             if (!value) return '';
+
+             return value.length > 90 ? value.slice(0, 90) + '...' : value;
+         },
+         mediaState(element) {
+             if (!element) return null;
+
+             return {
+                 paused: element.paused,
+                 ended: element.ended,
+                 muted: element.muted,
+                 volume: element.volume,
+                 readyState: element.readyState,
+                 networkState: element.networkState,
+                 currentTime: Number(element.currentTime || 0).toFixed(2),
+                 src: this.shortUrl(element.currentSrc || element.src || ''),
+                 error: element.error ? { code: element.error.code, message: element.error.message || '' } : null,
+             };
+         },
          audio() {
              return this.$refs.ttsAudio;
          },
          video() {
              return this.videoElement || this.$refs.videoPlayer;
          },
+         clearAudioSource(audio) {
+             if (!audio) return;
+
+             audio.removeAttribute('src');
+             if (!this.isLgTv) {
+                 audio.load();
+             }
+         },
          registerVideo(element) {
              this.videoElement = element;
+             this.debugLog('video registered', this.mediaState(element));
              this.playCurrentVideo();
          },
          unlockAudio() {
              if (this.audioUnlocked) return;
              const audio = this.audio();
              if (!audio) {
+                 this.debugLog('unlock skipped: audio element missing');
                  this.audioUnlocked = true;
                  return;
              }
 
              const vid = this.video();
-             const shouldResumeVideo = this.isSamsungTv && vid && !vid.paused && !vid.ended;
+             const shouldResumeVideo = this.shouldIsolateTtsAudio && vid && !vid.paused && !vid.ended;
+             this.debugLog('unlock start', {
+                 isLgTv: this.isLgTv,
+                 isSamsungTv: this.isSamsungTv,
+                 shouldIsolateTtsAudio: this.shouldIsolateTtsAudio,
+                 shouldResumeVideo: shouldResumeVideo,
+                 audio: this.mediaState(audio),
+                 video: this.mediaState(vid),
+             });
 
-             if (this.isSamsungTv && vid && !vid.paused) {
+             if (this.shouldIsolateTtsAudio && vid && !vid.paused) {
+                 this.debugLog('unlock pauses video for isolated audio', this.mediaState(vid));
                  vid.pause();
              }
 
              const finishUnlock = () => {
                  audio.pause();
-                 audio.removeAttribute('src');
-                 audio.load();
+                 this.clearAudioSource(audio);
                  audio.volume = this.ttsVolume;
                  this.audioUnlocked = true;
+                 this.debugLog('unlock finished', {
+                     audio: this.mediaState(audio),
+                     video: this.mediaState(vid),
+                 });
 
-                 if (!this.isSamsungTv || shouldResumeVideo || this.hasVideos) {
+                 if (!this.shouldIsolateTtsAudio || shouldResumeVideo || this.hasVideos) {
                      this.playCurrentVideo();
                  }
+
+                 this.playPendingTts();
              };
 
              audio.pause();
              audio.src = this.silentAudio;
-             audio.volume = this.ttsVolume;
-             audio.load();
+             audio.volume = this.isLgTv ? 0 : this.ttsVolume;
+             if (!this.isLgTv) {
+                 audio.load();
+             }
 
              const unlockPromise = audio.play();
              if (unlockPromise && typeof unlockPromise.then === 'function') {
                  unlockPromise
-                     .then(() => finishUnlock())
+                     .then(() => {
+                         this.debugLog('silent unlock play resolved', this.mediaState(audio));
+                         finishUnlock();
+                     })
                      .catch((error) => {
                          console.error('Audio unlock failed:', error);
+                         this.debugLog('silent unlock play failed', this.debugError(error));
                          finishUnlock();
                      });
 
@@ -72,16 +156,25 @@
          },
          playCurrentVideo() {
              const vid = this.video();
-             if (!vid || !this.hasVideos) return;
+             if (!vid || !this.hasVideos) {
+                 this.debugLog('video play skipped', { hasVideo: !!vid, hasVideos: this.hasVideos });
+                 return;
+             }
 
              if (vid.getAttribute('src') !== this.currentVideo) {
                  vid.src = this.currentVideo;
                  vid.load();
+                 this.debugLog('video source changed', this.mediaState(vid));
              }
 
              vid.muted = !this.audioUnlocked;
              vid.volume = this.videoVolume;
-             vid.play().catch(() => {});
+             const playPromise = vid.play();
+             if (playPromise && typeof playPromise.then === 'function') {
+                 playPromise
+                     .then(() => this.debugLog('video play resolved', this.mediaState(vid)))
+                     .catch((error) => this.debugLog('video play failed', this.debugError(error)));
+             }
          },
          playNext() {
              if (!this.hasVideos) return;
@@ -91,8 +184,9 @@
          restoreVideoVolume() {
              const vid = this.video();
              if (!vid) return;
+             this.debugLog('restore video volume', this.mediaState(vid));
 
-             if (this.isSamsungTv) {
+             if (this.shouldIsolateTtsAudio) {
                  if (this.videoPausedForTts && this.wasVideoPlayingBeforeTts) {
                      this.playCurrentVideo();
                  }
@@ -108,8 +202,9 @@
          lowerVideoVolume() {
              const vid = this.video();
              if (!vid) return;
+             this.debugLog('lower video volume', this.mediaState(vid));
 
-             if (this.isSamsungTv) {
+             if (this.shouldIsolateTtsAudio) {
                  if (!this.videoPausedForTts) {
                      this.wasVideoPlayingBeforeTts = !vid.paused && !vid.ended;
 
@@ -126,9 +221,14 @@
              vid.volume = this.videoVolumeDuringTts;
          },
          speakWithBrowserTts(text) {
+             this.debugLog('browser tts start', {
+                 hasSpeechSynthesis: 'speechSynthesis' in window,
+                 text: text,
+             });
              this.lowerVideoVolume();
 
              if (!('speechSynthesis' in window)) {
+                 this.debugLog('browser tts unavailable');
                  this.restoreVideoVolume();
                  return;
              }
@@ -140,15 +240,47 @@
              utterance.rate = 0.95;
              utterance.pitch = 1;
              utterance.volume = this.ttsVolume;
-             utterance.onend = () => this.restoreVideoVolume();
-             utterance.onerror = () => this.restoreVideoVolume();
+             utterance.onend = () => {
+                 this.debugLog('browser tts ended');
+                 this.restoreVideoVolume();
+             };
+             utterance.onerror = (event) => {
+                 this.debugLog('browser tts error', {
+                     error: event.error || '',
+                 });
+                 this.restoreVideoVolume();
+             };
 
              window.speechSynthesis.speak(utterance);
          },
+         playPendingTts() {
+             if (!this.audioUnlocked || !this.pendingTtsText) return;
+
+             const text = this.pendingTtsText;
+             this.pendingTtsText = '';
+             this.debugLog('tts replay after audio unlock', { text: text });
+             this.playTts(text);
+         },
          playTts(text) {
+             if (!this.audioUnlocked) {
+                 this.pendingTtsText = text;
+                 this.debugLog('tts deferred until audio unlock', { text: text });
+
+                 return;
+             }
+
+             this.debugLog('tts request start', { text: text });
              fetch('/tv-display/tts/announcement?text=' + encodeURIComponent(text))
-                 .then(res => res.json())
+                 .then(res => {
+                     this.debugLog('tts request response', { status: res.status, ok: res.ok });
+                     return res.json();
+                 })
                  .then(data => {
+                     this.debugLog('tts response json', {
+                         provider: data.provider || '',
+                         audioUrl: this.shortUrl(data.audio_url || ''),
+                     });
+
                      if (!data.audio_url) {
                          this.speakWithBrowserTts(text);
                          return;
@@ -156,6 +288,7 @@
 
                      const audio = this.audio();
                      if (!audio) {
+                         this.debugLog('tts audio element missing');
                          this.speakWithBrowserTts(text);
                          return;
                      }
@@ -163,9 +296,17 @@
                      audio.pause();
                      audio.src = data.audio_url;
                      audio.volume = this.ttsVolume;
-                     audio.load();
-                     audio.onended = () => this.restoreVideoVolume();
+                     if (!this.isLgTv) {
+                         audio.load();
+                     }
+                     this.debugLog('tts audio prepared', this.mediaState(audio));
+                     audio.onended = () => {
+                         this.debugLog('tts audio ended', this.mediaState(audio));
+                         this.restoreVideoVolume();
+                     };
                      audio.onerror = () => {
+                         this.debugLog('tts audio error', this.mediaState(audio));
+                         this.clearAudioSource(audio);
                          this.speakWithBrowserTts(text);
                      };
 
@@ -173,25 +314,49 @@
 
                      const playPromise = audio.play();
                      if (playPromise && typeof playPromise.catch === 'function') {
-                         playPromise.catch((error) => {
-                             console.error('TTS Playback failed:', error);
-                             this.speakWithBrowserTts(text);
-                         });
+                         playPromise
+                             .then(() => this.debugLog('tts audio play resolved', this.mediaState(audio)))
+                             .catch((error) => {
+                                 console.error('TTS Playback failed:', error);
+                                 this.debugLog('tts audio play failed', this.debugError(error));
+                                 this.clearAudioSource(audio);
+                                 this.speakWithBrowserTts(text);
+                             });
                      }
                  })
                  .catch((error) => {
                      console.error('TTS Fetch failed:', error);
+                     this.debugLog('tts fetch failed', this.debugError(error));
                      this.speakWithBrowserTts(text);
                  });
          }
      }"
+     x-init="debugLog('init', { userAgent: navigator.userAgent, isLgTv: isLgTv, isSamsungTv: isSamsungTv, videos: videos.length, audioUnlocked: audioUnlocked })"
      x-on:online.window="connected = true"
      x-on:offline.window="connected = false"
      x-on:click.window="unlockAudio()"
      x-on:keydown.window="unlockAudio()"
      x-on:play-tts.window="playTts($event.detail.text)">
 
-    <audio x-ref="ttsAudio" preload="auto"></audio>
+    <audio x-ref="ttsAudio"
+           preload="auto"
+           x-on:playing="debugLog('tts audio event playing', mediaState($el))"
+           x-on:ended="debugLog('tts audio event ended', mediaState($el))"
+           x-on:error="debugLog('tts audio event error', mediaState($el))"></audio>
+
+    <div x-show="debugEnabled"
+         x-cloak
+         class="fixed bottom-3 left-3 z-[200] w-[min(46rem,calc(100vw-1.5rem))] max-h-[45vh] overflow-hidden rounded-lg border border-amber-300/60 bg-black/85 p-3 font-mono text-[11px] leading-relaxed text-amber-100 shadow-2xl">
+        <div class="mb-2 flex items-center justify-between gap-3 border-b border-white/15 pb-2 text-xs font-bold text-white">
+            <span>TV Debug</span>
+            <span x-text="debugLines.length + ' logs'"></span>
+        </div>
+        <div class="max-h-[36vh] overflow-y-auto">
+            <template x-for="line in debugLines" :key="line">
+                <div class="border-b border-white/10 py-1" x-text="line"></div>
+            </template>
+        </div>
+    </div>
 
     {{-- Audio Unlock Overlay --}}
     <div x-show="!audioUnlocked"
@@ -334,7 +499,9 @@
             <video x-show="hasVideos"
                    x-ref="videoPlayer"
                    x-init="registerVideo($el)"
-                   x-on:ended="playNext()"
+                   x-on:playing="debugLog('video event playing', mediaState($el))"
+                   x-on:ended="debugLog('video event ended', mediaState($el)); playNext()"
+                   x-on:error="debugLog('video event error', mediaState($el))"
                    autoplay
                    muted
                    playsinline

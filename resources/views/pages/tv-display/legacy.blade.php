@@ -52,6 +52,52 @@
         color: rgba(255, 255, 255, 0.6);
     }
 
+    .tv-debug-panel {
+        position: fixed;
+        left: 1rem;
+        bottom: 1rem;
+        z-index: 10000;
+        display: none;
+        width: min(46rem, calc(100vw - 2rem));
+        max-height: 45vh;
+        overflow: hidden;
+        border: 1px solid rgba(252, 211, 77, 0.65);
+        border-radius: 0.65rem;
+        background: rgba(0, 0, 0, 0.86);
+        color: #fef3c7;
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.45);
+        font-family: Consolas, Monaco, monospace;
+        font-size: 0.72rem;
+        line-height: 1.35;
+    }
+
+    .tv-debug-panel.is-visible {
+        display: block;
+    }
+
+    .tv-debug-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.65rem 0.8rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+        color: #ffffff;
+        font-weight: 700;
+    }
+
+    .tv-debug-lines {
+        max-height: 36vh;
+        overflow-y: auto;
+        padding: 0.35rem 0.8rem;
+    }
+
+    .tv-debug-line {
+        padding: 0.32rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        word-break: break-word;
+    }
+
     @keyframes pulse-icon {
         0%, 100% { transform: scale(1); opacity: 0.7; }
         50% { transform: scale(1.12); opacity: 1; }
@@ -405,6 +451,14 @@
 </div>
 
 <audio id="ttsAudio" preload="auto"></audio>
+
+<div id="tvDebugPanel" class="tv-debug-panel">
+    <div class="tv-debug-header">
+        <span>TV Debug</span>
+        <span id="tvDebugCount">0 logs</span>
+    </div>
+    <div id="tvDebugLines" class="tv-debug-lines"></div>
+</div>
 @endsection
 
 @push('scripts')
@@ -422,14 +476,35 @@
     var playGuardTimer = null;
     var videoPausedForTts = false;
     var wasVideoPlayingBeforeTts = false;
+    var queuedAnnouncementCall = null;
+    var queuedAnnouncementId = null;
+    var ttsAudioContext = null;
+    var currentAudioSource = null;
+    var debugEnabled = window.location.search.indexOf('debug=1') !== -1 || window.location.hash.indexOf('debug') !== -1;
+    var debugLines = [];
 
     var VIDEO_VOLUME            = {{ config('tv.video_volume') }};
     var VIDEO_VOLUME_DURING_TTS = {{ config('tv.video_volume_during_tts') }};
     var TTS_VOLUME              = {{ config('tv.tts_volume') }};
     var SILENT_AUDIO            = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
     var isSamsungTv             = /Tizen|SMART-TV|SamsungBrowser|Maple/i.test(navigator.userAgent);
+    var isLgTv                  = /Web0S|WebOS|webOS|LG Browser|NetCast/i.test(navigator.userAgent);
 
     $(document).ready(function () {
+        initDebugPanel();
+        tvDebug('init', {
+            userAgent: navigator.userAgent,
+            isLgTv: isLgTv,
+            isSamsungTv: isSamsungTv,
+            hasAudio: !!audioPlayer,
+            hasVideo: !!tvPlayer,
+            volumes: {
+                video: VIDEO_VOLUME,
+                duringTts: VIDEO_VOLUME_DURING_TTS,
+                tts: TTS_VOLUME
+            }
+        });
+
         updateClock();
         setInterval(updateClock, 1000);
 
@@ -437,23 +512,35 @@
         fetchStateInterval = setInterval(fetchState, 5000); // Mengurangi frekuensi polling dari 3000ms ke 5000ms.
 
         tvPlayer.addEventListener('ended', function () {
+            tvDebug('video event ended', mediaState(tvPlayer));
             if (playlist.length === 0) { return; }
             currentVideoIdx = (currentVideoIdx + 1) % playlist.length;
             playCurrentVideo();
         });
 
+        tvPlayer.addEventListener('playing', function () {
+            tvDebug('video event playing', mediaState(tvPlayer));
+        });
+
+        tvPlayer.addEventListener('error', function () {
+            tvDebug('video event error', mediaState(tvPlayer));
+        });
+
         audioPlayer.addEventListener('playing', function () {
+            tvDebug('tts audio event playing', mediaState(audioPlayer));
             clearPlayGuard();
             pendingAnnouncementText = '';
         });
 
         audioPlayer.addEventListener('ended', function () {
+            tvDebug('tts audio event ended', mediaState(audioPlayer));
             clearPlayGuard();
             revokeAudioObjectUrl();
             endTtsPlayback();
         });
 
         audioPlayer.addEventListener('error', function () {
+            tvDebug('tts audio event error', mediaState(audioPlayer));
             clearPlayGuard();
             revokeAudioObjectUrl();
 
@@ -472,6 +559,7 @@
 
         document.addEventListener('visibilitychange', function() {
             isPageVisible = !document.hidden;
+            tvDebug('visibility changed', { isPageVisible: isPageVisible });
 
             if (isPageVisible) {
                 // Page became visible - resume operations
@@ -483,7 +571,96 @@
         });
     });
 
+    function initDebugPanel() {
+        if (!debugEnabled) { return; }
+
+        var panel = document.getElementById('tvDebugPanel');
+        if (panel) {
+            panel.classList.add('is-visible');
+        }
+    }
+
+    function escapeDebugHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function shortUrl(value) {
+        if (!value) { return ''; }
+
+        return value.length > 90 ? value.slice(0, 90) + '...' : value;
+    }
+
+    function debugError(error) {
+        if (!error) { return null; }
+
+        return {
+            name: error.name || '',
+            message: error.message || String(error),
+            code: error.code || ''
+        };
+    }
+
+    function mediaState(element) {
+        if (!element) { return null; }
+
+        return {
+            paused: element.paused,
+            ended: element.ended,
+            muted: element.muted,
+            volume: element.volume,
+            readyState: element.readyState,
+            networkState: element.networkState,
+            currentTime: Number(element.currentTime || 0).toFixed(2),
+            src: shortUrl(element.currentSrc || element.src || ''),
+            error: element.error ? {
+                code: element.error.code,
+                message: element.error.message || ''
+            } : null
+        };
+    }
+
+    function tvDebug(message, context) {
+        var detail = '';
+        if (context) {
+            try {
+                detail = ' ' + JSON.stringify(context);
+            } catch (error) {
+                detail = ' [context unavailable]';
+            }
+        }
+
+        var line = new Date().toLocaleTimeString('id-ID', { hour12: false }) + ' ' + message + detail;
+        if (window.console && window.console.log) {
+            window.console.log('[TV]', message, context || '');
+        }
+
+        if (!debugEnabled) { return; }
+
+        debugLines.unshift(line);
+        debugLines = debugLines.slice(0, 24);
+
+        var linesContainer = document.getElementById('tvDebugLines');
+        var countElement = document.getElementById('tvDebugCount');
+        if (countElement) {
+            countElement.textContent = debugLines.length + ' logs';
+        }
+        if (!linesContainer) { return; }
+
+        linesContainer.innerHTML = debugLines
+            .map(function (debugLine) {
+                return '<div class="tv-debug-line">' + escapeDebugHtml(debugLine) + '</div>';
+            })
+            .join('');
+    }
+
     function pauseOperations() {
+        tvDebug('pause operations', { video: mediaState(tvPlayer) });
+
         // Pause marquee animation
         var marquee = document.querySelector('.marquee-text');
         if (marquee) {
@@ -503,49 +680,81 @@
     var soundActivated = false;
 
     function activateSound() {
-        if (soundActivated) { return; }
+        if (soundActivated) {
+            tvDebug('activate sound skipped: already active');
+            return;
+        }
         soundActivated = true;
+        tvDebug('activate sound start', {
+            isLgTv: isLgTv,
+            isSamsungTv: isSamsungTv,
+            shouldIsolateTtsAudio: shouldIsolateTtsAudio(),
+            playlistLength: playlist.length,
+            audio: mediaState(audioPlayer),
+            video: mediaState(tvPlayer)
+        });
 
         // Hapus event listeners supaya tidak terpicu ulang
         document.removeEventListener('click', activateSound);
         document.removeEventListener('keydown', activateSound);
 
         setVideoAmbientVolume(VIDEO_VOLUME);
+        unlockWebAudioContext();
 
         if (tvPlayer && playlist.length > 0 && tvPlayer.paused) {
-            tvPlayer.play().catch(function () {
-                /* Video autoplay retry failed. */
-            });
+            var resumePromise = tvPlayer.play();
+            if (resumePromise && typeof resumePromise.catch === 'function') {
+                resumePromise
+                    .then(function () {
+                        tvDebug('activate video resume resolved', mediaState(tvPlayer));
+                    })
+                    .catch(function (error) {
+                        tvDebug('activate video resume failed', debugError(error));
+                    });
+            }
         }
 
         // Unlock audio element yang SEBENARNYA dipakai (#ttsAudio) dengan silent WAV.
-        // Pada Samsung/Tizen, video dipause sebentar agar audio element bisa di-unlock tanpa membuat video plane blank.
-        var shouldResumeVideo = isSamsungTv && tvPlayer && !tvPlayer.paused && !tvPlayer.ended;
-        if (isSamsungTv && tvPlayer && !tvPlayer.paused) {
+        // Pada Samsung/Tizen, video dipause sebentar agar audio element TTS mendapat output audio.
+        var shouldResumeVideo = shouldIsolateTtsAudio() && tvPlayer && !tvPlayer.paused && !tvPlayer.ended;
+        if (shouldIsolateTtsAudio() && tvPlayer && !tvPlayer.paused) {
+            tvDebug('activate pauses video for isolated audio', mediaState(tvPlayer));
             tvPlayer.pause();
         }
 
         audioPlayer.pause();
         audioPlayer.src = SILENT_AUDIO;
-        audioPlayer.volume = TTS_VOLUME;
-        audioPlayer.load();
+        audioPlayer.volume = isLgTv ? 0 : TTS_VOLUME;
+        if (!isLgTv) {
+            audioPlayer.load();
+        }
 
         var finishAudioUnlock = function () {
-            audioPlayer.pause();
-            audioPlayer.removeAttribute('src');
-            audioPlayer.load();
+            clearTtsAudioSource();
             audioPlayer.volume = TTS_VOLUME;
+            tvDebug('activate audio unlock finished', {
+                audio: mediaState(audioPlayer),
+                video: mediaState(tvPlayer)
+            });
 
-            if ((!isSamsungTv || shouldResumeVideo) && playlist.length > 0) {
+            if ((!shouldIsolateTtsAudio() || shouldResumeVideo) && playlist.length > 0) {
                 playCurrentVideo();
             }
+
+            playQueuedAnnouncement();
         };
 
         var unlockPromise = audioPlayer.play();
         if (unlockPromise && typeof unlockPromise.catch === 'function') {
             unlockPromise
-                .then(finishAudioUnlock)
-                .catch(finishAudioUnlock);
+                .then(function () {
+                    tvDebug('silent unlock play resolved', mediaState(audioPlayer));
+                    finishAudioUnlock();
+                })
+                .catch(function (error) {
+                    tvDebug('silent unlock play failed', debugError(error));
+                    finishAudioUnlock();
+                });
         } else {
             finishAudioUnlock();
         }
@@ -568,16 +777,28 @@
         if (isSamsungTv) {
             tvPlayer.muted = !soundActivated;
             tvPlayer.volume = soundActivated ? volume : 0;
+            tvDebug('set video volume samsung', mediaState(tvPlayer));
 
             return;
         }
 
         tvPlayer.muted = !soundActivated;
         tvPlayer.volume = volume;
+        tvDebug('set video volume', mediaState(tvPlayer));
+    }
+
+    function shouldIsolateTtsAudio() {
+        return false;
     }
 
     function beginTtsPlayback() {
-        if (isSamsungTv) {
+        tvDebug('begin tts playback', {
+            shouldIsolateTtsAudio: shouldIsolateTtsAudio(),
+            audio: mediaState(audioPlayer),
+            video: mediaState(tvPlayer)
+        });
+
+        if (shouldIsolateTtsAudio()) {
             if (!videoPausedForTts) {
                 wasVideoPlayingBeforeTts = tvPlayer && !tvPlayer.paused && !tvPlayer.ended;
 
@@ -595,7 +816,14 @@
     }
 
     function endTtsPlayback() {
-        if (isSamsungTv) {
+        tvDebug('end tts playback', {
+            audio: mediaState(audioPlayer),
+            video: mediaState(tvPlayer),
+            videoPausedForTts: videoPausedForTts,
+            wasVideoPlayingBeforeTts: wasVideoPlayingBeforeTts
+        });
+
+        if (shouldIsolateTtsAudio()) {
             if (videoPausedForTts && wasVideoPlayingBeforeTts && playlist.length > 0) {
                 playCurrentVideo();
             }
@@ -623,7 +851,91 @@
         }
     }
 
+    function clearTtsAudioSource() {
+        if (!audioPlayer) { return; }
+
+        audioPlayer.pause();
+        audioPlayer.removeAttribute('src');
+        if (!isLgTv) {
+            audioPlayer.load();
+        }
+    }
+
+    function getTtsAudioContext() {
+        var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) { return null; }
+
+        if (!ttsAudioContext) {
+            ttsAudioContext = new AudioContextClass();
+        }
+
+        return ttsAudioContext;
+    }
+
+    function unlockWebAudioContext() {
+        var context = getTtsAudioContext();
+        if (!context) {
+            tvDebug('web audio unavailable');
+
+            return;
+        }
+
+        if (context.state === 'suspended' && typeof context.resume === 'function') {
+            context.resume()
+                .then(function () {
+                    tvDebug('web audio context resumed', { state: context.state });
+                })
+                .catch(function (error) {
+                    tvDebug('web audio context resume failed', debugError(error));
+                });
+        }
+
+        try {
+            var buffer = context.createBuffer(1, 1, 22050);
+            var source = context.createBufferSource();
+            source.buffer = buffer;
+            source.connect(context.destination);
+            source.start(0);
+            tvDebug('web audio context unlocked', { state: context.state });
+        } catch (error) {
+            tvDebug('web audio unlock failed', debugError(error));
+        }
+    }
+
+    function decodeTtsAudio(context, audioBuffer) {
+        return new Promise(function (resolve, reject) {
+            try {
+                var decodePromise = context.decodeAudioData(audioBuffer, resolve, reject);
+                if (decodePromise && typeof decodePromise.then === 'function') {
+                    decodePromise.then(resolve).catch(reject);
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    function stopCurrentTtsSource() {
+        if (!currentAudioSource) { return; }
+
+        try {
+            currentAudioSource.stop(0);
+        } catch (error) {
+            // Source may already be stopped.
+        }
+
+        try {
+            currentAudioSource.disconnect();
+        } catch (error) {
+            // Source may already be disconnected.
+        }
+
+        currentAudioSource = null;
+    }
+
     function resumeOperations() {
+        tvDebug('resume operations', { video: mediaState(tvPlayer) });
+
         // Resume marquee animation
         var marquee = document.querySelector('.marquee-text');
         if (marquee) {
@@ -632,9 +944,16 @@
 
         // Resume video if playlist exists
         if (tvPlayer && playlist.length > 0 && tvPlayer.paused) {
-            tvPlayer.play().catch(function() {
-                // Autoplay blocked, will try on next user interaction
-            });
+            var resumePromise = tvPlayer.play();
+            if (resumePromise && typeof resumePromise.catch === 'function') {
+                resumePromise
+                    .then(function () {
+                        tvDebug('resume video play resolved', mediaState(tvPlayer));
+                    })
+                    .catch(function(error) {
+                        tvDebug('resume video play failed', debugError(error));
+                    });
+            }
         }
 
         // Immediate state refresh
@@ -655,17 +974,28 @@
     }
 
     function playCurrentVideo() {
-        if (playlist.length === 0) { return; }
+        if (playlist.length === 0) {
+            tvDebug('video play skipped: empty playlist');
+            return;
+        }
 
         if (tvPlayer.getAttribute('src') !== playlist[currentVideoIdx]) {
             tvPlayer.src = playlist[currentVideoIdx];
             tvPlayer.load();
+            tvDebug('video source changed', mediaState(tvPlayer));
         }
 
         setVideoAmbientVolume(VIDEO_VOLUME);
-        tvPlayer.play().catch(function () {
-            /* Autoplay diblokir browser — menunggu interaksi pengguna */
-        });
+        var playPromise = tvPlayer.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise
+                .then(function () {
+                    tvDebug('video play resolved', mediaState(tvPlayer));
+                })
+                .catch(function (error) {
+                    tvDebug('video play failed', debugError(error));
+                });
+        }
     }
 
     function fetchState() {
@@ -679,6 +1009,7 @@
             },
             error: function () {
                 fetchErrCount++;
+                tvDebug('state fetch failed', { fetchErrCount: fetchErrCount });
                 if (fetchErrCount >= 5) {
                     console.warn('TV Display: Koneksi ke server bermasalah (' + fetchErrCount + 'x gagal).');
                 }
@@ -690,6 +1021,10 @@
         /* Inisialisasi playlist video (hanya sekali) */
         if (playlist.length === 0 && data.videos && data.videos.length > 0) {
             playlist = data.videos;
+            tvDebug('playlist initialized', {
+                playlistLength: playlist.length,
+                firstVideo: shortUrl(playlist[0] || '')
+            });
             playCurrentVideo();
             $('#videoPlaceholder').hide();
         }
@@ -717,8 +1052,7 @@
 
             var callId = active.id + '-' + active.called_at;
             if (lastAnnouncedId !== callId) {
-                lastAnnouncedId = callId;
-                playAnnouncer(active);
+                playAnnouncerWhenReady(active, callId);
             }
         } else {
             $('#noCallState').removeClass('d-none');
@@ -856,9 +1190,14 @@
     function speakWithBrowserTts(text) {
         clearPlayGuard();
         revokeAudioObjectUrl();
+        tvDebug('browser tts start', {
+            hasSpeechSynthesis: 'speechSynthesis' in window,
+            text: text
+        });
         beginTtsPlayback();
 
         if (!('speechSynthesis' in window)) {
+            tvDebug('browser tts unavailable');
             endTtsPlayback();
             return;
         }
@@ -871,22 +1210,228 @@
         utterance.pitch = 1;
         utterance.volume = TTS_VOLUME;
         utterance.onend = function () {
+            tvDebug('browser tts ended');
             endTtsPlayback();
         };
-        utterance.onerror = function () {
+        utterance.onerror = function (event) {
+            tvDebug('browser tts error', {
+                error: event.error || ''
+            });
             endTtsPlayback();
         };
 
         window.speechSynthesis.speak(utterance);
     }
 
-    function playMiniMaxAudio(audioUrl, fallbackText) {
+    function playAnnouncerWhenReady(call, callId) {
+        if (!soundActivated) {
+            var isNewQueuedAnnouncement = queuedAnnouncementId !== callId;
+            queuedAnnouncementCall = call;
+            queuedAnnouncementId = callId;
+            if (isNewQueuedAnnouncement) {
+                tvDebug('announcement deferred until sound activation', {
+                    callId: callId,
+                    ticketNumber: call.ticket_number,
+                    counter: call.counter ? call.counter.name : ''
+                });
+            }
+
+            return;
+        }
+
+        lastAnnouncedId = callId;
+        queuedAnnouncementCall = null;
+        queuedAnnouncementId = null;
+        tvDebug('new active call', {
+            callId: callId,
+            ticketNumber: call.ticket_number,
+            counter: call.counter ? call.counter.name : ''
+        });
+        playAnnouncer(call);
+    }
+
+    function playQueuedAnnouncement() {
+        if (!soundActivated || !queuedAnnouncementCall || !queuedAnnouncementId) {
+            return;
+        }
+
+        if (lastAnnouncedId === queuedAnnouncementId) {
+            queuedAnnouncementCall = null;
+            queuedAnnouncementId = null;
+
+            return;
+        }
+
+        var call = queuedAnnouncementCall;
+        var callId = queuedAnnouncementId;
+        queuedAnnouncementCall = null;
+        queuedAnnouncementId = null;
+        lastAnnouncedId = callId;
+
+        tvDebug('announcement replay after sound activation', {
+            callId: callId,
+            ticketNumber: call.ticket_number,
+            counter: call.counter ? call.counter.name : ''
+        });
+        playAnnouncer(call);
+    }
+
+    function playTtsAudioSource(sourceUrl, fallbackText, sourceType) {
+        audioPlayer.src = sourceUrl;
+        tvDebug('tts audio source prepared', {
+            sourceType: sourceType,
+            audio: mediaState(audioPlayer)
+        });
+
+        playGuardTimer = setTimeout(function () {
+            if (pendingAnnouncementText !== '') {
+                tvDebug('tts play guard fallback', { text: pendingAnnouncementText });
+                var guardText = pendingAnnouncementText;
+                pendingAnnouncementText = '';
+                clearTtsAudioSource();
+                speakWithBrowserTts(guardText);
+            }
+        }, 7000);
+
+        audioPlayer.volume = TTS_VOLUME;
+        beginTtsPlayback();
+        var playPromise = audioPlayer.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise
+                .then(function () {
+                    tvDebug('tts audio play resolved', mediaState(audioPlayer));
+                })
+                .catch(function (error) {
+                    tvDebug('tts audio play failed', debugError(error));
+                    clearTtsAudioSource();
+                    speakWithBrowserTts(fallbackText);
+                });
+        }
+    }
+
+    function playTtsWithWebAudio(audioUrl, fallbackText) {
+        var context = getTtsAudioContext();
+        if (!context || typeof window.fetch !== 'function') {
+            return false;
+        }
+
+        tvDebug('tts web audio fetch start', { audioUrl: shortUrl(audioUrl) });
         fetch(audioUrl, {
             method: 'GET',
             credentials: 'same-origin',
             cache: 'no-store'
         })
             .then(function (response) {
+                tvDebug('tts web audio fetch response', {
+                    status: response.status,
+                    ok: response.ok,
+                    contentType: response.headers ? response.headers.get('content-type') : ''
+                });
+
+                if (!response.ok) {
+                    throw new Error('AUDIO_HTTP_' + response.status);
+                }
+
+                return response.arrayBuffer();
+            })
+            .then(function (audioBuffer) {
+                if (!audioBuffer || audioBuffer.byteLength <= 0) {
+                    throw new Error('AUDIO_EMPTY_BUFFER');
+                }
+
+                return decodeTtsAudio(context, audioBuffer);
+            })
+            .then(function (decodedBuffer) {
+                if (context.state === 'suspended' && typeof context.resume === 'function') {
+                    return context.resume().then(function () {
+                        return decodedBuffer;
+                    });
+                }
+
+                return decodedBuffer;
+            })
+            .then(function (decodedBuffer) {
+                stopCurrentTtsSource();
+
+                var source = context.createBufferSource();
+                var gainNode = context.createGain();
+                source.buffer = decodedBuffer;
+                gainNode.gain.value = TTS_VOLUME;
+                source.connect(gainNode);
+                gainNode.connect(context.destination);
+
+                currentAudioSource = source;
+                beginTtsPlayback();
+                pendingAnnouncementText = '';
+
+                source.onended = function () {
+                    if (currentAudioSource === source) {
+                        currentAudioSource = null;
+                    }
+
+                    clearPlayGuard();
+                    endTtsPlayback();
+                    tvDebug('tts web audio ended', { duration: decodedBuffer.duration });
+                };
+
+                playGuardTimer = setTimeout(function () {
+                    if (currentAudioSource === source) {
+                        tvDebug('tts web audio guard restore', { duration: decodedBuffer.duration });
+                        stopCurrentTtsSource();
+                        clearPlayGuard();
+                        endTtsPlayback();
+                    }
+                }, Math.max(7000, Math.ceil(decodedBuffer.duration * 1000) + 1500));
+
+                source.start(0);
+                tvDebug('tts web audio started', {
+                    duration: decodedBuffer.duration,
+                    contextState: context.state,
+                    video: mediaState(tvPlayer)
+                });
+            })
+            .catch(function (error) {
+                tvDebug('tts web audio failed, fallback direct audio', debugError(error));
+                clearPlayGuard();
+                stopCurrentTtsSource();
+                endTtsPlayback();
+                playTtsAudioSource(audioUrl, fallbackText, 'direct-fallback');
+            });
+
+        return true;
+    }
+
+    function playMiniMaxAudio(audioUrl, fallbackText) {
+        clearPlayGuard();
+        revokeAudioObjectUrl();
+        stopCurrentTtsSource();
+
+        if (playTtsWithWebAudio(audioUrl, fallbackText)) {
+            return;
+        }
+
+        tvDebug('tts direct audio selected', {
+            audioUrl: shortUrl(audioUrl),
+            isLgTv: isLgTv,
+            isSamsungTv: isSamsungTv
+        });
+        playTtsAudioSource(audioUrl, fallbackText, 'direct');
+
+        return;
+
+        tvDebug('tts audio fetch start', { audioUrl: shortUrl(audioUrl) });
+        fetch(audioUrl, {
+            method: 'GET',
+            credentials: 'same-origin',
+            cache: 'no-store'
+        })
+            .then(function (response) {
+                tvDebug('tts audio fetch response', {
+                    status: response.status,
+                    ok: response.ok,
+                    contentType: response.headers ? response.headers.get('content-type') : ''
+                });
+
                 if (!response.ok) {
                     throw new Error('AUDIO_HTTP_' + response.status);
                 }
@@ -894,6 +1439,11 @@
                 return response.blob();
             })
             .then(function (audioBlob) {
+                tvDebug('tts audio blob received', {
+                    size: audioBlob ? audioBlob.size : 0,
+                    type: audioBlob ? audioBlob.type : ''
+                });
+
                 if (!audioBlob || audioBlob.size <= 0) {
                     throw new Error('AUDIO_EMPTY_BLOB');
                 }
@@ -907,30 +1457,12 @@
                 revokeAudioObjectUrl();
 
                 currentAudioObjectUrl = URL.createObjectURL(audioBlob);
-                audioPlayer.src = currentAudioObjectUrl;
-
-                playGuardTimer = setTimeout(function () {
-                    if (pendingAnnouncementText !== '') {
-                        var guardText = pendingAnnouncementText;
-                        pendingAnnouncementText = '';
-                        speakWithBrowserTts(guardText);
-                    }
-                }, 2500);
-
-                audioPlayer.volume = TTS_VOLUME;
-                beginTtsPlayback();
-                var playPromise = audioPlayer.play();
-                if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(function () {
-                        // Bersihkan src agar tidak memicu error event setelah blob dicabut
-                        audioPlayer.src = '';
-                        speakWithBrowserTts(fallbackText);
-                    });
-                }
+                playTtsAudioSource(currentAudioObjectUrl, fallbackText, 'blob');
             })
-            .catch(function () {
+            .catch(function (error) {
+                tvDebug('tts audio fetch/play failed', debugError(error));
                 // Fetch gagal — pastikan src bersih sebelum fallback ke browser TTS
-                audioPlayer.src = '';
+                clearTtsAudioSource();
                 speakWithBrowserTts(fallbackText);
             });
     }
@@ -941,6 +1473,11 @@
         var text = 'Nomor antrian ' + ttsNomor + ', silakan menuju ' + loket + '.';
 
         pendingAnnouncementText = text;
+        tvDebug('announcer start', {
+            ticketNumber: call.ticket_number,
+            text: text,
+            soundActivated: soundActivated
+        });
 
         $.ajax({
             url: '{{ route("tv-display.tts.announcement") }}',
@@ -951,6 +1488,11 @@
                 text: text,
             },
             success: function (response) {
+                tvDebug('announcer endpoint success', {
+                    provider: response && response.provider ? response.provider : '',
+                    audioUrl: response && response.audio_url ? shortUrl(response.audio_url) : ''
+                });
+
                 if (response && response.audio_url) {
                     playMiniMaxAudio(response.audio_url, text);
 
@@ -961,7 +1503,11 @@
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(text);
             },
-            error: function () {
+            error: function (xhr) {
+                tvDebug('announcer endpoint failed', {
+                    status: xhr ? xhr.status : '',
+                    statusText: xhr ? xhr.statusText : ''
+                });
                 // AJAX gagal (sesi habis, dll): clear pending sebelum fallback
                 pendingAnnouncementText = '';
                 speakWithBrowserTts(text);
