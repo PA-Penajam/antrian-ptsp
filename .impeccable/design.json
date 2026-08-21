@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-21T17:00:00.000Z",
+  "title": "Design System: Antrian PTSP",
+  "extensions": {
+    "colorMeta": {
+      "court-cyan": {
+        "role": "primary",
+        "displayName": "Court Cyan",
+        "canonical": "#0e7490",
+        "tonalRamp": ["#083344", "#164e63", "#155e75", "#0e7490", "#0891b2", "#06b6d4", "#67e8f9", "#cffafe"]
+      },
+      "court-cyan-light": {
+        "role": "primary",
+        "displayName": "Court Cyan Light",
+        "canonical": "#0891b2",
+        "tonalRamp": ["#083344", "#164e63", "#155e75", "#0e7490", "#0891b2", "#22d3ee", "#a5f3fc", "#ecfeff"]
+      },
+      "oasis-emerald": {
+        "role": "secondary",
+        "displayName": "Oasis Emerald",
+        "canonical": "#0f766e",
+        "tonalRamp": ["#022c22", "#064e3b", "#065f46", "#0f766e", "#0d9488", "#14b8a6", "#5eead4", "#ccfbf1"]
+      },
+      "oasis-emerald-light": {
+        "role": "secondary",
+        "displayName": "Oasis Emerald Light",
+        "canonical": "#10b981",
+        "tonalRamp": ["#022c22", "#064e3b", "#047857", "#059669", "#10b981", "#34d399", "#a7f3d0", "#d1fae5"]
+      },
+      "amber-glow": {
+        "role": "accent",
+        "displayName": "Amber Glow",
+        "canonical": "#f59e0b",
+        "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fef3c7"]
+      },
+      "coral-crimson": {
+        "role": "accent",
+        "displayName": "Coral Crimson",
+        "canonical": "#ef4444",
+        "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fee2e2"]
+      },
+      "deep-slate": {
+        "role": "neutral",
+        "displayName": "Deep Slate",
+        "canonical": "#0f172a",
+        "tonalRamp": ["#020617", "#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#cbd5e1", "#f8fafc"]
+      },
+      "slate-muted": {
+        "role": "neutral",
+        "displayName": "Slate Muted",
+        "canonical": "#64748b",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#e2e8f0", "#f8fafc"]
+      },
+      "soft-mist": {
+        "role": "neutral",
+        "displayName": "Soft Mist",
+        "canonical": "#f8fcfd",
+        "tonalRamp": ["#0f172a", "#334155", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9", "#f8fcfd"]
+      },
+      "pure-white": {
+        "role": "neutral",
+        "displayName": "Pure White",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#1e293b", "#475569", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9", "#f8fafc", "#ffffff"]
+      },
+      "zinc-surface": {
+        "role": "neutral",
+        "displayName": "Zinc Surface",
+        "canonical": "#18181b",
+        "tonalRamp": ["#09090b", "#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#f4f4f5"]
+      },
+      "zinc-dark": {
+        "role": "neutral",
+        "displayName": "Zinc Dark",
+        "canonical": "#09090b",
+        "tonalRamp": ["#000000", "#09090b", "#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#d4d4d8"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Nomor antrian raksasa pada TV Display dan Kiosk." },
+      "headline": { "displayName": "Headline", "purpose": "Judul modul, halaman publik, dan header kartu." },
+      "title": { "displayName": "Title", "purpose": "Nama loket, kelompok layanan, dialog title." },
+      "body": { "displayName": "Body", "purpose": "Teks konten, instruksi form, keterangan umum." },
+      "label": { "displayName": "Label", "purpose": "Kategori layanan, badge status, info jam operasional." }
+    },
+    "shadows": [
+      { "name": "ambient-header", "value": "0 18px 50px -32px rgba(14, 116, 144, 0.4)", "purpose": "Header mengambang di kanvas publik." },
+      { "name": "card-elevated", "value": "0 24px 60px -48px rgba(15, 23, 42, 0.18)", "purpose": "Elevasi kartu modul dan dashboard stats." },
+      { "name": "kiosk-card", "value": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)", "purpose": "Fokus terminal Kiosk." },
+      { "name": "tv-pulse", "value": "0 0 0 12px rgba(245, 158, 11, 0)", "purpose": "Radar gentle panggilan antrian di TV." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Transisi default state hover dan focus." },
+      { "name": "pulse-gentle", "value": "pulse-gentle 2s ease-in-out infinite", "purpose": "Animasi getar halus saat loket memanggil nomor tiket di TV display." },
+      { "name": "marquee", "value": "marquee 20s linear infinite", "purpose": "Running text pengumuman horizontal pada TV display." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Tombol aksi utama bernuansa Court Cyan dengan radius ramah sentuh.",
+      "html": "<button class=\"ds-btn-primary\">Ambil Antrian Sekarang</button>",
+      "css": ".ds-btn-primary { background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%); color: #ffffff; font-family: 'Instrument Sans', sans-serif; font-size: 15px; font-weight: 600; padding: 14px 28px; border-radius: 16px; border: none; box-shadow: 0 10px 15px -3px rgba(8, 145, 178, 0.25); cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); transform: translateY(-1px); box-shadow: 0 14px 20px -3px rgba(8, 145, 178, 0.35); } .ds-btn-primary:focus-visible { outline: 2px solid #0891b2; outline-offset: 2px; }"
+    },
+    {
+      "name": "Kiosk Touch Button",
+      "kind": "button",
+      "refersTo": "button-touch",
+      "description": "Tombol sentuh tinggi 64px khusus terminal Kiosk publik.",
+      "html": "<button class=\"ds-btn-kiosk\"><span class=\"ds-btn-kiosk-icon\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2\"/><rect x=\"6\" y=\"14\" width=\"12\" height=\"8\" rx=\"1\"/></svg></span>Cari & Cetak Tiket</button>",
+      "css": ".ds-btn-kiosk { display: flex; align-items: center; justify-content: center; gap: 12px; height: 64px; width: 100%; background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%); color: #ffffff; font-family: 'Instrument Sans', sans-serif; font-size: 20px; font-weight: 700; border-radius: 16px; border: none; box-shadow: 0 12px 24px -4px rgba(8, 145, 178, 0.3); cursor: pointer; transition: transform 0.15s, filter 0.15s; } .ds-btn-kiosk:hover { filter: brightness(1.08); transform: translateY(-2px); } .ds-btn-kiosk:active { transform: translateY(0); filter: brightness(0.95); } .ds-btn-kiosk-icon { display: flex; align-items: center; justify-content: center; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Field input teks tebal dengan kontur 2px dan focus ring cyan.",
+      "html": "<div class=\"ds-field-wrap\"><label class=\"ds-field-label\">Nomor KTP atau Nomor HP</label><input type=\"text\" class=\"ds-input\" placeholder=\"Contoh: 3201xxxxxxxxxxxx\" /></div>",
+      "css": ".ds-field-wrap { display: flex; flex-direction: column; gap: 8px; font-family: 'Instrument Sans', sans-serif; } .ds-field-label { font-size: 14px; font-weight: 600; color: #1e293b; } .ds-input { height: 56px; padding: 0 20px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 16px; background: #ffffff; color: #0f172a; outline: none; transition: border-color 0.2s, box-shadow 0.2s; } .ds-input:focus { border-color: #0891b2; box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.15); }"
+    },
+    {
+      "name": "Public Service Card",
+      "kind": "card",
+      "refersTo": "card-public",
+      "description": "Kartu container layanan publik bernuansa lembut dengan border cyan tipis.",
+      "html": "<div class=\"ds-card-public\"><div class=\"ds-badge-emerald\">Layanan Aktif</div><h3 class=\"ds-card-title\">Pendaftaran Perkara</h3><p class=\"ds-card-desc\">Ambil nomor antrian untuk pendaftaran gugatan, permohonan, atau pendaftaran perkara online e-Court.</p><button class=\"ds-btn-primary\">Pilih Layanan</button></div>",
+      "css": ".ds-card-public { display: flex; flex-direction: column; gap: 16px; padding: 28px; background: #ffffff; border: 1px solid #cffafe; border-radius: 24px; box-shadow: 0 10px 30px -10px rgba(14, 116, 144, 0.08); font-family: 'Instrument Sans', sans-serif; transition: transform 0.2s, box-shadow 0.2s; } .ds-card-public:hover { transform: translateY(-3px); box-shadow: 0 20px 40px -12px rgba(14, 116, 144, 0.15); } .ds-card-title { font-size: 20px; font-weight: 700; color: #0f172a; margin: 0; } .ds-card-desc { font-size: 14px; line-height: 1.5; color: #64748b; margin: 0; } .ds-badge-emerald { align-self: flex-start; background: #ecfdf5; color: #047857; font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 12px; border-radius: 9999px; border: 1px solid #a7f3d0; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-status",
+      "description": "Pill penanda status antrian dengan teks uppercase ber-tracking lebar.",
+      "html": "<div style=\"display:flex; gap:8px;\"><span class=\"ds-chip ds-chip-waiting\">Menunggu</span><span class=\"ds-chip ds-chip-called\">Dipanggil</span><span class=\"ds-chip ds-chip-completed\">Selesai</span></div>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; padding: 4px 14px; border-radius: 9999px; font-family: 'Instrument Sans', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; } .ds-chip-waiting { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; } .ds-chip-called { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; } .ds-chip-completed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Digital Balai",
+    "overview": "Antrian PTSP mengadopsi suasana pelayanan peradilan yang hangat, terbuka, berwibawa, dan menenangkan. Antarmuka dirancang layaknya balai musyawarah modern: ruang yang rapi dan lapang, informasi yang langsung terbaca tanpa prasangka literasi digital, serta alur pelayanan yang memberikan ketenangan dan kepastian bagi setiap pengunjung masyarakat dan petugas di loket.\n\nSistem visual memadukan keteduhan warna laut dan oasis (Court Cyan & Oasis Emerald) dengan latar terang yang higienis (Soft Mist). Kedalaman antarmuka dibangun secara halus melalui pelapisan permukaan (layered surfaces), gradasi latar sejuk, serta radius kurva yang ramah (rounded-2xl dan rounded-3xl), menghadirkan kesan sentuhan yang humanis dan meyakinkan di layar publik, terminal kiosk, TV display ruang tunggu, hingga workstation internal.",
+    "keyCharacteristics": [
+      "Jernih & Menenangkan: Mengeliminasi kecemasan menunggu antrian melalui tata letak lapang, warna sejuk, dan status antrian yang transparan.",
+      "Ramah Sentuh & Inklusif: Target interaksi berukuran besar dengan batas radius lembut untuk kenyamanan layar sentuh kiosk dan kemudahan membaca bagi berbagai rentang usia.",
+      "Hierarki Operasional Presisi: Pemisahan tegas antara nomor tiket, nomor loket, nama layanan, dan tombol tindakan primer agar petugas dan pengunjung selalu sinkron."
+    ],
+    "rules": [
+      {
+        "name": "The Balai Contrast Rule",
+        "body": "Nomor antrian, status loket, dan instruksi publik wajib memiliki rasio kontras tajam (minimal 4.5:1 untuk teks biasa dan 3:1 untuk nomor besar/display) tanpa gradasi redup yang mengaburkan informasi.",
+        "section": "colors"
+      },
+      {
+        "name": "The Palette Restraint Rule",
+        "body": "Warna aksen status (Amber & Coral) hanya boleh dipakai untuk status tiket atau peringatan sistem, tidak boleh digunakan sebagai warna latar hiasan umum.",
+        "section": "colors"
+      },
+      {
+        "name": "The Big Ticket Rule",
+        "body": "Nomor tiket yang dipanggil atau dicetak harus selalu menggunakan bobot font-black dan menjadi elemen visual paling dominan pada layar bersangkutan.",
+        "section": "typography"
+      },
+      {
+        "name": "The Clean Surface Rule",
+        "body": "Seluruh kartu elevasi di atas background gradasi wajib memiliki background semi-transparan bg-white/90 atau bg-white solid dengan border border-cyan-100 atau border-slate-200 untuk menjaga batas kontur.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do gunakan nama dan logo instansi yang bersumber dinamis dari config('institution.*') tanpa hardcode identitas pengadilan di template.",
+      "Do berikan target sentuh minimal 48px (ideal 64px) untuk semua tombol yang dapat diakses di Kiosk publik.",
+      "Do sertakan visual feedback instan (indikator loading, spinner, atau bunyi TTS) ketika tombol panggil antrian ditekan.",
+      "Do jaga kontras teks nomor antrian dan nomor loket tetap tajam di segala sudut pandang TV Display.",
+      "Do sediakan layout responsif yang tetap rapi dari layar ponsel kecil hingga monitor TV 4K."
+    ],
+    "donts": [
+      "Don't menggunakan warna merah atau kuning sebagai latar dekorasi umum karena dikhususkan untuk status penting (batal / menunggu).",
+      "Don't menjejalkan teks jargon hukum atau istilah teknis sistem ke layar publik.",
+      "Don't menggunakan font display dengan dekorasi rumit atau tipis yang sulit dibaca dari jarak jauh di ruang tunggu.",
+      "Don't menghilangkan mode kontras tinggi dan fallback HTML sederhana (legacy mode) demi menjaga kompatibilitas hardware kiosk/TV lama."
+    ]
+  }
+}

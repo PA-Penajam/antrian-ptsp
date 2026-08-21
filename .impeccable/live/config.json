@@ -1,0 +1,14 @@
+{
+  "files": [
+    "resources/views/layouts/**/*.blade.php",
+    "resources/views/pages/tv-display/index.blade.php",
+    "resources/views/pages/officer/counter.blade.php"
+  ],
+  "exclude": [
+    "resources/views/layouts/app.blade.php",
+    "resources/views/layouts/auth.blade.php"
+  ],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}

@@ -15,7 +15,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
         <title>
             {{ filled($title ?? null) ? $title . ' - ' . $institutionName : $institutionName }}
@@ -112,7 +112,7 @@
                 </main>
             </div>
 
-            <footer class="border-t border-cyan-100 bg-[linear-gradient(180deg,#f8fdff_0%,#ecfeff_100%)]">
+            <footer class="border-t border-cyan-100 bg-[linear-gradient(180deg,#f8fdff_0%,#ecfeff_100%)] pb-[max(2rem,env(safe-area-inset-bottom))]">
                 <div class="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] lg:px-8 lg:py-10">
                     <div class="space-y-3">
                         <div class="inline-flex items-center gap-2 rounded-full border border-cyan-100 bg-white px-3 py-1 text-xs font-semibold tracking-[0.18em] text-cyan-700 uppercase shadow-sm">

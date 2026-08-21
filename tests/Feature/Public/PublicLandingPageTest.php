@@ -45,3 +45,13 @@ test('landing page renders service catalog details when services are available',
         ->toContain('Online')
         ->toContain('Walk-in');
 });
+
+test('landing page renders live queue monitor with active calling ticket', function () {
+    $response = get('/');
+
+    $response->assertSuccessful()
+        ->assertSeeText('Pantauan Antrian Hari Ini')
+        ->assertSeeText('Total Tiket Terdaftar')
+        ->assertSeeText('Sedang Menunggu')
+        ->assertSeeText('Selesai Dilayani');
+});

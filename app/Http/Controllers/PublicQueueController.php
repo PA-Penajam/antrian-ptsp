@@ -17,10 +17,27 @@ class PublicQueueController extends Controller
 {
     public function index(): View
     {
+        $today = CarbonImmutable::today();
         $services = Service::active()->get();
+
+        $todayStats = [
+            'total' => QueueTicket::query()->whereDate('service_date', $today)->count(),
+            'waiting' => QueueTicket::query()->whereDate('service_date', $today)->where('status', QueueStatus::Waiting)->count(),
+            'completed' => QueueTicket::query()->whereDate('service_date', $today)->where('status', QueueStatus::Completed)->count(),
+        ];
+
+        $activeCallingTickets = QueueTicket::query()
+            ->with(['counter', 'service'])
+            ->whereDate('service_date', $today)
+            ->where('status', QueueStatus::Called)
+            ->orderByDesc('called_at')
+            ->take(4)
+            ->get();
 
         return view('welcome', [
             'services' => $services,
+            'todayStats' => $todayStats,
+            'activeCallingTickets' => $activeCallingTickets,
         ]);
     }
 

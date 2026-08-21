@@ -1,215 +1,429 @@
 @php
     $institutionName = config('institution.name');
     $operatingHours = config('institution.operating_hours');
+    $todayStats = $todayStats ?? ['total' => 0, 'waiting' => 0, 'completed' => 0];
+    $activeCallingTickets = $activeCallingTickets ?? collect();
 @endphp
 
-<x-layouts::public :title="'Beranda - ' . config('institution.name')">
-    <flux:main container>
-        <div class="mx-auto flex w-full max-w-6xl flex-col gap-8 py-6 sm:gap-10 sm:py-8 lg:gap-12">
-            <flux:card class="overflow-hidden border-cyan-200 bg-[linear-gradient(180deg,#f6fcff_0%,#edf8fd_55%,#ffffff_100%)] p-0 shadow-[0_30px_80px_-48px_rgba(14,116,144,0.45)]">
-                <div class="grid gap-8 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)] lg:px-10">
-                    <div class="space-y-5 text-center lg:text-left">
-                        <div class="flex justify-center lg:justify-start">
-                            <flux:badge color="sky" rounded icon="building-office-2">
-                                {{ $institutionName }}
-                            </flux:badge>
+<x-layouts::public :title="'Beranda - ' . $institutionName">
+    <div class="mx-auto flex w-full max-w-6xl flex-col gap-8 sm:gap-12 lg:gap-14">
+        
+        {{-- 1. HERO BALAI SECTION --}}
+        <div class="relative overflow-hidden rounded-3xl border border-cyan-200/80 bg-gradient-to-b from-white via-[#f7fcfd] to-[#edf8fa] p-5 sm:p-8 lg:p-12 shadow-[0_24px_60px_-36px_rgba(14,116,144,0.35)] print:bg-white print:border-slate-300 print:shadow-none">
+            <div class="grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(19rem,0.9fr)] lg:items-stretch">
+                <div class="flex flex-col justify-between space-y-6 text-center lg:text-left">
+                    <div class="space-y-3.5 sm:space-y-4">
+                        <div class="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50/90 px-3.5 py-1.5 shadow-xs print:border-slate-300 print:bg-slate-100">
+                            <flux:icon.building-office-2 class="size-4 text-cyan-700 print:text-slate-800" />
+                            <span class="text-xs font-semibold tracking-wider text-cyan-900 uppercase print:text-slate-900">{{ $institutionName }}</span>
                         </div>
 
-                        <div class="space-y-3">
-                            <flux:heading level="1" size="xl" class="text-balance text-slate-900">
+                        <div class="space-y-2.5 sm:space-y-3">
+                            <flux:heading level="1" size="xl" class="text-balance font-black text-slate-900 text-3xl sm:text-4xl lg:text-5xl">
                                 Sistem Antrian PTSP
                             </flux:heading>
 
-                            <flux:subheading class="mx-auto max-w-3xl text-base leading-7 text-slate-600 lg:mx-0 sm:text-lg">
-                                {{ $institutionName }} menghadirkan layanan antrian publik yang lebih cepat, jelas, dan tertib untuk membantu masyarakat memilih layanan, memahami persyaratan, dan datang dengan persiapan yang tepat.
+                            <flux:subheading class="mx-auto max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base lg:mx-0 lg:text-lg">
+                                Layanan terpadu satu pintu yang tertib, ramah, dan transparan. Ambil nomor antrian dari rumah, pantau giliran secara langsung, dan siapkan dokumen dengan tenang.
                             </flux:subheading>
                         </div>
-
-                        <div class="flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
-                            <flux:button href="{{ url('/antrian') }}" variant="primary" icon="ticket" class="justify-center">
-                                Ambil Nomor Antrian
-                            </flux:button>
-
-                            <flux:button href="{{ url('/antrian/cek') }}" variant="filled" icon="magnifying-glass" class="justify-center">
-                                Cek Status Antrian
-                            </flux:button>
-                        </div>
                     </div>
 
-                    <flux:card class="space-y-5 border-cyan-100 bg-white/90 p-6 shadow-none">
-                        <div class="space-y-2">
-                            <flux:heading size="lg" class="text-slate-900">Informasi Pelayanan</flux:heading>
-                            <flux:text class="text-sm leading-6 text-slate-600">
-                                Gunakan katalog layanan untuk menyiapkan berkas dan cek tiket tanpa perlu antre ulang di kantor.
-                            </flux:text>
-                        </div>
+                    {{-- Action Buttons (Optimized for touch thumb zones on mobile and cursor on desktop) --}}
+                    <div class="flex flex-col justify-center gap-3 sm:flex-row lg:justify-start print:hidden">
+                        <flux:button
+                            href="{{ url('/antrian') }}"
+                            variant="primary"
+                            icon="ticket"
+                            class="h-14 w-full justify-center rounded-2xl bg-gradient-to-r from-cyan-700 via-cyan-600 to-teal-700 px-7 text-base font-bold text-white shadow-lg shadow-cyan-700/25 transition-all duration-200 hover:brightness-105 active:scale-[0.99] touch-manipulation sm:w-auto"
+                        >
+                            Ambil Nomor Antrian
+                        </flux:button>
 
-                        <div class="grid gap-3">
-                            <flux:card class="border-slate-200 bg-slate-50 p-4 shadow-none">
-                                <div class="flex items-start gap-3">
-                                    <div class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700">
-                                        <flux:icon.clock class="size-5" />
-                                    </div>
-
-                                    <div class="space-y-1">
-                                        <flux:text class="text-xs font-semibold tracking-[0.18em] text-cyan-700 uppercase">Jam Operasional</flux:text>
-                                        <flux:text class="text-sm leading-6 text-slate-700">
-                                            {{ filled($operatingHours) ? $operatingHours : 'Informasi jam layanan belum tersedia.' }}
-                                        </flux:text>
-                                    </div>
-                                </div>
-                            </flux:card>
-
-                            <flux:card class="border-slate-200 bg-slate-50 p-4 shadow-none">
-                                <div class="flex items-start gap-3">
-                                    <div class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                                        <flux:icon.identification class="size-5" />
-                                    </div>
-
-                                    <div class="space-y-1">
-                                        <flux:text class="text-xs font-semibold tracking-[0.18em] text-emerald-700 uppercase">Persiapan Pengunjung</flux:text>
-                                        <flux:text class="text-sm leading-6 text-slate-700">
-                                            Bawa identitas dan dokumen pendukung agar verifikasi layanan berjalan lebih singkat di loket PTSP.
-                                        </flux:text>
-                                    </div>
-                                </div>
-                            </flux:card>
-                        </div>
-                    </flux:card>
-                </div>
-            </flux:card>
-
-            <section class="space-y-4">
-                <div class="space-y-2">
-                    <flux:badge color="blue" rounded>Katalog Layanan</flux:badge>
-                    <flux:heading level="2" size="lg" class="text-slate-900">Layanan Tersedia</flux:heading>
-                    <flux:text class="max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-                        Berikut daftar layanan aktif yang dapat diakses masyarakat melalui PTSP {{ $institutionName }}. Perhatikan jenis layanan, persyaratan, dan kuota hariannya.
-                    </flux:text>
-                </div>
-
-                @if ($services->isNotEmpty())
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        @foreach ($services as $service)
-                            <flux:card class="space-y-4 border-slate-200 bg-white p-5 shadow-[0_24px_60px_-52px_rgba(15,23,42,0.4)]">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="space-y-1">
-                                        <flux:heading size="base" class="text-slate-900">{{ $service->name }}</flux:heading>
-                                        <flux:text class="text-xs font-medium tracking-[0.16em] text-slate-500 uppercase">Informasi Layanan</flux:text>
-                                    </div>
-
-                                    <flux:badge color="zinc" rounded>
-                                        {{ filled($service->letter_code) ? $service->letter_code : 'UMUM' }}
-                                    </flux:badge>
-                                </div>
-
-                                @if ($service->description)
-                                    <flux:text class="text-sm leading-6 text-slate-600">{{ $service->description }}</flux:text>
-                                @endif
-
-                                <div class="flex flex-wrap gap-2">
-                                    @if ($service->booking_enabled)
-                                        <flux:badge color="green" size="sm">Booking Online</flux:badge>
-                                    @endif
-
-                                    @if ($service->walk_in_enabled)
-                                        <flux:badge color="blue" size="sm">Walk-in</flux:badge>
-                                    @endif
-
-                                    @if ($service->daily_quota)
-                                        <flux:badge color="zinc" size="sm">Kuota: {{ $service->daily_quota }}/hari</flux:badge>
-                                    @endif
-                                </div>
-
-                                <flux:separator />
-
-                                <div class="space-y-2">
-                                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Persyaratan</flux:text>
-                                    <flux:text class="whitespace-pre-line text-sm leading-6 text-slate-700">
-                                        {{ filled($service->requirements) ? $service->requirements : 'Persyaratan layanan akan diinformasikan oleh petugas PTSP.' }}
-                                    </flux:text>
-                                </div>
-                            </flux:card>
-                        @endforeach
+                        <flux:button
+                            href="{{ url('/antrian/cek') }}"
+                            variant="subtle"
+                            icon="magnifying-glass"
+                            class="h-14 w-full justify-center rounded-2xl border-2 border-cyan-200/90 bg-white px-7 text-base font-bold text-cyan-950 shadow-xs transition-all duration-200 hover:border-cyan-300 hover:bg-cyan-50/70 touch-manipulation sm:w-auto"
+                        >
+                            Cek Status Antrian
+                        </flux:button>
                     </div>
-                @else
-                    <flux:card class="border-dashed border-slate-300 bg-white/90 p-8 text-center">
-                        <div class="mx-auto flex max-w-2xl flex-col items-center gap-4">
-                            <div class="flex size-14 items-center justify-center rounded-3xl bg-cyan-100 text-cyan-700">
-                                <flux:icon.inbox class="size-7" />
-                            </div>
+                </div>
 
-                            <div class="space-y-2">
-                                <flux:heading size="lg" class="text-slate-900">Layanan belum tersedia</flux:heading>
-                                <flux:text class="text-sm leading-6 text-slate-600 sm:text-base">
-                                    Daftar layanan publik akan tampil di halaman ini setelah data layanan diaktifkan oleh petugas PTSP.
-                                </flux:text>
-                            </div>
-                        </div>
-                    </flux:card>
-                @endif
-            </section>
-
-            <section>
-                <flux:card class="space-y-5 border-cyan-200 bg-[linear-gradient(180deg,#ffffff_0%,#f4fbff_100%)] p-6 sm:p-7">
-                    <div class="space-y-2">
-                        <flux:badge color="cyan" rounded>Panduan Pengunjung</flux:badge>
-                        <flux:heading level="2" size="lg" class="text-slate-900">Datang dengan alur yang jelas</flux:heading>
-                        <flux:text class="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                            Tiga langkah sederhana ini membantu masyarakat mendapatkan layanan yang lebih tertib sejak sebelum datang ke kantor pengadilan.
+                {{-- Hero Operational Card --}}
+                <div class="flex flex-col justify-between space-y-4 rounded-3xl border border-cyan-200/90 bg-white/95 p-4.5 sm:p-6 shadow-sm backdrop-blur-sm print:border-slate-300">
+                    <div class="space-y-1">
+                        <flux:heading size="lg" class="font-bold text-slate-900">Informasi Pelayanan</flux:heading>
+                        <flux:text class="text-xs leading-relaxed text-slate-600 sm:text-sm">
+                            Jam layanan tatap muka dan panduan persiapan dokumen di ruang PTSP.
                         </flux:text>
                     </div>
 
-                    <div class="grid gap-4 sm:grid-cols-3">
-                        <flux:card class="border-slate-200 bg-white p-5 shadow-none">
-                            <div class="space-y-3">
-                                <flux:badge color="blue" rounded>Step 1</flux:badge>
-                                <flux:heading size="base" class="text-slate-900">Pilih Layanan</flux:heading>
-                                <flux:text class="text-sm leading-6 text-slate-600">
-                                    Tinjau katalog layanan dan pilih jenis pelayanan yang paling sesuai dengan kebutuhan Anda.
-                                </flux:text>
+                    <div class="grid gap-3">
+                        <div class="flex items-start gap-3.5 rounded-2xl border border-cyan-100 bg-gradient-to-br from-cyan-50/80 to-white p-3.5 sm:p-4 shadow-xs print:border-slate-200">
+                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-cyan-600 text-white shadow-xs sm:size-11">
+                                <flux:icon.clock class="size-5" />
                             </div>
-                        </flux:card>
-
-                        <flux:card class="border-slate-200 bg-white p-5 shadow-none">
-                            <div class="space-y-3">
-                                <flux:badge color="green" rounded>Step 2</flux:badge>
-                                <flux:heading size="base" class="text-slate-900">Isi Data Diri</flux:heading>
-                                <flux:text class="text-sm leading-6 text-slate-600">
-                                    Lengkapi data yang diperlukan secara benar agar petugas mudah memverifikasi kebutuhan layanan.
-                                </flux:text>
+                            <div class="min-w-0 space-y-0.5">
+                                <p class="text-xs font-bold tracking-[0.16em] text-cyan-800 uppercase print:text-slate-800">Jam Operasional</p>
+                                <p class="text-sm font-semibold text-slate-800 truncate">
+                                    {{ filled($operatingHours) ? $operatingHours : 'Senin - Jumat, 08:00 - 16:00 WIB' }}
+                                </p>
                             </div>
-                        </flux:card>
+                        </div>
 
-                        <flux:card class="border-slate-200 bg-white p-5 shadow-none">
-                            <div class="space-y-3">
-                                <flux:badge color="amber" rounded>Step 3</flux:badge>
-                                <flux:heading size="base" class="text-slate-900">Tunjukkan Nomor Antrian</flux:heading>
-                                <flux:text class="text-sm leading-6 text-slate-600">
-                                    Pantau display dan tunjukkan nomor antrian kepada petugas saat layanan Anda dipanggil.
-                                </flux:text>
+                        <div class="flex items-start gap-3.5 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/80 to-white p-3.5 sm:p-4 shadow-xs print:border-slate-200">
+                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs sm:size-11">
+                                <flux:icon.identification class="size-5" />
                             </div>
-                        </flux:card>
-                    </div>
-
-                    <flux:separator />
-
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                        <flux:text class="text-sm text-slate-600">Petugas PTSP? Masuk ke panel administrasi.</flux:text>
-                        <div class="flex gap-2">
-                            @auth
-                                <flux:button href="{{ route('dashboard') }}" variant="subtle" icon="squares-2x2" size="sm">
-                                    Dashboard
-                                </flux:button>
-                            @else
-                                <flux:button href="{{ route('login') }}" variant="subtle" icon="arrow-right-start-on-rectangle" size="sm">
-                                    Masuk
-                                </flux:button>
-                            @endauth
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-bold tracking-[0.16em] text-emerald-800 uppercase print:text-slate-800">Persiapan Dokumen</p>
+                                <p class="text-xs leading-relaxed text-slate-700 sm:text-sm">
+                                    Bawa e-KTP dan berkas persyaratan asli agar proses verifikasi di loket berjalan lancar.
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </flux:card>
-            </section>
+                </div>
+            </div>
         </div>
-    </flux:main>
+
+        {{-- 2. LIVE ANTRIAN RINGKAS (MINI-MONITOR WIDGET) --}}
+        <div class="rounded-3xl border border-cyan-100 bg-gradient-to-b from-white via-white to-cyan-50/30 p-5 sm:p-8 shadow-[0_18px_45px_-30px_rgba(14,116,144,0.22)] print:border-slate-300 print:shadow-none">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="space-y-0.5 sm:space-y-1">
+                    <flux:heading level="2" size="xl" class="font-bold text-slate-900">Pantauan Antrian Hari Ini</flux:heading>
+                    <flux:text class="text-xs text-slate-600 sm:text-sm">
+                        Ringkasan aktivitas tiket dan panggilan loket di ruang tunggu PTSP saat ini.
+                    </flux:text>
+                </div>
+
+                <div class="inline-flex items-center gap-2.5 self-start rounded-full border border-emerald-200 bg-emerald-50/90 px-3 py-1 text-xs font-bold tracking-wider text-emerald-800 uppercase shadow-xs sm:self-auto sm:px-3.5 sm:py-1.5 print:hidden">
+                    <span class="relative flex size-2.5">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75 motion-reduce:hidden"></span>
+                        <span class="relative inline-flex size-2.5 rounded-full bg-emerald-600"></span>
+                    </span>
+                    <span>Live Sinkronisasi</span>
+                </div>
+            </div>
+
+            {{-- Stats Grid (Adaptive 1 col on mobile, 3 cols on sm+) --}}
+            <div class="mt-5 sm:mt-6 grid gap-3.5 sm:grid-cols-3">
+                <div class="flex items-center gap-4 rounded-2xl border border-cyan-200/80 bg-gradient-to-br from-cyan-50/90 via-cyan-50/40 to-white p-4 sm:p-4.5 shadow-xs transition hover:border-cyan-300">
+                    <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-600 to-cyan-800 text-white shadow-md shadow-cyan-600/20 sm:size-13">
+                        <flux:icon.ticket class="size-6 sm:size-6.5" />
+                    </div>
+                    <div>
+                        <p class="text-2xl font-black text-cyan-950 sm:text-3xl lg:text-4xl">{{ $todayStats['total'] }}</p>
+                        <p class="text-xs font-bold tracking-[0.14em] text-cyan-800 uppercase">Total Tiket Terdaftar</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/90 via-amber-50/40 to-white p-4 sm:p-4.5 shadow-xs transition hover:border-amber-300">
+                    <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-md shadow-amber-600/20 sm:size-13">
+                        <flux:icon.clock class="size-6 sm:size-6.5" />
+                    </div>
+                    <div>
+                        <p class="text-2xl font-black text-amber-950 sm:text-3xl lg:text-4xl">{{ $todayStats['waiting'] }}</p>
+                        <p class="text-xs font-bold tracking-[0.14em] text-amber-800 uppercase">Sedang Menunggu</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-emerald-50/40 to-white p-4 sm:p-4.5 shadow-xs transition hover:border-emerald-300">
+                    <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-md shadow-emerald-600/20 sm:size-13">
+                        <flux:icon.check-circle class="size-6 sm:size-6.5" />
+                    </div>
+                    <div>
+                        <p class="text-2xl font-black text-emerald-950 sm:text-3xl lg:text-4xl">{{ $todayStats['completed'] }}</p>
+                        <p class="text-xs font-bold tracking-[0.14em] text-emerald-800 uppercase">Selesai Dilayani</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Active Calling Display Cards --}}
+            @if ($activeCallingTickets->isNotEmpty())
+                <div class="mt-6 border-t border-cyan-100 pt-5 sm:pt-6">
+                    <div class="mb-3.5 flex items-center gap-2">
+                        <flux:icon.megaphone class="size-4 text-emerald-700" />
+                        <p class="text-xs font-bold tracking-[0.16em] text-slate-700 uppercase">Sedang Dipanggil di Loket PTSP</p>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        @foreach ($activeCallingTickets as $callingTicket)
+                            <div class="flex items-center justify-between rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-white p-3.5 sm:p-4 shadow-xs transition-all duration-200 hover:shadow-md hover:border-emerald-400">
+                                <div class="min-w-0 pr-2">
+                                    <div class="inline-flex items-center gap-1.5 rounded-md bg-emerald-700 px-2 py-0.5 text-xs font-bold text-white uppercase shadow-2xs">
+                                        <span class="inline-flex size-1.5 rounded-full bg-emerald-300 animate-pulse motion-reduce:hidden"></span>
+                                        {{ $callingTicket->counter?->name ?? 'Loket' }}
+                                    </div>
+                                    <p class="mt-1 truncate text-xs font-medium text-slate-600">{{ $callingTicket->service?->name }}</p>
+                                </div>
+                                <div class="shrink-0 font-black text-xl sm:text-2xl tracking-wider text-emerald-800 animate-pulse-gentle rounded-xl px-2 py-0.5">
+                                    {{ $callingTicket->ticket_number }}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @else
+                <div class="mt-5 sm:mt-6 flex flex-col gap-2 rounded-2xl border border-cyan-100 bg-cyan-50/70 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5 text-xs text-cyan-900">
+                    <div class="flex items-center gap-2">
+                        <flux:icon.sparkles class="size-4 text-cyan-700 shrink-0" />
+                        <span>Semua loket siap melayani antrian Anda dengan tertib dan transparan.</span>
+                    </div>
+                    <a href="{{ url('/antrian') }}" class="font-semibold text-cyan-800 hover:underline print:hidden">
+                        Ambil nomor sekarang &rarr;
+                    </a>
+                </div>
+            @endif
+        </div>
+
+        {{-- 3. KATALOG LAYANAN INTERAKTIF --}}
+        <section
+            x-data="{ filter: 'all' }"
+            class="space-y-5 sm:space-y-6"
+        >
+            <div class="flex flex-col gap-3.5 sm:flex-row sm:items-end sm:justify-between">
+                <div class="space-y-1">
+                    <flux:heading level="2" size="xl" class="font-bold text-slate-900">Katalog Layanan</flux:heading>
+                    <flux:text class="max-w-3xl text-xs leading-relaxed text-slate-600 sm:text-base">
+                        Pilih jenis permohonan yang sesuai. Anda dapat memeriksa persyaratan dokumen serta mengambil nomor antrian secara langsung.
+                    </flux:text>
+                </div>
+
+                {{-- Quick Filter Pills (Smooth scroll on narrow screens) --}}
+                <div class="flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-cyan-100 bg-white p-1.5 shadow-2xs print:hidden touch-manipulation">
+                    <button
+                        type="button"
+                        x-on:click="filter = 'all'"
+                        :class="filter === 'all' ? 'bg-cyan-800 text-white shadow-xs' : 'text-cyan-900 hover:text-cyan-950 hover:bg-cyan-50'"
+                        class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer"
+                    >
+                        Semua Layanan
+                    </button>
+                    <button
+                        type="button"
+                        x-on:click="filter = 'booking'"
+                        :class="filter === 'booking' ? 'bg-emerald-800 text-white shadow-xs' : 'text-emerald-900 hover:text-emerald-950 hover:bg-emerald-50'"
+                        class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer"
+                    >
+                        Booking Online
+                    </button>
+                    <button
+                        type="button"
+                        x-on:click="filter = 'walkin'"
+                        :class="filter === 'walkin' ? 'bg-blue-800 text-white shadow-xs' : 'text-blue-900 hover:text-blue-950 hover:bg-blue-50'"
+                        class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer"
+                    >
+                        Walk-in
+                    </button>
+                </div>
+            </div>
+
+            @if ($services->isNotEmpty())
+                <div class="grid gap-4.5 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach ($services as $service)
+                        <div
+                            x-show="filter === 'all' || (filter === 'booking' && {{ $service->booking_enabled ? 'true' : 'false' }}) || (filter === 'walkin' && {{ $service->walk_in_enabled ? 'true' : 'false' }})"
+                            x-transition:enter="transition ease-out duration-250 motion-reduce:transition-none"
+                            x-transition:enter-start="opacity-0 translate-y-2 scale-[0.98]"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave="transition ease-in duration-150 motion-reduce:transition-none"
+                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave-end="opacity-0 translate-y-1 scale-[0.98]"
+                            x-data="{ showRequirements: false }"
+                            class="flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_14px_34px_-24px_rgba(15,23,42,0.14)] transition-all duration-200 ease-out hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_48px_-24px_rgba(14,116,144,0.22)] motion-reduce:transform-none print:shadow-none print:border-slate-300"
+                        >
+                            <div class="space-y-4">
+                                {{-- Header Service --}}
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <flux:heading size="lg" class="font-bold text-slate-900">{{ $service->name }}</flux:heading>
+                                        <p class="text-xs font-semibold tracking-[0.14em] text-cyan-800 uppercase">Pelayanan PTSP</p>
+                                    </div>
+
+                                    <span class="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-100 to-teal-100 font-black text-base text-cyan-900 border border-cyan-200/60 shadow-2xs">
+                                        {{ filled($service->letter_code) ? $service->letter_code : 'U' }}
+                                    </span>
+                                </div>
+
+                                @if ($service->description)
+                                    <flux:text class="text-xs leading-relaxed text-slate-600 sm:text-sm">
+                                        {{ $service->description }}
+                                    </flux:text>
+                                @endif
+
+                                {{-- Badges --}}
+                                <div class="flex flex-wrap gap-2">
+                                    @if ($service->booking_enabled)
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+                                            <flux:icon.check class="size-3 text-emerald-600" />
+                                            Booking Online
+                                        </span>
+                                    @endif
+
+                                    @if ($service->walk_in_enabled)
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-800">
+                                            <flux:icon.users class="size-3 text-blue-600" />
+                                            Walk-in
+                                        </span>
+                                    @endif
+
+                                    @if ($service->daily_quota)
+                                        <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                                            Kuota: {{ $service->daily_quota }}/hari
+                                        </span>
+                                    @endif
+                                </div>
+
+                                {{-- Requirements Accordion (Auto-expanded on print, interactive on screen) --}}
+                                <div class="border-t border-slate-100 pt-3.5">
+                                    <button
+                                        type="button"
+                                        x-on:click="showRequirements = !showRequirements"
+                                        class="group flex w-full min-h-[44px] items-center justify-between rounded-xl py-1.5 text-xs font-bold tracking-[0.14em] text-cyan-800 uppercase transition hover:text-cyan-950 cursor-pointer touch-manipulation print:hidden"
+                                    >
+                                        <span class="flex items-center gap-1.5">
+                                            <flux:icon.document-text class="size-3.5 text-cyan-600 group-hover:text-cyan-800" />
+                                            Persyaratan Berkas
+                                        </span>
+                                        <svg
+                                            class="size-4 text-cyan-600 transform transition-transform duration-200 motion-reduce:transition-none"
+                                            :class="showRequirements ? 'rotate-180 text-cyan-800' : ''"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <div
+                                        x-show="showRequirements"
+                                        x-collapse.duration.250ms
+                                        class="mt-2.5 rounded-2xl border border-cyan-100 bg-gradient-to-br from-slate-50 to-cyan-50/40 p-4 text-xs leading-relaxed text-slate-700 print:!block print:bg-white print:border-slate-200"
+                                    >
+                                        @if (filled($service->requirements))
+                                            <div class="space-y-2">
+                                                @foreach (explode("\n", $service->requirements) as $reqLine)
+                                                    @if (filled(trim($reqLine)))
+                                                        <div class="flex items-start gap-2">
+                                                            <flux:icon.check-circle class="size-4 shrink-0 text-emerald-600 mt-0.5" />
+                                                            <span>{{ trim($reqLine) }}</span>
+                                                        </div>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <p class="text-slate-500 italic">Persyaratan umum akan dipandu langsung oleh petugas loket PTSP.</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Action Button (48px high for touch comfort) --}}
+                            <div class="mt-6 pt-2 print:hidden">
+                                <flux:button
+                                    href="{{ url('/antrian?service_id=' . $service->id) }}"
+                                    variant="primary"
+                                    icon="ticket"
+                                    class="h-12 w-full justify-center rounded-2xl bg-gradient-to-r from-cyan-700 to-teal-700 font-bold text-white shadow-xs transition hover:brightness-105 active:scale-[0.99] touch-manipulation"
+                                >
+                                    Pilih Layanan
+                                </flux:button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="rounded-3xl border border-dashed border-slate-300 bg-white/90 p-10 text-center">
+                    <div class="mx-auto flex max-w-md flex-col items-center gap-4">
+                        <div class="flex size-14 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700">
+                            <flux:icon.inbox class="size-7" />
+                        </div>
+                        <div class="space-y-1">
+                            <flux:heading size="lg" class="text-slate-900">Layanan belum tersedia</flux:heading>
+                            <flux:text class="text-sm text-slate-600">
+                                Daftar layanan publik akan tampil setelah data layanan diaktifkan oleh administrator PTSP.
+                            </flux:text>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </section>
+
+        {{-- 4. PANDUAN PENGUNJUNG --}}
+        <section class="rounded-3xl border border-cyan-200/80 bg-gradient-to-b from-white via-cyan-50/20 to-cyan-50/50 p-5 sm:p-8 lg:p-10 shadow-xs print:border-slate-300 print:bg-white">
+            <div class="space-y-2 text-center lg:text-left">
+                <flux:heading level="2" size="xl" class="font-bold text-slate-900">Panduan Pengunjung</flux:heading>
+                <flux:text class="max-w-2xl text-xs leading-relaxed text-slate-600 sm:text-base">
+                    Tiga langkah sederhana untuk memastikan kunjungan Anda ke PTSP {{ $institutionName }} tertib dan efisien.
+                </flux:text>
+            </div>
+
+            <div class="mt-6 sm:mt-8 grid gap-4 sm:gap-5 sm:grid-cols-3 items-stretch">
+                <div class="flex flex-col justify-between space-y-4 rounded-3xl border border-cyan-200/90 bg-white p-5 sm:p-6 shadow-xs transition hover:border-cyan-300 print:border-slate-200">
+                    <div class="space-y-3.5">
+                        <div class="flex size-11 sm:size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-600 to-cyan-800 font-black text-base sm:text-lg text-white shadow-md shadow-cyan-600/20">
+                            1
+                        </div>
+                        <div class="space-y-1.5">
+                            <flux:heading size="base" class="font-bold text-slate-900">Pilih Layanan</flux:heading>
+                            <flux:text class="text-xs leading-relaxed text-slate-600 sm:text-sm">
+                                Tinjau katalog layanan dan pahami jenis pelayanan serta persyaratan berkas yang wajib disiapkan.
+                            </flux:text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col justify-between space-y-4 rounded-3xl border border-emerald-200/90 bg-white p-5 sm:p-6 shadow-xs transition hover:border-emerald-300 print:border-slate-200">
+                    <div class="space-y-3.5">
+                        <div class="flex size-11 sm:size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 font-black text-base sm:text-lg text-white shadow-md shadow-emerald-600/20">
+                            2
+                        </div>
+                        <div class="space-y-1.5">
+                            <flux:heading size="base" class="font-bold text-slate-900">Isi Data Diri</flux:heading>
+                            <flux:text class="text-xs leading-relaxed text-slate-600 sm:text-sm">
+                                Masukkan nama, nomor HP, dan NIK pada formulir booking untuk verifikasi identitas di meja frontdesk.
+                            </flux:text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col justify-between space-y-4 rounded-3xl border border-blue-200/90 bg-white p-5 sm:p-6 shadow-xs transition hover:border-blue-300 print:border-slate-200">
+                    <div class="space-y-3.5">
+                        <div class="flex size-11 sm:size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-800 font-black text-base sm:text-lg text-white shadow-md shadow-blue-600/20">
+                            3
+                        </div>
+                        <div class="space-y-1.5">
+                            <flux:heading size="base" class="font-bold text-slate-900">Tunjukkan Nomor Antrian</flux:heading>
+                            <flux:text class="text-xs leading-relaxed text-slate-600 sm:text-sm">
+                                Simpan bukti tiket dan hadir tepat waktu sesuai giliran panggilan loket di layar display ruang tunggu.
+                            </flux:text>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Assurance Banner & Internal Staff Login Hint --}}
+            <div class="mt-6 sm:mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-cyan-100 pt-5 sm:pt-6 print:border-slate-200">
+                <div class="flex items-center gap-2 text-xs font-semibold text-emerald-800 print:text-slate-800">
+                    <flux:icon.shield-check class="size-4 text-emerald-600 print:text-slate-700" />
+                    <span>Pelayanan Bebas Pungutan Liar &mdash; Cepat, Tertib, dan Akuntabel.</span>
+                </div>
+                <div class="print:hidden">
+                    @auth
+                        <flux:button href="{{ route('dashboard') }}" variant="subtle" icon="squares-2x2" size="sm" class="rounded-xl border border-cyan-200 bg-white text-cyan-950 font-semibold shadow-xs">
+                            Buka Dashboard
+                        </flux:button>
+                    @else
+                        <flux:button href="{{ route('login') }}" variant="subtle" icon="arrow-right-start-on-rectangle" size="sm" class="rounded-xl border border-cyan-200 bg-white text-cyan-950 font-semibold shadow-xs">
+                            Masuk Petugas
+                        </flux:button>
+                    @endauth
+                </div>
+            </div>
+        </section>
+
+    </div>
 </x-layouts::public>

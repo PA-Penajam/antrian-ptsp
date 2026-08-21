@@ -21,10 +21,14 @@ export default defineConfig({
         }),
     ],
     server: {
-        host: true,
+        // Dedicated port: avoids collision with other local Vite apps (e.g. sso-papenajam on 5173)
+        host: '127.0.0.1',
+        port: 5174,
+        strictPort: true,
         cors: true,
         hmr: {
             host: '127.0.0.1',
+            port: 5174,
         },
         watch: {
             ignored: ['**/vendor/**', '**/node_modules/**', '**/storage/framework/views/**'],
