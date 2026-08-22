@@ -1,7 +1,17 @@
 <x-layouts::app :title="__('Laporan Antrian')">
     <div class="w-full space-y-6">
+        {{-- Print-Only Formal Header --}}
+        <div class="hidden print:block mb-6 border-b-2 border-zinc-900 pb-4 text-center">
+            <h1 class="text-xl font-bold uppercase tracking-wider text-zinc-900">{{ config('institution.name', 'Pengadilan Agama') }}</h1>
+            <h2 class="text-base font-semibold uppercase tracking-wide text-zinc-800 mt-1">Laporan Rekapitulasi Pelayanan Antrian PTSP</h2>
+            <p class="text-xs text-zinc-600 mt-1">
+                Periode: {{ \Carbon\Carbon::parse($from)->translatedFormat('d F Y') }} s.d. {{ \Carbon\Carbon::parse($to)->translatedFormat('d F Y') }}
+                &bull; Dicetak: {{ now()->translatedFormat('d/m/Y H:i') }}
+            </p>
+        </div>
+
         {{-- Breadcrumbs & Header --}}
-        <div class="animate-fade-in-up flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div class="animate-fade-in-up flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between print:hidden">
             <div class="space-y-1">
                 <flux:breadcrumbs class="mb-1">
                     <flux:breadcrumbs.item :href="route('dashboard')" icon="home" aria-label="Beranda" />
@@ -19,7 +29,7 @@
                     type="button" 
                     variant="filled" 
                     icon="printer" 
-                    class="font-semibold text-xs shadow-2xs"
+                    class="font-semibold text-xs shadow-2xs cursor-pointer"
                     onclick="window.print()"
                     aria-label="Cetak atau ekspor laporan ke PDF"
                 >
@@ -29,7 +39,7 @@
         </div>
 
         {{-- Filter Tanggal & Quick Presets --}}
-        <div class="animate-fade-in-up" style="animation-delay: 75ms;">
+        <div class="animate-fade-in-up print:hidden" style="animation-delay: 75ms;">
             <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900" x-data="{
                 from: '{{ $from }}',
                 to: '{{ $to }}',
@@ -89,7 +99,7 @@
                         <flux:button 
                             type="submit" 
                             variant="primary" 
-                            class="w-full sm:w-auto bg-cyan-700 font-bold text-white shadow-md shadow-cyan-700/20 hover:bg-cyan-600 dark:bg-cyan-700 dark:text-white dark:hover:bg-cyan-600 px-5"
+                            class="w-full sm:w-auto bg-cyan-700 font-bold text-white shadow-md shadow-cyan-700/20 hover:bg-cyan-600 dark:bg-cyan-700 dark:text-white dark:hover:bg-cyan-600 px-5 cursor-pointer"
                             x-bind:disabled="filtering"
                         >
                             <span x-show="!filtering" class="flex items-center gap-1.5">
@@ -111,41 +121,41 @@
                 <div class="mt-4 pt-3.5 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center gap-2 text-xs">
                     <span class="text-zinc-500 font-medium mr-1">Preset Cepat:</span>
                     @if ($from === now()->toDateString() && $to === now()->toDateString())
-                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-cyan-700 text-white dark:bg-cyan-600 dark:text-white shadow-2xs" @click="setPreset(0)">
+                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-cyan-700 text-white dark:bg-cyan-600 dark:text-white shadow-2xs cursor-pointer" @click="setPreset(0)">
                             Hari Ini
                         </button>
                     @else
-                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700" @click="setPreset(0)">
+                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer" @click="setPreset(0)">
                             Hari Ini
                         </button>
                     @endif
 
                     @if ($from === now()->subDays(6)->toDateString() && $to === now()->toDateString())
-                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-cyan-700 text-white dark:bg-cyan-600 dark:text-white shadow-2xs" @click="setPreset(6)">
+                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-cyan-700 text-white dark:bg-cyan-600 dark:text-white shadow-2xs cursor-pointer" @click="setPreset(6)">
                             7 Hari Terakhir
                         </button>
                     @else
-                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700" @click="setPreset(6)">
+                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer" @click="setPreset(6)">
                             7 Hari Terakhir
                         </button>
                     @endif
 
                     @if ($from === now()->subDays(29)->toDateString() && $to === now()->toDateString())
-                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-cyan-700 text-white dark:bg-cyan-600 dark:text-white shadow-2xs" @click="setPreset(29)">
+                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-cyan-700 text-white dark:bg-cyan-600 dark:text-white shadow-2xs cursor-pointer" @click="setPreset(29)">
                             30 Hari Terakhir
                         </button>
                     @else
-                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700" @click="setPreset(29)">
+                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer" @click="setPreset(29)">
                             30 Hari Terakhir
                         </button>
                     @endif
 
                     @if ($from === now()->startOfMonth()->toDateString() && $to === now()->toDateString())
-                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-cyan-700 text-white dark:bg-cyan-600 dark:text-white shadow-2xs" @click="setPreset('month')">
+                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-cyan-700 text-white dark:bg-cyan-600 dark:text-white shadow-2xs cursor-pointer" @click="setPreset('month')">
                             Bulan Ini
                         </button>
                     @else
-                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700" @click="setPreset('month')">
+                        <button type="button" class="rounded-xl px-2.5 py-1 font-semibold bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer" @click="setPreset('month')">
                             Bulan Ini
                         </button>
                     @endif
@@ -162,12 +172,12 @@
         @endphp
 
         {{-- Executive KPI Cards --}}
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in-up" style="animation-delay: 150ms;">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in-up print:grid-cols-4 print:gap-3" style="animation-delay: 150ms;">
             {{-- Total Antrian --}}
-            <flux:card class="admin-stat-total admin-card-elevated rounded-3xl p-5 relative overflow-hidden">
+            <flux:card class="admin-stat-total admin-card-elevated rounded-3xl p-5 relative overflow-hidden print:shadow-none print:border print:border-zinc-300">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-sky-800 dark:text-sky-300">Total Tiket</span>
-                    <div class="admin-icon-box size-8 rounded-xl bg-sky-200/70 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300">
+                    <div class="admin-icon-box size-8 rounded-xl bg-sky-200/70 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300 print:hidden">
                         <flux:icon.ticket class="size-4" />
                     </div>
                 </div>
@@ -178,10 +188,10 @@
             </flux:card>
 
             {{-- Tiket Selesai --}}
-            <flux:card class="admin-stat-success admin-card-elevated rounded-3xl p-5 relative overflow-hidden">
+            <flux:card class="admin-stat-success admin-card-elevated rounded-3xl p-5 relative overflow-hidden print:shadow-none print:border print:border-zinc-300">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Tiket Selesai</span>
-                    <div class="admin-icon-box size-8 rounded-xl bg-emerald-200/70 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
+                    <div class="admin-icon-box size-8 rounded-xl bg-emerald-200/70 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 print:hidden">
                         <flux:icon.check-circle class="size-4" />
                     </div>
                 </div>
@@ -198,10 +208,10 @@
             </flux:card>
 
             {{-- Layanan Terdaftar --}}
-            <flux:card class="admin-stat-warning admin-card-elevated rounded-3xl p-5 relative overflow-hidden">
+            <flux:card class="admin-stat-warning admin-card-elevated rounded-3xl p-5 relative overflow-hidden print:shadow-none print:border print:border-zinc-300">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">Layanan Aktif</span>
-                    <div class="admin-icon-box size-8 rounded-xl bg-amber-200/70 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
+                    <div class="admin-icon-box size-8 rounded-xl bg-amber-200/70 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 print:hidden">
                         <flux:icon.clipboard-document-list class="size-4" />
                     </div>
                 </div>
@@ -212,10 +222,10 @@
             </flux:card>
 
             {{-- Petugas Bertugas --}}
-            <flux:card class="admin-stat-info admin-card-elevated rounded-3xl p-5 relative overflow-hidden">
+            <flux:card class="admin-stat-info admin-card-elevated rounded-3xl p-5 relative overflow-hidden print:shadow-none print:border print:border-zinc-300">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-violet-800 dark:text-violet-300">Petugas Bertugas</span>
-                    <div class="admin-icon-box size-8 rounded-xl bg-violet-200/70 text-violet-700 dark:bg-violet-900/60 dark:text-violet-300">
+                    <div class="admin-icon-box size-8 rounded-xl bg-violet-200/70 text-violet-700 dark:bg-violet-900/60 dark:text-violet-300 print:hidden">
                         <flux:icon.user-group class="size-4" />
                     </div>
                 </div>
@@ -227,13 +237,13 @@
         </div>
 
         {{-- Laporan Breakdown Grid --}}
-        <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <div class="grid gap-6 grid-cols-1 lg:grid-cols-2 print:grid-cols-1 print:gap-4">
             {{-- By Service --}}
-            <div class="animate-fade-in-up" style="animation-delay: 200ms;">
-                <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 h-full flex flex-col justify-between">
+            <div class="animate-fade-in-up print:break-inside-avoid" style="animation-delay: 200ms;">
+                <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 h-full flex flex-col justify-between print:shadow-none print:border-zinc-300">
                     <div>
-                        <div class="flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800">
-                            <div class="admin-icon-box bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                        <div class="flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800 print:border-zinc-300">
+                            <div class="admin-icon-box bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 print:hidden">
                                 <flux:icon.clipboard-document-list class="size-5" />
                             </div>
                             <div>
@@ -244,8 +254,8 @@
 
                         @if (count($report['by_service']) > 0)
                             <div class="admin-table-scroll mt-4 overflow-x-auto">
-                                <flux:table>
-                                    <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40">
+                                <flux:table aria-label="Tabel rincian antrian berdasarkan layanan">
+                                    <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40 print:bg-transparent">
                                         <flux:table.column class="text-xs font-bold uppercase tracking-wider">Nama Layanan</flux:table.column>
                                         <flux:table.column class="text-right text-xs font-bold uppercase tracking-wider">Jumlah</flux:table.column>
                                     </flux:table.columns>
@@ -283,11 +293,11 @@
             </div>
 
             {{-- By Counter --}}
-            <div class="animate-fade-in-up" style="animation-delay: 250ms;">
-                <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 h-full flex flex-col justify-between">
+            <div class="animate-fade-in-up print:break-inside-avoid" style="animation-delay: 250ms;">
+                <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 h-full flex flex-col justify-between print:shadow-none print:border-zinc-300">
                     <div>
-                        <div class="flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800">
-                            <div class="admin-icon-box bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300">
+                        <div class="flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800 print:border-zinc-300">
+                            <div class="admin-icon-box bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 print:hidden">
                                 <flux:icon.building-office class="size-5" />
                             </div>
                             <div>
@@ -298,8 +308,8 @@
 
                         @if (count($report['by_counter']) > 0)
                             <div class="admin-table-scroll mt-4 overflow-x-auto">
-                                <flux:table>
-                                    <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40">
+                                <flux:table aria-label="Tabel rincian antrian berdasarkan loket">
+                                    <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40 print:bg-transparent">
                                         <flux:table.column class="text-xs font-bold uppercase tracking-wider">Loket Pelayanan</flux:table.column>
                                         <flux:table.column class="text-right text-xs font-bold uppercase tracking-wider">Jumlah</flux:table.column>
                                     </flux:table.columns>
@@ -331,11 +341,11 @@
             </div>
 
             {{-- By Officer --}}
-            <div class="animate-fade-in-up" style="animation-delay: 300ms;">
-                <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 h-full flex flex-col justify-between">
+            <div class="animate-fade-in-up print:break-inside-avoid" style="animation-delay: 300ms;">
+                <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 h-full flex flex-col justify-between print:shadow-none print:border-zinc-300">
                     <div>
-                        <div class="flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800">
-                            <div class="admin-icon-box bg-violet-100 text-violet-700 dark:bg-violet-950/70 dark:text-violet-300">
+                        <div class="flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800 print:border-zinc-300">
+                            <div class="admin-icon-box bg-violet-100 text-violet-700 dark:bg-violet-950/70 dark:text-violet-300 print:hidden">
                                 <flux:icon.user class="size-5" />
                             </div>
                             <div>
@@ -346,8 +356,8 @@
 
                         @if (count($report['by_officer']) > 0)
                             <div class="admin-table-scroll mt-4 overflow-x-auto">
-                                <flux:table>
-                                    <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40">
+                                <flux:table aria-label="Tabel rincian antrian berdasarkan petugas">
+                                    <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40 print:bg-transparent">
                                         <flux:table.column class="text-xs font-bold uppercase tracking-wider">Nama Petugas</flux:table.column>
                                         <flux:table.column class="text-right text-xs font-bold uppercase tracking-wider">Tiket Selesai</flux:table.column>
                                     </flux:table.columns>
@@ -379,11 +389,11 @@
             </div>
 
             {{-- By Status --}}
-            <div class="animate-fade-in-up" style="animation-delay: 350ms;">
-                <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 h-full flex flex-col justify-between">
+            <div class="animate-fade-in-up print:break-inside-avoid" style="animation-delay: 350ms;">
+                <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 h-full flex flex-col justify-between print:shadow-none print:border-zinc-300">
                     <div>
-                        <div class="flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800">
-                            <div class="admin-icon-box bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300">
+                        <div class="flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800 print:border-zinc-300">
+                            <div class="admin-icon-box bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300 print:hidden">
                                 <flux:icon.signal class="size-5" />
                             </div>
                             <div>
@@ -394,8 +404,8 @@
 
                         @if (count($report['by_status']) > 0)
                             <div class="admin-table-scroll mt-4 overflow-x-auto">
-                                <flux:table>
-                                    <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40">
+                                <flux:table aria-label="Tabel rincian antrian berdasarkan status">
+                                    <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40 print:bg-transparent">
                                         <flux:table.column class="text-xs font-bold uppercase tracking-wider">Status Tiket</flux:table.column>
                                         <flux:table.column class="text-right text-xs font-bold uppercase tracking-wider">Jumlah</flux:table.column>
                                     </flux:table.columns>
@@ -432,10 +442,10 @@
             </div>
 
             {{-- Officer x Service Distribution --}}
-            <div class="lg:col-span-2 animate-fade-in-up" style="animation-delay: 400ms;">
-                <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-7 dark:border-zinc-800 dark:bg-zinc-900">
-                    <div class="flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800">
-                        <div class="admin-icon-box bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950/70 dark:text-fuchsia-300">
+            <div class="lg:col-span-2 animate-fade-in-up print:break-inside-avoid" style="animation-delay: 400ms;">
+                <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-7 dark:border-zinc-800 dark:bg-zinc-900 print:shadow-none print:border-zinc-300">
+                    <div class="flex items-center gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800 print:border-zinc-300">
+                        <div class="admin-icon-box bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950/70 dark:text-fuchsia-300 print:hidden">
                             <flux:icon.chart-bar class="size-5" />
                         </div>
                         <div>
@@ -446,8 +456,8 @@
 
                     @if (count($report['officer_service_distribution'] ?? []) > 0)
                         <div class="admin-table-scroll mt-4 overflow-x-auto">
-                            <flux:table>
-                                <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40">
+                            <flux:table aria-label="Tabel distribusi layanan per petugas">
+                                <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40 print:bg-transparent">
                                     <flux:table.column class="whitespace-nowrap text-xs font-bold uppercase tracking-wider">Petugas</flux:table.column>
                                     <flux:table.column class="text-xs font-bold uppercase tracking-wider">Distribusi Layanan Selesai</flux:table.column>
                                     <flux:table.column class="text-right text-xs font-bold uppercase tracking-wider">Total Selesai</flux:table.column>
@@ -460,7 +470,7 @@
                                         <flux:table.row class="admin-row-enter transition-colors hover:bg-fuchsia-50/30 dark:hover:bg-zinc-800/60" style="--stagger-i: {{ $loop->index }}">
                                             <flux:table.cell class="font-bold whitespace-nowrap text-zinc-900 dark:text-zinc-100">
                                                 <div class="flex items-center gap-2">
-                                                    <div class="flex size-7 items-center justify-center rounded-lg bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 font-bold text-xs">
+                                                    <div class="flex size-7 items-center justify-center rounded-lg bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 font-bold text-xs print:border print:border-zinc-300">
                                                         {{ strtoupper(substr($officer, 0, 1)) }}
                                                     </div>
                                                     <span>{{ $officer }}</span>
@@ -469,7 +479,7 @@
                                             <flux:table.cell>
                                                 <div class="flex flex-wrap gap-1.5 py-1">
                                                     @foreach ($services as $service => $count)
-                                                        <span class="inline-flex items-center gap-1.5 rounded-xl bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
+                                                        <span class="inline-flex items-center gap-1.5 rounded-xl bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 print:border print:border-zinc-300">
                                                             <span>{{ $service }}</span>
                                                             <span class="rounded-md bg-white px-1.5 py-0.5 text-xs font-bold font-mono text-fuchsia-700 shadow-2xs dark:bg-zinc-900 dark:text-fuchsia-300">{{ $count }}</span>
                                                         </span>
