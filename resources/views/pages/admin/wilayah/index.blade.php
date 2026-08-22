@@ -129,7 +129,7 @@
                                     </flux:table.cell>
                                     <flux:table.cell class="whitespace-nowrap text-right">
                                         @if ($selectedKabupatenKode !== $kabupaten->kode)
-                                            <form method="POST" action="{{ route('admin.wilayah.update') }}" class="inline">
+                                            <form method="POST" action="{{ route('admin.wilayah.update') }}" class="inline" x-data="{ localSubmitting: false }" @submit="localSubmitting = true; submitting = true">
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="kabupaten_kode" value="{{ $kabupaten->kode }}">
@@ -137,12 +137,21 @@
                                                     type="submit" 
                                                     size="sm" 
                                                     variant="primary" 
-                                                    icon="check" 
                                                     aria-label="Pilih {{ $kabupaten->nama }} sebagai wilayah aktif"
                                                     class="font-semibold shadow-md shadow-cyan-700/20 bg-cyan-700 hover:bg-cyan-600 dark:bg-cyan-700 dark:hover:bg-cyan-600 text-white"
                                                     x-bind:disabled="submitting"
                                                 >
-                                                    Pilih
+                                                    <span x-show="!localSubmitting" class="flex items-center gap-2">
+                                                        <flux:icon.check class="size-4" />
+                                                        Pilih
+                                                    </span>
+                                                    <span x-show="localSubmitting" class="flex items-center gap-2" style="display: none;">
+                                                        <svg class="size-4 animate-spin motion-reduce:hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Menyimpan...
+                                                    </span>
                                                 </flux:button>
                                             </form>
                                         @else
