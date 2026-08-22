@@ -25,6 +25,12 @@
             </flux:callout>
         @endif
 
+        @if (session('error'))
+            <flux:callout icon="exclamation-circle" color="red" class="animate-fade-in-up rounded-2xl shadow-xs" style="animation-delay: 75ms;">
+                {{ session('error') }}
+            </flux:callout>
+        @endif
+
         {{-- Created Ticket Celebration Card --}}
         @if ($ticket)
             <div class="animate-ticket-arrive overflow-hidden rounded-3xl border border-emerald-200/80 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent p-5 sm:p-6 shadow-lg shadow-emerald-500/5 backdrop-blur-xs dark:border-emerald-500/30 dark:from-emerald-950/40 dark:via-zinc-900/60 dark:to-zinc-900 relative">
@@ -61,6 +67,17 @@
                             <span class="text-zinc-500 dark:text-zinc-400">Waktu:</span>
                             <span class="ml-1 font-bold text-zinc-900 dark:text-white">{{ $ticket->created_at->format('H:i') }} WIB</span>
                         </div>
+                        <flux:button 
+                            type="button" 
+                            size="sm" 
+                            variant="filled" 
+                            icon="printer" 
+                            class="font-semibold text-xs text-emerald-800 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:text-emerald-200 dark:hover:bg-emerald-900 shadow-2xs"
+                            onclick="window.print()"
+                            aria-label="Cetak tiket antrian"
+                        >
+                            Cetak
+                        </flux:button>
                     </div>
                 </div>
             </div>
@@ -102,6 +119,17 @@
                             <span class="text-zinc-500 dark:text-zinc-400">Waktu Check-in:</span>
                             <span class="ml-1 font-bold text-zinc-900 dark:text-white">{{ $checkedInTicket->checked_in_at?->format('H:i') ?? now()->format('H:i') }} WIB</span>
                         </div>
+                        <flux:button 
+                            type="button" 
+                            size="sm" 
+                            variant="filled" 
+                            icon="printer" 
+                            class="font-semibold text-xs text-violet-800 bg-violet-100 hover:bg-violet-200 dark:bg-violet-900/60 dark:text-violet-200 dark:hover:bg-violet-900 shadow-2xs"
+                            onclick="window.print()"
+                            aria-label="Cetak struk check-in tiket"
+                        >
+                            Cetak
+                        </flux:button>
                     </div>
                 </div>
             </div>
@@ -286,7 +314,12 @@
                         @csrf
 
                         <flux:field>
-                            <flux:label class="font-semibold">Nomor Antrian / Kode Booking</flux:label>
+                            <div class="flex items-center justify-between">
+                                <flux:label class="font-semibold">Nomor Antrian / Kode Booking</flux:label>
+                                <span class="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                                    Tekan <span class="workstation-kbd bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700">Enter</span>
+                                </span>
+                            </div>
                             <flux:input 
                                 id="ticket-number-input" 
                                 type="text" 
@@ -297,6 +330,8 @@
                                 class="font-mono text-base tracking-wider uppercase"
                                 icon="ticket"
                                 autocomplete="off"
+                                x-data
+                                x-on:input="$el.value = $el.value.toUpperCase()"
                             />
                             <flux:error name="ticket_number" />
                         </flux:field>
