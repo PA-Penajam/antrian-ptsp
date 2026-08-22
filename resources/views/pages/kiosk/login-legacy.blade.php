@@ -12,7 +12,7 @@
        ═══════════════════════════════════════════════════════════ */
 
     html, body {
-        background-color: #0b132b;
+        background-color: #f8fafc;
         margin: 0;
         padding: 0;
         overflow-x: hidden;
@@ -29,8 +29,13 @@
 
     .login-root {
         min-height: 100vh;
-        background-color: #0f172a;
-        background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+        background-color: #f8fafc;
+        background-image: 
+            linear-gradient(180deg, rgba(248, 250, 252, 0.90) 0%, rgba(241, 245, 249, 0.94) 100%),
+            url("{{ asset('metronic-assets/media/misc/kiosk-bg-bright.jpg') }}");
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -52,26 +57,27 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: #1e293b;
-        color: #94a3b8;
+        background: #ffffff;
+        color: #475569;
         font-size: 0.8rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         padding: 6px 14px;
         border-radius: 999px;
-        border: 1px solid #334155;
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
     }
 
     .login-pulse-dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background-color: #34d399;
+        background-color: #10b981;
     }
 
     .login-clock {
-        color: #38bdf8;
+        color: #0284c7;
         font-weight: 800;
         font-size: 1.1rem;
         font-variant-numeric: tabular-nums;
@@ -80,8 +86,8 @@
     /* Main Login Card */
     .login-card {
         border-radius: 28px !important;
-        border: 2px solid #334155 !important;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45) !important;
+        border: 2px solid #e2e8f0 !important;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08) !important;
         background: #ffffff !important;
         width: 100%;
         max-width: 560px;
@@ -212,8 +218,8 @@
 
     /* Tactile Virtual PIN Keypad */
     .login-numpad-container {
-        background: #f1f5f9;
-        border: 2px solid #cbd5e1;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
         border-radius: 20px;
         padding: 16px;
         margin-top: 16px;
@@ -322,11 +328,11 @@
                     <i class="fa-solid fa-lock fs-1" id="lockIcon"></i>
                 </div>
 
-                @if(config('institution.logo_path'))
-                    <img alt="Logo" src="{{ Storage::url(config('institution.logo_path')) }}"
+                @if(config('institution.logo_path') && file_exists(public_path(config('institution.logo_path'))))
+                    <img alt="{{ config('institution.name') }}" src="{{ asset(config('institution.logo_path')) }}"
                          style="height:44px;object-fit:contain;display:block;margin:0 auto 12px;">
-                @else
-                    <img alt="Logo" src="{{ asset('metronic-assets/media/logos/logo-papenajam.webp') }}"
+                @elseif(config('institution.logo_path') && file_exists(storage_path('app/public/' . config('institution.logo_path'))))
+                    <img alt="{{ config('institution.name') }}" src="{{ Storage::url(config('institution.logo_path')) }}"
                          style="height:44px;object-fit:contain;display:block;margin:0 auto 12px;">
                 @endif
 
@@ -437,7 +443,7 @@
 
     {{-- Bottom Footer --}}
     <div class="text-center py-2">
-        <span class="text-gray-400 fw-semibold fs-7 text-uppercase" style="opacity:0.6; letter-spacing:1px;">
+        <span class="text-gray-500 fw-semibold fs-7 text-uppercase" style="letter-spacing:1px;">
             &copy; {{ date('Y') }} Sistem Antrian PTSP &bull; Mode Legacy Android 5
         </span>
     </div>

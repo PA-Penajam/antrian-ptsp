@@ -14,6 +14,7 @@ use App\Models\Counter;
 use App\Models\CounterSession;
 use App\Models\QueuePool;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -76,6 +77,19 @@ class CounterManagementController extends Controller
 
             return redirect()->route('admin.loket.index')
                 ->with('status', 'Loket berhasil diperbarui.');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][Loket] Gagal memperbarui loket (constraint)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+                'counter_id' => $counter->id,
+            ]);
+
+            $msg = str_contains($e->getMessage(), 'Duplicate entry')
+                ? 'Kode loket sudah digunakan.'
+                : 'Gagal memperbarui loket karena konflik data.';
+
+            return back()->withInput()->with('error', $msg);
         } catch (Throwable $e) {
             Log::error('[Admin][Loket] Gagal memperbarui loket', [
                 'error' => $e->getMessage(),
@@ -84,8 +98,8 @@ class CounterManagementController extends Controller
                 'input' => $request->except(['_token', '_method']),
             ]);
 
-            return redirect()->route('admin.loket.index')
-                ->with('error', 'Terjadi kesalahan saat memperbarui loket. Silakan coba lagi.');
+            return back()->withInput()
+                ->with('error', 'Terjadi kesalahan saat memperbarui loket. Periksa koneksi dan coba lagi.');
         }
     }
 
@@ -96,6 +110,18 @@ class CounterManagementController extends Controller
 
             return redirect()->route('admin.loket.index')
                 ->with('status', 'Loket berhasil dibuat.');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][Loket] Gagal membuat loket (constraint)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+            ]);
+
+            $msg = str_contains($e->getMessage(), 'Duplicate entry')
+                ? 'Kode loket sudah digunakan.'
+                : 'Gagal membuat loket karena konflik data.';
+
+            return back()->withInput()->with('error', $msg);
         } catch (Throwable $e) {
             Log::error('[Admin][Loket] Gagal membuat loket', [
                 'error' => $e->getMessage(),
@@ -103,8 +129,8 @@ class CounterManagementController extends Controller
                 'input' => $request->except(['_token']),
             ]);
 
-            return redirect()->route('admin.loket.index')
-                ->with('error', 'Terjadi kesalahan saat membuat loket. Silakan coba lagi.');
+            return back()->withInput()
+                ->with('error', 'Terjadi kesalahan saat membuat loket. Periksa koneksi dan coba lagi.');
         }
     }
 
@@ -135,6 +161,16 @@ class CounterManagementController extends Controller
 
             return redirect()->route('admin.loket.index')
                 ->with('status', 'Loket berhasil dihapus.');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][Loket] Gagal menghapus loket (FK)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+                'counter_id' => $counter->id,
+            ]);
+
+            return redirect()->route('admin.loket.index')
+                ->with('error', 'Loket tidak dapat dihapus karena masih terhubung dengan data lain.');
         } catch (Throwable $e) {
             Log::error('[Admin][Loket] Gagal menghapus loket', [
                 'error' => $e->getMessage(),
@@ -143,7 +179,7 @@ class CounterManagementController extends Controller
             ]);
 
             return redirect()->route('admin.loket.index')
-                ->with('error', 'Terjadi kesalahan saat menghapus loket. Silakan coba lagi.');
+                ->with('error', 'Terjadi kesalahan saat menghapus loket. Coba lagi atau hubungi admin.');
         }
     }
 
@@ -154,6 +190,18 @@ class CounterManagementController extends Controller
 
             return redirect()->route('admin.loket.index')
                 ->with('status', 'Pool antrian berhasil dibuat.');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][Loket][Pool] Gagal membuat pool (constraint)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+            ]);
+
+            $msg = str_contains($e->getMessage(), 'Duplicate entry')
+                ? 'Kode pool sudah digunakan.'
+                : 'Gagal membuat pool karena konflik data.';
+
+            return back()->withInput()->with('error', $msg);
         } catch (Throwable $e) {
             Log::error('[Admin][Loket][Pool] Gagal membuat pool', [
                 'error' => $e->getMessage(),
@@ -161,8 +209,8 @@ class CounterManagementController extends Controller
                 'input' => $request->except(['_token']),
             ]);
 
-            return redirect()->route('admin.loket.index')
-                ->with('error', 'Terjadi kesalahan saat membuat pool. Silakan coba lagi.');
+            return back()->withInput()
+                ->with('error', 'Terjadi kesalahan saat membuat pool. Periksa koneksi dan coba lagi.');
         }
     }
 
@@ -173,6 +221,19 @@ class CounterManagementController extends Controller
 
             return redirect()->route('admin.loket.index')
                 ->with('status', 'Pool antrian berhasil diperbarui.');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][Loket][Pool] Gagal memperbarui pool (constraint)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+                'pool_id' => $pool->id,
+            ]);
+
+            $msg = str_contains($e->getMessage(), 'Duplicate entry')
+                ? 'Kode pool sudah digunakan.'
+                : 'Gagal memperbarui pool karena konflik data.';
+
+            return back()->withInput()->with('error', $msg);
         } catch (Throwable $e) {
             Log::error('[Admin][Loket][Pool] Gagal memperbarui pool', [
                 'error' => $e->getMessage(),
@@ -181,8 +242,8 @@ class CounterManagementController extends Controller
                 'input' => $request->except(['_token', '_method']),
             ]);
 
-            return redirect()->route('admin.loket.index')
-                ->with('error', 'Terjadi kesalahan saat memperbarui pool. Silakan coba lagi.');
+            return back()->withInput()
+                ->with('error', 'Terjadi kesalahan saat memperbarui pool. Periksa koneksi dan coba lagi.');
         }
     }
 
@@ -202,6 +263,16 @@ class CounterManagementController extends Controller
 
             return redirect()->route('admin.loket.index')
                 ->with('status', 'Pool antrian berhasil dihapus.');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][Loket][Pool] Gagal menghapus pool (FK)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+                'pool_id' => $pool->id,
+            ]);
+
+            return redirect()->route('admin.loket.index')
+                ->with('error', 'Pool tidak dapat dihapus karena masih terhubung dengan data lain.');
         } catch (Throwable $e) {
             Log::error('[Admin][Loket][Pool] Gagal menghapus pool', [
                 'error' => $e->getMessage(),
@@ -210,46 +281,67 @@ class CounterManagementController extends Controller
             ]);
 
             return redirect()->route('admin.loket.index')
-                ->with('error', 'Terjadi kesalahan saat menghapus pool. Silakan coba lagi.');
+                ->with('error', 'Terjadi kesalahan saat menghapus pool. Coba lagi atau hubungi admin.');
         }
     }
 
     public function assignOfficer(AssignCounterOfficerRequest $request, Counter $counter): RedirectResponse
     {
-        $validated = $request->validated();
-        $userId = $validated['user_id'];
+        try {
+            $validated = $request->validated();
+            $userId = $validated['user_id'];
 
-        CounterSession::query()
-            ->where('user_id', $userId)
-            ->where('status', 'open')
-            ->update([
-                'status' => 'closed',
-                'closed_at' => now(),
+            CounterSession::query()
+                ->where('user_id', $userId)
+                ->where('status', 'open')
+                ->update([
+                    'status' => 'closed',
+                    'closed_at' => now(),
+                ]);
+
+            CounterSession::query()->create([
+                'counter_id' => $counter->id,
+                'user_id' => $userId,
+                'assigned_by' => auth()->id(),
+                'opened_at' => now(),
+                'status' => 'open',
             ]);
 
-        CounterSession::query()->create([
-            'counter_id' => $counter->id,
-            'user_id' => $userId,
-            'assigned_by' => auth()->id(),
-            'opened_at' => now(),
-            'status' => 'open',
-        ]);
+            return redirect()->route('admin.loket.index', ['tab' => 'assignment'])
+                ->with('status', 'Petugas berhasil ditugaskan ke loket.');
+        } catch (Throwable $e) {
+            Log::error('[Admin][Loket] Gagal menugaskan petugas', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'counter_id' => $counter->id,
+            ]);
 
-        return redirect()->route('admin.loket.index', ['tab' => 'assignment'])
-            ->with('status', 'Petugas berhasil ditugaskan ke loket.');
+            return back()->withInput()
+                ->with('error', 'Gagal menugaskan petugas. Periksa koneksi dan coba lagi.');
+        }
     }
 
     public function releaseOfficer(Counter $counter): RedirectResponse
     {
-        CounterSession::query()
-            ->where('counter_id', $counter->id)
-            ->where('status', 'open')
-            ->update([
-                'status' => 'closed',
-                'closed_at' => now(),
+        try {
+            CounterSession::query()
+                ->where('counter_id', $counter->id)
+                ->where('status', 'open')
+                ->update([
+                    'status' => 'closed',
+                    'closed_at' => now(),
+                ]);
+
+            return redirect()->route('admin.loket.index', ['tab' => 'assignment'])
+                ->with('status', 'Penugasan petugas dilepaskan.');
+        } catch (Throwable $e) {
+            Log::error('[Admin][Loket] Gagal melepas petugas', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'counter_id' => $counter->id,
             ]);
 
-        return redirect()->route('admin.loket.index', ['tab' => 'assignment'])
-            ->with('status', 'Penugasan petugas dilepaskan.');
+            return back()->with('error', 'Gagal melepas penugasan petugas. Coba lagi.');
+        }
     }
 }

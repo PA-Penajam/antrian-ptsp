@@ -6,6 +6,7 @@ use App\Enums\QueueStatus;
 use App\Models\QueueTicket;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -77,6 +78,8 @@ class TvDisplay extends Component
                 ->limit(6)
                 ->get();
         } catch (\Throwable $e) {
+            Log::warning('[TV] Gagal memuat antrian aktif', ['error' => $e->getMessage()]);
+
             return new Collection;
         }
     }
@@ -92,6 +95,8 @@ class TvDisplay extends Component
                 ->limit(4)
                 ->get();
         } catch (\Throwable $e) {
+            Log::warning('[TV] Gagal memuat riwayat panggilan', ['error' => $e->getMessage()]);
+
             return new Collection;
         }
     }
@@ -119,6 +124,8 @@ class TvDisplay extends Component
                     ->all();
             });
         } catch (\Throwable $e) {
+            Log::warning('[TV] Gagal memuat daftar video', ['error' => $e->getMessage()]);
+
             return [];
         }
     }

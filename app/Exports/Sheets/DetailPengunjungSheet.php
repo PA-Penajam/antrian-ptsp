@@ -17,12 +17,12 @@ class DetailPengunjungSheet implements FromArray, ShouldAutoSize, WithHeadings, 
     /**
      * Data detail pengunjung dari report builder.
      *
-     * @var array<int, array{no: int, nama: string, alamat: string, layanan: string}>
+     * @var array<int, array{no: int, tanggal: string, nama: string, alamat: string, layanan: string}>
      */
     protected array $data;
 
     /**
-     * @param  array<int, array{no: int, nama: string, alamat: string, layanan: string}>  $data
+     * @param  array<int, array{no: int, tanggal: string, nama: string, alamat: string, layanan: string}>  $data
      */
     public function __construct(array $data)
     {
@@ -33,6 +33,7 @@ class DetailPengunjungSheet implements FromArray, ShouldAutoSize, WithHeadings, 
     {
         return array_map(fn (array $item): array => [
             $item['no'],
+            $this->sanitizeCellValue($item['tanggal']),
             $this->sanitizeCellValue($item['nama']),
             $this->sanitizeCellValue($item['alamat']),
             $this->sanitizeCellValue($item['layanan']),
@@ -48,6 +49,7 @@ class DetailPengunjungSheet implements FromArray, ShouldAutoSize, WithHeadings, 
     {
         return [
             'No',
+            'Tanggal Pendaftaran',
             'Nama Pengunjung',
             'Alamat/Wilayah',
             'Layanan yang diambil',

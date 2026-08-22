@@ -47,6 +47,11 @@
                             <flux:error name="reprintQuery" />
                         </flux:field>
 
+                        <div wire:offline class="flex items-center gap-2 rounded-2xl border border-amber-300 bg-amber-100 px-4 py-3 text-sm font-semibold tracking-wide text-amber-900">
+                            <flux:icon.signal-slash class="size-5 text-amber-700 shrink-0" />
+                            <span>Koneksi terputus. Sambungkan internet sebelum mencari tiket.</span>
+                        </div>
+
                         <flux:button wire:click="searchTicketForReprint" variant="primary" icon="magnifying-glass" class="h-16 w-full rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 text-xl font-bold shadow-lg shadow-cyan-500/25" wire:loading.attr="disabled" wire:target="searchTicketForReprint">
                             <span wire:loading.remove wire:target="searchTicketForReprint">Cari Tiket</span>
                             <span wire:loading wire:target="searchTicketForReprint" class="inline-flex items-center gap-2">
@@ -155,10 +160,10 @@
                                 $colors = [
                                     ['from-cyan-400 to-blue-500', 'bg-cyan-50', 'text-cyan-600', 'border-cyan-200'],
                                     ['from-emerald-400 to-teal-500', 'bg-emerald-50', 'text-emerald-600', 'border-emerald-200'],
-                                    ['from-violet-400 to-purple-500', 'bg-violet-50', 'text-violet-600', 'border-violet-200'],
+                                    ['from-cyan-400 to-teal-500', 'bg-cyan-50', 'text-cyan-600', 'border-cyan-200'],
                                     ['from-amber-400 to-orange-500', 'bg-amber-50', 'text-amber-600', 'border-amber-200'],
                                     ['from-rose-400 to-pink-500', 'bg-rose-50', 'text-rose-600', 'border-rose-200'],
-                                    ['from-indigo-400 to-blue-500', 'bg-indigo-50', 'text-indigo-600', 'border-indigo-200'],
+                                    ['from-sky-400 to-cyan-500', 'bg-sky-50', 'text-sky-600', 'border-sky-200'],
                                 ];
                                 $color = $colors[$index % count($colors)];
                             @endphp
@@ -228,7 +233,7 @@
 
                     {{-- Tombol Cetak Ulang --}}
                     <div class="flex items-center justify-center pt-2">
-                        <flux:button wire:click="enterReprintMode" variant="outline" icon="printer" class="h-14 rounded-2xl border-2 border-slate-300 px-8 text-lg font-semibold text-slate-700 transition-colors hover:border-cyan-400 hover:bg-cyan-50">
+                        <flux:button wire:click="enterReprintMode" variant="outline" icon="printer" class="h-14 rounded-2xl border-2 border-slate-300 px-8 text-lg font-semibold text-cyan-800 transition-colors hover:border-cyan-400 hover:bg-cyan-50 hover:text-cyan-900">
                             Cetak Ulang Tiket
                         </flux:button>
                     </div>
@@ -249,13 +254,13 @@
                         </h1>
                         
                         {{-- Selected Service Badge --}}
-                        <div class="flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-50 to-blue-50 p-4">
+                        <div class="flex items-center justify-center gap-3 rounded-2xl border border-cyan-100 bg-gradient-to-r from-cyan-50 to-blue-50 p-4">
                             <div class="rounded-xl bg-cyan-100 px-4 py-2">
-                                <span class="text-2xl font-black text-cyan-600">{{ $this->selectedService?->letter_code ?? $this->selectedService?->code }}</span>
+                                <span class="text-2xl font-black text-cyan-700">{{ $this->selectedService?->letter_code ?? $this->selectedService?->code }}</span>
                             </div>
                             <div class="text-left">
-                                <div class="text-sm text-slate-500">Layanan Terpilih</div>
-                                <div class="text-lg font-bold text-slate-800">{{ $this->selectedService?->name }}</div>
+                                <div class="text-xs font-semibold tracking-[0.14em] text-cyan-700 uppercase">Layanan Terpilih</div>
+                                <div class="text-lg font-bold text-cyan-950">{{ $this->selectedService?->name }}</div>
                             </div>
                         </div>
                     </div>
@@ -510,15 +515,15 @@
                     {{-- Ticket Card dengan Design Premium --}}
                     <div class="relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-10 shadow-2xl">
                         {{-- Background Pattern --}}
-                        <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle at 2px 2px, #0ea5e9 1px, transparent 0); background-size: 24px 24px;"></div>
+                        <div class="absolute inset-0 opacity-[0.04]" style="background-image: radial-gradient(circle at 2px 2px, #0e7490 1px, transparent 0); background-size: 24px 24px;"></div>
                         
                         {{-- Top Accent Line --}}
-                        <div class="absolute left-0 right-0 top-0 h-2 bg-gradient-to-r from-cyan-500 via-blue-500 to-violet-500"></div>
-                        
+                        <div class="absolute left-0 right-0 top-0 h-1.5 bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500"></div>
+
                         <div class="relative space-y-8">
                             {{-- Ticket Number dengan Typography Bold --}}
                             <div class="text-center">
-                                <div class="text-9xl font-black tracking-wider text-slate-900 drop-shadow-xs sm:text-[10rem]">
+                                <div class="text-8xl font-black tracking-wider text-slate-900 drop-shadow-xs sm:text-8xl">
                                     {{ $ticket->ticket_number }}
                                 </div>
                             </div>

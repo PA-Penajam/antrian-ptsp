@@ -6,6 +6,7 @@ use App\Enums\QueueStatus;
 use App\Models\QueueTicket;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -38,15 +39,22 @@ class PublicQueueMonitor extends Component
 
         $today = CarbonImmutable::today();
 
-        $ticket = QueueTicket::query()
-            ->with(['service', 'counter', 'queuePool'])
-            ->whereDate('service_date', $today)
-            ->where(function ($query) use ($number) {
-                $query->where('ticket_number', $number)
-                    ->orWhere('ticket_number', 'like', "%{$number}%");
-            })
-            ->latest('id')
-            ->first();
+        try {
+            $ticket = QueueTicket::query()
+                ->with(['service', 'counter', 'queuePool'])
+                ->whereDate('service_date', $today)
+                ->where(function ($query) use ($number) {
+                    $query->where('ticket_number', $number)
+                        ->orWhere('ticket_number', 'like', "%{$number}%");
+                })
+                ->latest('id')
+                ->first();
+        } catch (\Throwable $e) {
+            Log::warning('[PublicMonitor] Gagal mencari tiket', ['error' => $e->getMessage(), 'number' => $number]);
+            $this->lookupMessage = 'Gagal mencari tiket. Periksa koneksi Anda dan coba lagi.';
+
+            return;
+        }
 
         if (! $ticket) {
             $this->lookupMessage = "Tiket \"{$number}\" tidak ditemukan untuk antrian hari ini. Pastikan nomor sudah sesuai atau cek tanggal kunjungan Anda.";
@@ -116,7 +124,9 @@ class PublicQueueMonitor extends Component
                 'waiting' => QueueTicket::query()->whereDate('service_date', $today)->where('status', QueueStatus::Waiting)->count(),
                 'completed' => QueueTicket::query()->whereDate('service_date', $today)->where('status', QueueStatus::Completed)->count(),
             ];
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            Log::warning('[PublicMonitor] Gagal memuat statistik harian', ['error' => $e->getMessage()]);
+
             return ['total' => 0, 'waiting' => 0, 'completed' => 0];
         }
     }
@@ -136,7 +146,9 @@ class PublicQueueMonitor extends Component
                 ->orderByDesc('called_at')
                 ->limit(4)
                 ->get();
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            Log::warning('[PublicMonitor] Gagal memuat panggilan aktif', ['error' => $e->getMessage()]);
+
             return new Collection;
         }
     }

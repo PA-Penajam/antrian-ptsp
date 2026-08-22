@@ -1069,20 +1069,22 @@ new class extends Component
                     </div>
 
                     <!-- Action Controls Cockpit Bar -->
-                    <div class="relative z-10 grid gap-3 pt-4 border-t border-cyan-200/60 dark:border-cyan-900/40 sm:grid-cols-2 lg:grid-cols-5">
+                    <div class="relative z-10 grid gap-2.5 pt-4 border-t border-cyan-200/60 dark:border-cyan-900/40 sm:grid-cols-2">
+                        <!-- Primary Call Action: full-width, dominant -->
                         <flux:button
                             variant="primary"
                             icon="megaphone"
                             wire:click="callNext"
                             :disabled="! $this->hasSelectedCounter"
                             wire:loading.attr="disabled"
-                            class="w-full bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white font-bold shadow-md shadow-cyan-600/25 active:scale-95 transition-all"
+                            class="sm:col-span-2 w-full py-3 text-base justify-center bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white font-bold shadow-md shadow-cyan-600/25 active:scale-95 transition-all"
                             :class="(flashedKey === 'Space' || flashedKey === 'F2') ? 'animate-hotkey-cyan ring-4 ring-cyan-400/50' : ''"
                         >
                             <span>Panggil Berikutnya</span>
-                            <kbd class="workstation-kbd bg-cyan-800/40 text-cyan-100 border-cyan-400/40 ml-1.5">Space</kbd>
+                            <kbd class="workstation-kbd bg-cyan-950/40 text-cyan-50 border-cyan-300/30 ml-1.5">Space</kbd>
                         </flux:button>
 
+                        <!-- Secondary Actions: balanced 2x2 -->
                         <flux:button
                             variant="filled"
                             color="cyan"
@@ -1090,24 +1092,11 @@ new class extends Component
                             wire:click="recall"
                             :disabled="! $this->hasActiveTicket"
                             wire:loading.attr="disabled"
-                            class="w-full font-semibold active:scale-95 transition-all"
-                            :class="flashedKey === 'F1' ? 'animate-hotkey-sky ring-4 ring-sky-400/50' : ''"
+                            class="w-full justify-center font-semibold active:scale-95 transition-all"
+                            :class="flashedKey === 'F1' ? 'animate-hotkey-cyan ring-4 ring-cyan-400/50' : ''"
                         >
                             <span>Panggil Ulang</span>
-                            <kbd class="workstation-kbd bg-sky-800/30 text-sky-200 border-sky-400/30 ml-1.5">F1</kbd>
-                        </flux:button>
-
-                        <flux:button
-                            variant="ghost"
-                            icon="forward"
-                            x-on:click="Flux.modal('confirm-skip-ticket').show()"
-                            :disabled="! $this->hasActiveTicket"
-                            wire:loading.attr="disabled"
-                            class="w-full text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30 dark:hover:text-amber-300 font-semibold active:scale-95 transition-all"
-                            :class="flashedKey === 'F3' ? 'animate-hotkey-amber ring-4 ring-amber-400/50' : ''"
-                        >
-                            <span>Lewati (Skip)</span>
-                            <kbd class="workstation-kbd bg-amber-800/30 text-amber-200 border-amber-400/30 ml-1.5">F3</kbd>
+                            <kbd class="workstation-kbd bg-cyan-950/40 text-cyan-50 border-cyan-300/30 ml-1.5">F1</kbd>
                         </flux:button>
 
                         <flux:button
@@ -1117,11 +1106,24 @@ new class extends Component
                             wire:click="complete"
                             :disabled="! $this->hasActiveTicket"
                             wire:loading.attr="disabled"
-                            class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
+                            class="w-full justify-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
                             :class="(flashedKey === 'F4' || flashedKey === 'Ctrl+Enter') ? 'animate-hotkey-emerald ring-4 ring-emerald-400/50' : ''"
                         >
                             <span>Selesai</span>
-                            <kbd class="workstation-kbd bg-emerald-800/40 text-emerald-100 border-emerald-400/40 ml-1.5">F4</kbd>
+                            <kbd class="workstation-kbd bg-emerald-950/40 text-emerald-50 border-emerald-300/30 ml-1.5">F4</kbd>
+                        </flux:button>
+
+                        <flux:button
+                            variant="ghost"
+                            icon="forward"
+                            x-on:click="Flux.modal('confirm-skip-ticket').show()"
+                            :disabled="! $this->hasActiveTicket"
+                            wire:loading.attr="disabled"
+                            class="w-full justify-center text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30 dark:hover:text-amber-300 font-semibold active:scale-95 transition-all"
+                            :class="flashedKey === 'F3' ? 'animate-hotkey-amber ring-4 ring-amber-400/50' : ''"
+                        >
+                            <span>Lewati (Skip)</span>
+                            <kbd class="workstation-kbd bg-amber-500/15 text-amber-700 border-amber-300/40 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-400/30 ml-1.5">F3</kbd>
                         </flux:button>
 
                         <flux:button
@@ -1130,11 +1132,11 @@ new class extends Component
                             x-on:click="Flux.modal('confirm-cancel-ticket').show()"
                             :disabled="! $this->hasActiveTicket"
                             wire:loading.attr="disabled"
-                            class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-950/30 dark:hover:text-red-400 font-semibold active:scale-95 transition-all"
+                            class="w-full justify-center text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-950/30 dark:hover:text-red-400 font-semibold active:scale-95 transition-all"
                             :class="flashedKey === 'F8' ? 'animate-hotkey-rose ring-4 ring-rose-400/50' : ''"
                         >
                             <span>Batalkan</span>
-                            <kbd class="workstation-kbd bg-rose-800/30 text-rose-200 border-rose-400/30 ml-1.5">F8</kbd>
+                            <kbd class="workstation-kbd bg-red-500/15 text-red-700 border-red-300/40 dark:bg-red-500/15 dark:text-red-400 dark:border-red-400/30 ml-1.5">F8</kbd>
                         </flux:button>
                     </div>
                 </div>

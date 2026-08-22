@@ -302,10 +302,10 @@ test('search filters counters by code', function () {
         'email_verified_at' => now(),
     ]);
     $pool = QueuePool::factory()->create();
-    $counter1 = Counter::factory()->for($pool)->create(['code' => 'U1']);
-    $counter2 = Counter::factory()->for($pool)->create(['code' => 'K2']);
+    $counter1 = Counter::factory()->for($pool)->create(['code' => 'LOK-U1']);
+    $counter2 = Counter::factory()->for($pool)->create(['code' => 'LOK-K2']);
 
-    $response = $this->actingAs($admin)->get('/admin/loket?search=U1');
+    $response = $this->actingAs($admin)->get('/admin/loket?search=LOK-U1');
 
     $response->assertOk()
         ->assertSee($counter1->code)

@@ -144,11 +144,22 @@
             </div>
         </form>
 
+        {{-- Offline Indicator --}}
+        <div wire:offline class="mt-3 flex items-center gap-2 rounded-2xl border border-amber-300 bg-amber-100 px-4 py-2.5 text-xs font-semibold tracking-wide text-amber-900 shadow-xs">
+            <flux:icon.signal-slash class="size-4 text-amber-700 shrink-0" />
+            <span>Koneksi terputus. Periksa internet Anda — data akan dimuat ulang otomatis saat tersambung.</span>
+        </div>
+
         {{-- Lookup Error / Notice Banner --}}
         @if ($lookupMessage)
-            <div class="mt-3.5 flex items-start gap-2.5 rounded-2xl border border-amber-200 bg-amber-50/95 p-3.5 text-xs leading-relaxed font-medium text-amber-900 shadow-xs animate-in fade-in duration-200">
+            <div class="mt-3.5 flex items-start gap-2.5 rounded-2xl border border-amber-200 bg-amber-50/95 p-3.5 text-xs leading-relaxed font-medium text-amber-900 shadow-xs">
                 <flux:icon.information-circle class="size-4 text-amber-700 shrink-0 mt-0.5" />
-                <span>{{ $lookupMessage }}</span>
+                <span class="flex-1 break-words">{{ $lookupMessage }}</span>
+                @if (str_contains($lookupMessage, 'Gagal mencari') || str_contains($lookupMessage, 'Gagal memuat'))
+                    <flux:button wire:click="searchTicket" variant="subtle" size="xs" class="shrink-0 rounded-xl border border-amber-300 bg-white font-bold tracking-wide text-amber-800 hover:bg-amber-50">
+                        Coba Lagi
+                    </flux:button>
+                @endif
             </div>
         @endif
 

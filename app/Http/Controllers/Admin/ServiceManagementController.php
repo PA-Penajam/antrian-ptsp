@@ -8,6 +8,7 @@ use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
 use App\Models\QueuePool;
 use App\Models\Service;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -64,6 +65,18 @@ class ServiceManagementController extends Controller
 
             return redirect()->route('admin.layanan.index')
                 ->with('status', 'Layanan Berhasil Dibuat');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][Layanan] Gagal membuat layanan (constraint)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+            ]);
+
+            $msg = str_contains($e->getMessage(), 'Duplicate entry')
+                ? 'Kode atau slug sudah digunakan. Gunakan nilai lain.'
+                : 'Gagal menyimpan layanan karena data bertabrakan dengan data lain.';
+
+            return back()->withInput()->with('error', $msg);
         } catch (Throwable $e) {
             Log::error('[Admin][Layanan] Gagal membuat layanan', [
                 'error' => $e->getMessage(),
@@ -71,8 +84,8 @@ class ServiceManagementController extends Controller
                 'input' => $request->except(['_token']),
             ]);
 
-            return redirect()->route('admin.layanan.index')
-                ->with('error', 'Terjadi kesalahan saat membuat layanan. Silakan coba lagi.');
+            return back()->withInput()
+                ->with('error', 'Terjadi kesalahan saat membuat layanan. Periksa koneksi Anda dan coba lagi. Jika berlanjut, hubungi admin.');
         }
     }
 
@@ -83,6 +96,19 @@ class ServiceManagementController extends Controller
 
             return redirect()->route('admin.layanan.index')
                 ->with('status', 'Layanan Berhasil Diperbarui');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][Layanan] Gagal memperbarui layanan (constraint)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+                'service_id' => $service->id,
+            ]);
+
+            $msg = str_contains($e->getMessage(), 'Duplicate entry')
+                ? 'Kode atau slug sudah digunakan. Gunakan nilai lain.'
+                : 'Gagal memperbarui layanan karena konflik data.';
+
+            return back()->withInput()->with('error', $msg);
         } catch (Throwable $e) {
             Log::error('[Admin][Layanan] Gagal memperbarui layanan', [
                 'error' => $e->getMessage(),
@@ -91,8 +117,8 @@ class ServiceManagementController extends Controller
                 'input' => $request->except(['_token', '_method']),
             ]);
 
-            return redirect()->route('admin.layanan.index')
-                ->with('error', 'Terjadi kesalahan saat memperbarui layanan. Silakan coba lagi.');
+            return back()->withInput()
+                ->with('error', 'Terjadi kesalahan saat memperbarui layanan. Periksa koneksi Anda dan coba lagi.');
         }
     }
 
@@ -115,6 +141,16 @@ class ServiceManagementController extends Controller
 
             return redirect()->route('admin.layanan.index')
                 ->with('status', 'Layanan berhasil dihapus.');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][Layanan] Gagal menghapus layanan (FK constraint)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+                'service_id' => $service->id,
+            ]);
+
+            return redirect()->route('admin.layanan.index')
+                ->with('error', 'Layanan tidak dapat dihapus karena masih terhubung dengan data lain.');
         } catch (Throwable $e) {
             Log::error('[Admin][Layanan] Gagal menghapus layanan', [
                 'error' => $e->getMessage(),
@@ -123,7 +159,7 @@ class ServiceManagementController extends Controller
             ]);
 
             return redirect()->route('admin.layanan.index')
-                ->with('error', 'Terjadi kesalahan saat menghapus layanan. Silakan coba lagi.');
+                ->with('error', 'Terjadi kesalahan saat menghapus layanan. Coba lagi atau hubungi admin jika berlanjut.');
         }
     }
 }

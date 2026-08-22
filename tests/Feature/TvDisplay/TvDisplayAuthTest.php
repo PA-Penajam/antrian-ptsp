@@ -107,7 +107,7 @@ it('serves cached audio payload for authenticated tv legacy session', function (
     expect($response->getContent())->toBe($audioPayload);
 });
 
-it('allows tv legacy video audio after samsung sound activation', function () {
+it('renders full queue display without video and handles sound activation', function () {
     $response = withSession([
         'tv_display_authenticated' => true,
         'tv_display_authenticated_at' => now()->timestamp,
@@ -124,19 +124,16 @@ it('allows tv legacy video audio after samsung sound activation', function () {
         ->assertSee('tts direct audio selected', false)
         ->assertSee('var isSamsungTv', false)
         ->assertSee('var isLgTv', false)
-        ->assertSee('if (isSamsungTv)', false)
-        ->assertSee('shouldIsolateTtsAudio', false)
-        ->assertSee('return false;', false)
+        ->assertSee('playAttentionChime', false)
         ->assertSee('playTtsWithWebAudio', false)
         ->assertSee('tts web audio started', false)
         ->assertSee('audioPlayer.src = SILENT_AUDIO', false)
         ->assertSee('audioPlayer.volume = isLgTv ? 0 : TTS_VOLUME', false)
         ->assertDontSee("audioPlayer.src = ''", false)
         ->assertSee('beginTtsPlayback', false)
-        ->assertSee('object-fit: contain', false)
-        ->assertSee('tvPlayer.muted = !soundActivated', false)
-        ->assertSee('tvPlayer.volume = soundActivated ? volume : 0', false)
-        ->assertDontSee("tvPlayer.removeAttribute('src')", false);
+        ->assertSee('Sedang Dipanggil', false)
+        ->assertSee('Panggilan Terakhir', false)
+        ->assertDontSee('<video id="tvPlayer"', false);
 });
 
 // ── Legacy TV Login & PIN Authentication ────────────────────────────────────

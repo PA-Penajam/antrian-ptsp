@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -52,6 +53,18 @@ class UserManagementController extends Controller
 
             return redirect('/admin/users')
                 ->with('status', 'User Berhasil Dibuat');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][User] Gagal membuat user (constraint)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+            ]);
+
+            $msg = str_contains($e->getMessage(), 'Duplicate entry')
+                ? 'Email sudah digunakan. Gunakan email lain.'
+                : 'Gagal membuat user karena konflik data.';
+
+            return back()->withInput($request->except('password'))->with('error', $msg);
         } catch (Throwable $e) {
             Log::error('[Admin][User] Gagal membuat user', [
                 'error' => $e->getMessage(),
@@ -59,8 +72,8 @@ class UserManagementController extends Controller
                 'input' => $request->except(['_token', 'password']),
             ]);
 
-            return redirect('/admin/users')
-                ->with('error', 'Terjadi kesalahan saat membuat user. Silakan coba lagi.');
+            return back()->withInput($request->except('password'))
+                ->with('error', 'Terjadi kesalahan saat membuat user. Periksa koneksi dan coba lagi.');
         }
     }
 
@@ -83,6 +96,19 @@ class UserManagementController extends Controller
 
             return redirect('/admin/users')
                 ->with('status', 'User Berhasil Diperbarui');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][User] Gagal memperbarui user (constraint)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+                'target_user_id' => $user->id,
+            ]);
+
+            $msg = str_contains($e->getMessage(), 'Duplicate entry')
+                ? 'Email sudah digunakan. Gunakan email lain.'
+                : 'Gagal memperbarui user karena konflik data.';
+
+            return back()->withInput($request->except('password'))->with('error', $msg);
         } catch (Throwable $e) {
             Log::error('[Admin][User] Gagal memperbarui user', [
                 'error' => $e->getMessage(),
@@ -91,8 +117,8 @@ class UserManagementController extends Controller
                 'input' => $request->except(['_token', '_method', 'password']),
             ]);
 
-            return redirect('/admin/users')
-                ->with('error', 'Terjadi kesalahan saat memperbarui user. Silakan coba lagi.');
+            return back()->withInput($request->except('password'))
+                ->with('error', 'Terjadi kesalahan saat memperbarui user. Periksa koneksi dan coba lagi.');
         }
     }
 
@@ -121,6 +147,16 @@ class UserManagementController extends Controller
 
             return redirect()->route('admin.users.index')
                 ->with('status', 'User berhasil dihapus.');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][User] Gagal menghapus user (FK)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+                'target_user_id' => $user->id,
+            ]);
+
+            return redirect()->route('admin.users.index')
+                ->with('error', 'User tidak dapat dihapus karena masih terhubung dengan data lain.');
         } catch (Throwable $e) {
             Log::error('[Admin][User] Gagal menghapus user', [
                 'error' => $e->getMessage(),
@@ -129,7 +165,7 @@ class UserManagementController extends Controller
             ]);
 
             return redirect()->route('admin.users.index')
-                ->with('error', 'Terjadi kesalahan saat menghapus user. Silakan coba lagi.');
+                ->with('error', 'Terjadi kesalahan saat menghapus user. Coba lagi.');
         }
     }
 }

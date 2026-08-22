@@ -39,7 +39,7 @@
                 <div class="h-1 flex-1 overflow-hidden rounded-full bg-sky-100/80 dark:bg-sky-950/60">
                     <div class="h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-500 transition-all duration-1000 ease-out" style="width:{{ $this->todayTotal > 0 ? '100' : '0' }}%"></div>
                 </div>
-                <p class="text-[10px] font-semibold text-sky-700 dark:text-sky-300">tiket masuk</p>
+                <p class="text-xs font-semibold text-sky-700 dark:text-sky-300">tiket masuk</p>
             </div>
         </div>
 
@@ -60,7 +60,7 @@
                     @php $servedRate = $this->todayTotal > 0 ? round(($this->todayServed / $this->todayTotal) * 100) : 0; @endphp
                     <div class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-1000 ease-out" style="width:{{ $servedRate }}%"></div>
                 </div>
-                <p class="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">{{ $servedRate }}% selesai</p>
+                <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">{{ $servedRate }}% selesai</p>
             </div>
         </div>
 
@@ -81,24 +81,24 @@
                 <div class="h-1 flex-1 overflow-hidden rounded-full bg-amber-100/80 dark:bg-amber-950/60">
                     <div class="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400 transition-all duration-1000 ease-out" style="width:{{ $waitingRate }}%"></div>
                 </div>
-                <p class="text-[10px] font-semibold text-amber-700 dark:text-amber-300">{{ $waitingRate }}% antri</p>
+                <p class="text-xs font-semibold text-amber-700 dark:text-amber-300">{{ $waitingRate }}% antri</p>
             </div>
         </div>
 
         {{-- Rata-rata Tunggu --}}
         <div class="animate-fade-in-up anim-delay-300 admin-stat-info admin-card-elevated group relative cursor-default overflow-hidden rounded-2xl border p-5">
-            <div aria-hidden="true" class="pointer-events-none absolute right-0 top-0 size-24 rounded-full bg-[radial-gradient(circle,_rgba(168,85,247,0.14),_transparent_70%)] transition-transform duration-500 group-hover:scale-150"></div>
+            <div aria-hidden="true" class="pointer-events-none absolute right-0 top-0 size-24 rounded-full bg-[radial-gradient(circle,_rgba(14,116,144,0.10),_transparent_70%)] transition-transform duration-500 group-hover:scale-150"></div>
             <div class="flex items-start justify-between">
                 <div class="space-y-1.5">
-                    <p class="text-xs font-semibold tracking-[0.16em] text-purple-700 uppercase dark:text-purple-300">Rata-rata Tunggu</p>
-                    <p class="text-3xl font-bold tabular-nums text-purple-700 dark:text-purple-200 sm:text-4xl">{{ $this->todayAvgWaitMinutes }}<span class="ml-1 text-base font-medium">mnt</span></p>
+                    <p class="text-xs font-semibold tracking-[0.16em] text-cyan-700 uppercase dark:text-cyan-300">Rata-rata Tunggu</p>
+                    <p class="text-3xl font-bold tabular-nums text-cyan-700 dark:text-cyan-200 sm:text-4xl">{{ $this->todayAvgWaitMinutes }}<span class="ml-1 text-base font-medium">mnt</span></p>
                 </div>
-                <div class="admin-icon-box bg-purple-100 text-purple-600 group-hover:scale-110 group-hover:rotate-3 dark:bg-purple-900/60 dark:text-purple-300">
+                <div class="admin-icon-box bg-cyan-100 text-cyan-600 group-hover:scale-110 group-hover:rotate-3 dark:bg-cyan-900/60 dark:text-cyan-300">
                     <flux:icon.chart-bar class="size-5 transition-transform duration-300 group-hover:scale-110" />
                 </div>
             </div>
             <div class="mt-3">
-                <p class="text-[10px] font-semibold text-purple-700 dark:text-purple-300">rata-rata per tiket</p>
+                <p class="text-xs font-semibold text-cyan-700 dark:text-cyan-300">rata-rata per tiket</p>
             </div>
         </div>
     </div>
@@ -355,7 +355,7 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <flux:heading size="sm">Aktivitas Terkini</flux:heading>
-                        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-emerald-700 uppercase dark:border-emerald-800/40 dark:bg-emerald-950/40 dark:text-emerald-300">Live</span>
+                        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-xs font-bold tracking-wider text-emerald-700 uppercase dark:border-emerald-800/40 dark:bg-emerald-950/40 dark:text-emerald-300">Live</span>
                     </div>
                     <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">Auto-refresh setiap 30 detik</flux:text>
                 </div>

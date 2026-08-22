@@ -299,7 +299,7 @@ test('halaman laporan menampilkan tombol export excel dan pdf', function () {
     expect($response->html())->toContain('PDF');
 });
 
-test('builder mengembalikan detail pengunjung dengan kolom no nama alamat layanan', function () {
+test('builder mengembalikan detail pengunjung dengan kolom no tanggal nama alamat layanan', function () {
     $pool = QueuePool::factory()->create();
     $service = Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
     $wilayah = Wilayah::factory()->create(['kode' => '640102', 'nama' => 'Penajam']);
@@ -319,13 +319,14 @@ test('builder mengembalikan detail pengunjung dengan kolom no nama alamat layana
     expect($report['detail_pengunjung'])->toHaveCount(1);
     expect($report['detail_pengunjung'][0])->toMatchArray([
         'no' => 1,
+        'tanggal' => '14/04/2026',
         'nama' => 'Budi Santoso',
         'alamat' => 'Penajam',
         'layanan' => 'Pendaftaran',
     ]);
 });
 
-test('export excel mengandung sheet detail pengunjung', function () {
+test('export excel mengandung sheet detail pengunjung dengan header tanggal pendaftaran', function () {
     $pool = QueuePool::factory()->create();
     $service = Service::factory()->for($pool)->create();
 
@@ -343,6 +344,15 @@ test('export excel mengandung sheet detail pengunjung', function () {
     $titles = array_map(fn ($sheet) => $sheet->title(), $sheets);
 
     expect($titles)->toContain('Detail Pengunjung');
+
+    $detailSheet = collect($sheets)->first(fn ($sheet) => $sheet->title() === 'Detail Pengunjung');
+    expect($detailSheet->headings())->toBe([
+        'No',
+        'Tanggal Pendaftaran',
+        'Nama Pengunjung',
+        'Alamat/Wilayah',
+        'Layanan yang diambil',
+    ]);
 });
 
 test('export excel detail pengunjung menghindari formula injection', function () {
@@ -364,7 +374,7 @@ test('export excel detail pengunjung menghindari formula injection', function ()
     $detailSheet = collect($sheets)->first(fn ($sheet) => $sheet->title() === 'Detail Pengunjung');
     $rows = $detailSheet->array();
 
-    expect($rows[0][1])->toBe("' =HYPERLINK(\"http://evil\",\"Budi\")");
+    expect($rows[0][2])->toBe("' =HYPERLINK(\"http://evil\",\"Budi\")");
 });
 
 test('export excel per layanan menghindari formula injection', function () {

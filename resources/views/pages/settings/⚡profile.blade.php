@@ -81,46 +81,91 @@ new #[Title('Profile settings')] class extends Component {
     <flux:heading class="sr-only">{{ __('Profile settings') }}</flux:heading>
 
     <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
-        <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
+        {{-- Profile Avatar & Role Badge Header --}}
+        @php
+            $currentUser = auth()->user();
+            $userInitials = $currentUser ? strtoupper(substr(trim($currentUser->name), 0, 2)) : 'U';
+            $isVerified = $currentUser && $currentUser->email_verified_at !== null;
+        @endphp
+        
+        <div class="mb-6 flex items-center gap-4 rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4 dark:border-zinc-800 dark:bg-zinc-800/40">
+            <div class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-cyan-700 font-mono text-lg font-black text-white shadow-sm ring-2 ring-cyan-200 dark:ring-cyan-800">
+                {{ $userInitials }}
+            </div>
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="text-base font-bold text-zinc-900 dark:text-white">{{ $currentUser?->name }}</h3>
+                    <flux:badge size="sm" color="{{ $currentUser?->role?->color() ?? 'zinc' }}" class="text-xs font-semibold">
+                        {{ $currentUser?->role?->label() ?? 'User' }}
+                    </flux:badge>
+                </div>
+                <p class="truncate font-mono text-xs text-zinc-500 dark:text-zinc-400">{{ $currentUser?->email }}</p>
+                <div class="mt-1 flex items-center gap-1.5">
+                    @if ($isVerified)
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                            <flux:icon.check-circle class="size-3.5" />
+                            Email Terverifikasi
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                            <flux:icon.exclamation-circle class="size-3.5" />
+                            Email Belum Diverifikasi
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
 
-            <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+        <form wire:submit="updateProfileInformation" class="space-y-6">
+            <flux:field>
+                <flux:label>{{ __('Name') }}</flux:label>
+                <flux:input wire:model="name" icon="user" type="text" required autofocus autocomplete="name" />
+                <flux:error name="name" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('Email') }}</flux:label>
+                <flux:input wire:model="email" icon="envelope" type="email" required autocomplete="email" />
+                <flux:error name="email" />
 
                 @if ($this->hasUnverifiedEmail)
-                    <div>
-                        <flux:text class="mt-4">
-                            {{ __('Your email address is unverified.') }}
-
-                            <flux:link class="text-sm cursor-pointer" wire:click.prevent="resendVerificationNotification">
-                                {{ __('Click here to re-send the verification email.') }}
-                            </flux:link>
-                        </flux:text>
+                    <div class="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs dark:border-amber-900/50 dark:bg-amber-950/30">
+                        <div class="flex items-start gap-2">
+                            <flux:icon.exclamation-triangle class="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                            <div>
+                                <span class="font-medium text-amber-900 dark:text-amber-200">{{ __('Your email address is unverified.') }}</span>
+                                <div class="mt-1">
+                                    <flux:link class="cursor-pointer font-bold text-amber-800 underline hover:text-amber-950 dark:text-amber-300 dark:hover:text-white" wire:click.prevent="resendVerificationNotification">
+                                        {{ __('Click here to re-send the verification email.') }}
+                                    </flux:link>
+                                </div>
+                            </div>
+                        </div>
 
                         @if (session('status') === 'verification-link-sent')
-                            <flux:text class="mt-2 font-medium !dark:text-green-400 !text-green-600">
+                            <div class="mt-2 text-xs font-bold text-emerald-700 dark:text-emerald-400">
                                 {{ __('A new verification link has been sent to your email address.') }}
-                            </flux:text>
+                            </div>
                         @endif
                     </div>
                 @endif
-            </div>
+            </flux:field>
 
-            <div class="flex items-center gap-4">
-                <div class="flex items-center justify-end">
-                    <flux:button variant="primary" type="submit" class="w-full" data-test="update-profile-button">
-                        {{ __('Save') }}
-                    </flux:button>
-                </div>
+            <div class="flex items-center gap-4 pt-2">
+                <flux:button variant="primary" type="submit" icon="check" class="bg-cyan-700 font-bold text-white shadow-sm hover:bg-cyan-600" data-test="update-profile-button">
+                    {{ __('Save') }}
+                </flux:button>
 
-                <x-action-message class="me-3" on="profile-updated">
+                <x-action-message class="text-xs font-semibold text-emerald-600 dark:text-emerald-400" on="profile-updated">
                     {{ __('Saved.') }}
                 </x-action-message>
             </div>
         </form>
 
         @if ($this->showDeleteUser)
-            <livewire:pages::settings.delete-user-form />
+            <div class="mt-10 border-t border-zinc-100 pt-8 dark:border-zinc-800">
+                <livewire:pages::settings.delete-user-form />
+            </div>
         @endif
     </x-pages::settings.layout>
 </section>

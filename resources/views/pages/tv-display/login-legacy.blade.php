@@ -5,14 +5,14 @@
 @push('styles')
 <style>
     /* ═══════════════════════════════════════════════════════════
-       ANDROID 5 DELIGHT & MOTION (PIN TV DISPLAY LOGIN)
+       ANDROID 5 DELIGHT & MOTION (PIN TV DISPLAY LOGIN - BRIGHT THEME)
        - Pure transform3d & opacity transitions
        - Zero blur filters or CPU-heavy continuous loops
-       - Dark TV monitor theme with on-screen tactile PIN pad
+       - Crisp daylight theme with on-screen tactile PIN pad
        ═══════════════════════════════════════════════════════════ */
 
     html, body {
-        background-color: #080d1a;
+        background-color: #f1f5f9;
         margin: 0;
         padding: 0;
         overflow-x: hidden;
@@ -20,6 +20,7 @@
         -webkit-touch-callout: none;
         -webkit-user-select: none;
         user-select: none;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
     input {
@@ -29,8 +30,13 @@
 
     .tv-login-root {
         min-height: 100vh;
-        background-color: #0b132b;
-        background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #080d1a 100%);
+        background-color: #f8fafc;
+        background-image:
+            linear-gradient(135deg, rgba(248, 250, 252, 0.93) 0%, rgba(241, 245, 249, 0.90) 50%, rgba(226, 232, 240, 0.94) 100%),
+            url('{{ asset('metronic-assets/media/misc/tv-bg-bright.jpg') }}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -52,26 +58,27 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: #1e293b;
-        color: #94a3b8;
+        background: #ffffff;
+        color: #475569;
         font-size: 0.8rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         padding: 6px 14px;
         border-radius: 999px;
-        border: 1px solid #334155;
+        border: 1.5px solid #e2e8f0;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
     }
 
     .tv-pulse-dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background-color: #38bdf8;
+        background-color: #0284c7;
     }
 
     .tv-clock {
-        color: #38bdf8;
+        color: #0284c7;
         font-weight: 800;
         font-size: 1.1rem;
         font-variant-numeric: tabular-nums;
@@ -80,9 +87,9 @@
     /* Main Card */
     .tv-login-card {
         border-radius: 28px !important;
-        border: 2px solid #334155 !important;
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5) !important;
-        background: #1e293b !important;
+        border: 1.5px solid #e2e8f0 !important;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08) !important;
+        background: #ffffff !important;
         width: 100%;
         max-width: 560px;
         margin: auto;
@@ -116,19 +123,19 @@
     .display-emblem {
         width: 76px;
         height: 76px;
-        background: #2563eb;
+        background: #0284c7;
         color: #ffffff;
         border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
+        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.35);
         transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s;
     }
 
     .display-emblem.emblem-active {
         transform: scale(1.06);
-        background: #1d4ed8;
+        background: #0369a1;
     }
 
     .display-emblem.emblem-unlocking {
@@ -139,28 +146,28 @@
 
     /* Input Field & Pulse */
     .tv-input {
-        background-color: #0f172a !important;
-        border: 2px solid #475569 !important;
+        background-color: #ffffff !important;
+        border: 2px solid #cbd5e1 !important;
         border-radius: 16px !important;
         font-size: 1.35rem !important;
         padding: 14px 18px !important;
         height: auto !important;
         font-weight: 700;
-        color: #f8fafc !important;
+        color: #0f172a !important;
         letter-spacing: 2px;
         transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
     }
 
     .tv-input:focus {
-        border-color: #38bdf8 !important;
-        background-color: #0f172a !important;
-        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2) !important;
+        border-color: #0284c7 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15) !important;
         outline: none;
     }
 
     .tv-input.key-pulse {
-        border-color: #38bdf8 !important;
-        background-color: #1e3a5f !important;
+        border-color: #0284c7 !important;
+        background-color: #e0f2fe !important;
     }
 
     /* PIN Counter Dots */
@@ -176,12 +183,12 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: #475569;
+        background: #cbd5e1;
         transition: transform 0.15s ease, background-color 0.15s ease;
     }
 
     .pin-dot.filled {
-        background: #38bdf8;
+        background: #0284c7;
         transform: scale(1.2);
     }
 
@@ -195,11 +202,11 @@
         right: 12px;
         top: 50%;
         transform: translateY(-50%);
-        background: #334155;
-        border: none;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
         padding: 10px 14px;
-        color: #94a3b8;
+        color: #64748b;
         font-size: 1.1rem;
         cursor: pointer;
         z-index: 10;
@@ -207,14 +214,14 @@
     }
 
     .password-toggle-btn:active {
-        background: #475569;
-        color: #ffffff;
+        background: #e2e8f0;
+        color: #0f172a;
     }
 
     /* Tactile Virtual PIN Keypad */
     .tv-numpad-container {
-        background: #0f172a;
-        border: 2px solid #334155;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
         border-radius: 20px;
         padding: 16px;
         margin-top: 16px;
@@ -228,25 +235,25 @@
     }
 
     .tv-numpad-btn {
-        background: #1e293b;
-        border: 2px solid #334155;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
         border-radius: 14px;
         font-size: 1.65rem;
         font-weight: 800;
-        color: #f8fafc;
+        color: #0f172a;
         height: 60px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         user-select: none;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
         transition: transform 0.1s ease, background-color 0.1s ease;
     }
 
     .tv-numpad-btn:active, .tv-numpad-btn.btn-active-touch {
         transform: scale(0.92) !important;
-        background-color: #334155 !important;
+        background-color: #e2e8f0 !important;
     }
 
     .tv-numpad-btn-action {
@@ -255,26 +262,26 @@
     }
 
     .tv-numpad-btn-clear {
-        background: #450a0a;
-        border-color: #7f1d1d;
-        color: #fca5a5;
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #dc2626;
     }
     .tv-numpad-btn-clear:active {
-        background: #7f1d1d;
+        background: #fee2e2;
     }
 
     .tv-numpad-btn-backspace {
-        background: #451a03;
-        border-color: #78350f;
-        color: #fcd34d;
+        background: #fffbeb;
+        border-color: #fde68a;
+        color: #d97706;
     }
     .tv-numpad-btn-backspace:active {
-        background: #78350f;
+        background: #fef3c7;
     }
 
     .btn-tv-submit {
         min-height: 60px;
-        font-size: 1.3rem !important;
+        font-size: 1.25rem !important;
         font-weight: 800 !important;
         border-radius: 999px !important;
         padding: 14px 28px !important;
@@ -282,9 +289,10 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
-        background-color: #2563eb !important;
-        border-color: #2563eb !important;
+        background-color: #0284c7 !important;
+        border-color: #0284c7 !important;
         color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
         transition: transform 0.15s ease, background-color 0.15s ease;
     }
 
@@ -324,18 +332,18 @@
                     <i class="fa-solid fa-display fs-1" id="displayIcon"></i>
                 </div>
 
-                @if(config('institution.logo_path'))
-                    <img alt="Logo" src="{{ Storage::url(config('institution.logo_path')) }}"
+                @if(config('institution.logo_path') && file_exists(public_path(config('institution.logo_path'))))
+                    <img alt="{{ config('institution.name') }}" src="{{ asset(config('institution.logo_path')) }}"
                          style="height:44px;object-fit:contain;display:block;margin:0 auto 12px;">
-                @else
-                    <img alt="Logo" src="{{ asset('metronic-assets/media/logos/logo-papenajam.webp') }}"
+                @elseif(config('institution.logo_path') && file_exists(storage_path('app/public/' . config('institution.logo_path'))))
+                    <img alt="{{ config('institution.name') }}" src="{{ Storage::url(config('institution.logo_path')) }}"
                          style="height:44px;object-fit:contain;display:block;margin:0 auto 12px;">
                 @endif
 
-                <h1 class="fw-boldest fs-2x text-white text-uppercase mb-1" style="letter-spacing:-0.5px;">
+                <h1 class="fw-boldest fs-2x text-uppercase mb-1" style="color:#0f172a;letter-spacing:-0.5px;">
                     Monitor Antrian
                 </h1>
-                <p class="fs-4 fw-semibold mb-0" style="color:#94a3b8;">
+                <p class="fs-4 fw-semibold mb-0" style="color:#64748b;">
                     TV Display &bull; {{ config('institution.name') }}
                 </p>
             </div>
@@ -343,7 +351,7 @@
             {{-- Error Message Banner --}}
             @if($errors->has('password'))
                 <div class="rounded-3 fw-bold fs-5 mb-6 p-4 d-flex align-items-center"
-                     style="background:rgba(239,68,68,0.15);border:2px solid #ef4444;color:#fca5a5;">
+                     style="background:#fef2f2;border:2px solid #ef4444;color:#b91c1c;">
                     <i class="fa-solid fa-triangle-exclamation fs-3 me-3 text-danger"></i>
                     <div>{{ $errors->first('password') }}</div>
                 </div>
@@ -362,8 +370,8 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="fs-4 fw-bold mb-2 d-block text-uppercase"
-                           style="color:#cbd5e1; letter-spacing:0.5px;">
+                    <label class="fs-5 fw-bold mb-2 d-block text-uppercase"
+                           style="color:#334155; letter-spacing:0.5px;">
                         PIN TV Display
                     </label>
                     <div class="password-input-group">
@@ -388,7 +396,7 @@
 
                 {{-- Built-in On-Screen Keypad --}}
                 <div class="tv-numpad-container">
-                    <div class="text-center fs-7 fw-bold text-gray-400 text-uppercase mb-2">
+                    <div class="text-center fs-7 fw-bold text-gray-500 text-uppercase mb-2">
                         Papan Tombol PIN
                     </div>
                     <div class="tv-numpad-grid">
@@ -416,7 +424,7 @@
 
                 <button type="submit"
                         id="btnTvSubmit"
-                        class="btn btn-tv-submit w-100 shadow">
+                        class="btn btn-tv-submit w-100">
                     <span class="indicator-label d-flex align-items-center gap-2">
                         <i class="fa-solid fa-right-to-bracket" id="submitIcon"></i>
                         Masuk ke TV Display
@@ -429,7 +437,7 @@
             </form>
 
             <div class="text-center mt-6">
-                <a href="{{ url('/') }}" class="text-gray-400 hover-primary fw-semibold fs-6 text-decoration-none">
+                <a href="{{ url('/') }}" class="text-muted hover-primary fw-semibold fs-6 text-decoration-none">
                     <i class="fa-solid fa-house me-1"></i> Kembali ke Halaman Utama
                 </a>
             </div>
@@ -439,7 +447,7 @@
 
     {{-- Bottom Footer --}}
     <div class="text-center py-2">
-        <span class="text-gray-500 fw-semibold fs-7 text-uppercase" style="opacity:0.6; letter-spacing:1px;">
+        <span class="text-gray-600 fw-semibold fs-7 text-uppercase" style="letter-spacing:1px;">
             &copy; {{ date('Y') }} Sistem Antrian PTSP &bull; Mode Legacy Android 5
         </span>
     </div>

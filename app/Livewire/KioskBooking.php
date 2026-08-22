@@ -10,6 +10,8 @@ use App\Models\Service;
 use App\Models\Wilayah;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Exists;
 use Illuminate\View\View;
@@ -162,17 +164,32 @@ class KioskBooking extends Component
             'visitorWilayahKode' => ['required', 'string', $this->wilayahExistsRule()],
         ]);
 
-        $this->ticket = $createQueueTicket->handle([
-            'service_id' => $this->selectedServiceId,
-            'channel' => 'walk_in_kiosk',
-            'service_date' => CarbonImmutable::today(),
-            'visitor_name' => $this->visitorName,
-            'visitor_identifier' => $this->visitorIdentifier ?: null,
-            'visitor_phone' => $this->visitorPhone ?: null,
-            'visitor_wilayah_kode' => $this->visitorWilayahKode,
-            'notes' => null,
-            'created_by' => null,
-        ]);
+        try {
+            $this->ticket = $createQueueTicket->handle([
+                'service_id' => $this->selectedServiceId,
+                'channel' => 'walk_in_kiosk',
+                'service_date' => CarbonImmutable::today(),
+                'visitor_name' => $this->visitorName,
+                'visitor_identifier' => $this->visitorIdentifier ?: null,
+                'visitor_phone' => $this->visitorPhone ?: null,
+                'visitor_wilayah_kode' => $this->visitorWilayahKode,
+                'notes' => null,
+                'created_by' => null,
+            ]);
+        } catch (QueryException $e) {
+            $msg = str_contains($e->getMessage(), 'Duplicate entry')
+                ? 'Tiket sudah dibuat sebelumnya. Silakan cek antrian Anda.'
+                : 'Gagal membuat tiket karena konflik data. Coba lagi.';
+
+            $this->addError('visitorName', $msg);
+
+            return;
+        } catch (\Throwable $e) {
+            Log::error('[Kiosk] Gagal membuat tiket', ['error' => $e->getMessage()]);
+            $this->addError('visitorName', 'Gagal membuat tiket. Periksa koneksi dan coba lagi.');
+
+            return;
+        }
 
         $this->step = 4; // Step 4 = ticket printed
 
@@ -241,20 +258,27 @@ class KioskBooking extends Component
             'reprintQuery' => ['required', 'string', 'min:3'],
         ]);
 
-        $this->reprintTicket = QueueTicket::query()
-            ->with('service')
-            ->whereDate('service_date', today())
-            ->whereIn('status', [
-                QueueStatus::Booked,
-                QueueStatus::Waiting,
-                QueueStatus::Called,
-            ])
-            ->where(function ($query) {
-                $query->where('visitor_identifier', $this->reprintQuery)
-                    ->orWhere('visitor_phone', $this->reprintQuery);
-            })
-            ->latest()
-            ->first();
+        try {
+            $this->reprintTicket = QueueTicket::query()
+                ->with('service')
+                ->whereDate('service_date', today())
+                ->whereIn('status', [
+                    QueueStatus::Booked,
+                    QueueStatus::Waiting,
+                    QueueStatus::Called,
+                ])
+                ->where(function ($query) {
+                    $query->where('visitor_identifier', $this->reprintQuery)
+                        ->orWhere('visitor_phone', $this->reprintQuery);
+                })
+                ->latest()
+                ->first();
+        } catch (\Throwable $e) {
+            Log::warning('[Kiosk] Gagal mencari tiket cetak ulang', ['error' => $e->getMessage()]);
+            $this->addError('reprintQuery', 'Gagal mencari tiket. Periksa koneksi dan coba lagi.');
+
+            return;
+        }
 
         if ($this->reprintTicket) {
             $this->reprintBarcodeSvg = $this->generateBarcodeSvg($this->reprintTicket->ticket_number);

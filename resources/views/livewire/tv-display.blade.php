@@ -346,7 +346,7 @@
 
     <div x-show="debugEnabled"
          x-cloak
-         class="fixed bottom-3 left-3 z-[200] w-[min(46rem,calc(100vw-1.5rem))] max-h-[45vh] overflow-hidden rounded-lg border border-amber-300/60 bg-black/85 p-3 font-mono text-[11px] leading-relaxed text-amber-100 shadow-2xl">
+          class="fixed bottom-3 left-3 z-[200] w-[min(46rem,calc(100vw-1.5rem))] max-h-[45vh] overflow-hidden rounded-lg border border-amber-300/60 bg-black/85 p-3 font-mono text-xs leading-relaxed text-amber-100 shadow-2xl">
         <div class="mb-2 flex items-center justify-between gap-3 border-b border-white/15 pb-2 text-xs font-bold text-white">
             <span>TV Debug</span>
             <span x-text="debugLines.length + ' logs'"></span>
@@ -362,7 +362,7 @@
     <div x-show="!audioUnlocked"
          class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-white cursor-pointer"
          x-transition.opacity.duration.500ms>
-        <div class="bg-blue-600 rounded-full p-6 mb-4 animate-bounce">
+        <div class="bg-blue-600 rounded-full p-6 mb-4 animate-pulse">
             <flux:icon.speaker-wave class="w-12 h-12" />
         </div>
         <h2 class="text-4xl font-bold mb-2">Izin Suara Diperlukan</h2>
@@ -430,7 +430,7 @@
                          x-transition:enter="transition ease-out duration-300"
                          x-transition:enter-start="opacity-0 scale-95"
                          x-transition:enter-end="opacity-100 scale-100"
-                         class="bg-white rounded-2xl shadow-lg border-l-8 border-amber-500 p-6 animate-pulse-gentle">
+                          class="bg-white rounded-2xl shadow-lg ring-1 ring-amber-200 p-6 animate-pulse-gentle">
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-7xl font-black text-slate-900">{{ $heroCall->ticket_number }}</div>
@@ -456,7 +456,7 @@
                                  x-transition:enter="transition ease-out duration-300"
                                  x-transition:enter-start="opacity-0 scale-95"
                                  x-transition:enter-end="opacity-100 scale-100"
-                                 class="bg-white rounded-xl shadow-sm border-l-4 border-amber-400 p-4">
+                                 class="bg-white rounded-xl shadow-sm ring-1 ring-amber-100 p-4">
                                     <div class="text-4xl font-black text-slate-800">{{ $ticket->ticket_number }}</div>
                                     <div class="text-xl text-blue-800 font-semibold mt-1">{{ $ticket->counter?->name ?? '-' }}</div>
                                     <div class="text-sm text-slate-500 mt-0.5">{{ $ticket->service?->name ?? '-' }}</div>
@@ -479,7 +479,7 @@
                     <div class="space-y-2">
                         @foreach ($recentCalls as $ticket)
                             <div wire:key="recent-call-{{ $ticket->id }}"
-                                 class="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between {{ $ticket->status === \App\Enums\QueueStatus::Called ? 'border-l-4 border-amber-400' : '' }}"
+                                  class="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between {{ $ticket->status === \App\Enums\QueueStatus::Called ? 'ring-1 ring-amber-200' : '' }}"
                                  style="opacity: {{ max(0.4, 0.9 - ($loop->index * 0.15)) }}">
                                 <div class="flex items-center gap-4">
                                     <span class="text-xl font-bold font-mono text-slate-700">{{ $ticket->ticket_number }}</span>

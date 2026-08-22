@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -130,14 +131,17 @@ class TvDisplayController extends Controller
                 ],
             ]);
         } catch (\Throwable $e) {
+            Log::warning('[TV Legacy API] Gagal memuat state', ['error' => $e->getMessage()]);
+
             return response()->json([
-                'success' => true,
+                'success' => false,
+                'message' => 'Gagal memuat data antrian. Coba lagi.',
                 'data' => [
                     'currentCalls' => [],
                     'recentCalls' => [],
                     'videos' => [],
                 ],
-            ]);
+            ], 200);
         }
     }
 }

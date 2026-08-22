@@ -259,6 +259,21 @@
             @endauth
         </flux:header>
 
+        {{-- Global offline banner (admin) --}}
+        <div wire:offline class="sticky top-0 z-50 flex items-center justify-center gap-2 bg-amber-500 px-4 py-2.5 text-xs font-bold tracking-wide text-white shadow-sm">
+            <flux:icon.signal-slash class="size-4 shrink-0" />
+            <span>Koneksi terputus — beberapa aksi mungkin gagal. Periksa internet Anda.</span>
+        </div>
+
+        {{-- Global flash: rate-limit / error passthrough --}}
+        @if (session('error'))
+            <div class="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
+                <flux:callout icon="x-circle" color="red" heading="Terjadi Kendala" class="rounded-2xl shadow-xs">
+                    <span class="text-sm font-medium">{{ session('error') }}</span>
+                </flux:callout>
+            </div>
+        @endif
+
         {{ $slot }}
 
         @include('partials.flux-scripts')

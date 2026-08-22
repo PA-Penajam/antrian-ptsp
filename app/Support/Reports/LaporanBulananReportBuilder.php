@@ -24,7 +24,7 @@ class LaporanBulananReportBuilder
      *     per_layanan: array<int, array{id: int, name: string, total: int, completed: int, cancelled: int}>,
      *     per_hari: array<int, array{date: string, hari: int, nama_hari: string, total: int, online: int, kiosk: int, assisted: int}>,
      *     per_channel: array<int, array{channel: string, total: int, persen: float}>,
-     *     detail_pengunjung: array<int, array{no: int, nama: string, alamat: string, layanan: string}>,
+     *     detail_pengunjung: array<int, array{no: int, tanggal: string, nama: string, alamat: string, layanan: string}>,
      * }
      */
     public function build(int $bulan, int $tahun): array
@@ -145,6 +145,7 @@ class LaporanBulananReportBuilder
             ->values()
             ->map(fn (QueueTicket $ticket, int $index): array => [
                 'no' => $index + 1,
+                'tanggal' => $ticket->service_date ? Carbon::parse($ticket->service_date)->translatedFormat('d/m/Y') : '-',
                 'nama' => $ticket->visitor_name ?: '-',
                 'alamat' => $ticket->wilayah?->nama ?: 'Tidak tersedia',
                 'layanan' => $ticket->service?->name ?: 'Tidak tersedia',

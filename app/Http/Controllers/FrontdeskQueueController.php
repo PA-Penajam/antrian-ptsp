@@ -10,8 +10,11 @@ use App\Models\QueueTicket;
 use App\Models\Service;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use Throwable;
 
 class FrontdeskQueueController extends Controller
 {
@@ -45,17 +48,29 @@ class FrontdeskQueueController extends Controller
     {
         $validated = $request->validated();
 
-        $ticket = $createQueueTicket->handle([
-            'service_id' => (int) $validated['service_id'],
-            'channel' => $validated['channel'],
-            'service_date' => CarbonImmutable::parse($validated['service_date']),
-            'visitor_name' => $validated['visitor_name'],
-            'visitor_identifier' => $validated['visitor_identifier'] ?? null,
-            'visitor_phone' => $validated['visitor_phone'] ?? null,
-            'visit_purpose' => $validated['visit_purpose'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-            'created_by' => $request->user()?->id,
-        ]);
+        try {
+            $ticket = $createQueueTicket->handle([
+                'service_id' => (int) $validated['service_id'],
+                'channel' => $validated['channel'],
+                'service_date' => CarbonImmutable::parse($validated['service_date']),
+                'visitor_name' => $validated['visitor_name'],
+                'visitor_identifier' => $validated['visitor_identifier'] ?? null,
+                'visitor_phone' => $validated['visitor_phone'] ?? null,
+                'visit_purpose' => $validated['visit_purpose'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'created_by' => $request->user()?->id,
+            ]);
+        } catch (QueryException $e) {
+            Log::warning('[Frontdesk] Gagal membuat tiket (constraint)', ['error' => $e->getMessage(), 'code' => $e->getCode()]);
+
+            return back()->withInput()
+                ->with('error', 'Gagal membuat tiket. Kuota mungkin penuh atau data bertabrakan. Coba lagi.');
+        } catch (Throwable $e) {
+            Log::error('[Frontdesk] Gagal membuat tiket', ['error' => $e->getMessage(), 'user_id' => $request->user()?->id]);
+
+            return back()->withInput()
+                ->with('error', 'Gagal membuat tiket. Periksa koneksi dan coba lagi. Jika berlanjut, hubungi admin.');
+        }
 
         return redirect()
             ->route('frontdesk.queue.index')
@@ -78,6 +93,11 @@ class FrontdeskQueueController extends Controller
                 ->withErrors([
                     'ticket_number' => 'Tiket ini tidak dapat check-in karena statusnya bukan terdaftar (online).',
                 ]);
+        } catch (Throwable $e) {
+            Log::error('[Frontdesk] Gagal check-in tiket', ['error' => $e->getMessage(), 'ticket_number' => $validated['ticket_number']]);
+
+            return back()->withInput()
+                ->with('error', 'Gagal memproses check-in. Periksa koneksi dan coba lagi.');
         }
 
         return redirect()

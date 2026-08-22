@@ -8,7 +8,13 @@ colors:
   oasis-emerald-light: "#10b981"
   civic-blue: "#2563eb"
   amber-glow: "#f59e0b"
+  amber-glow-light: "#fef3c7"
+  amber-glow-border: "#fcd34d"
+  amber-glow-active: "#fde68a"
   coral-crimson: "#ef4444"
+  coral-crimson-light: "#fee2e2"
+  coral-crimson-border: "#fca5a5"
+  coral-crimson-active: "#fecaca"
   deep-slate: "#0f172a"
   slate-muted: "#64748b"
   soft-mist: "#f8fcfd"
@@ -16,6 +22,12 @@ colors:
   zinc-surface: "#18181b"
   zinc-dark: "#09090b"
 typography:
+  mega:
+    fontFamily: "Instrument Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "clamp(5rem, 12vw, 8.5rem)"
+    fontWeight: 900
+    lineHeight: 1
+    letterSpacing: "-0.02em"
   display:
     fontFamily: "Instrument Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: "clamp(2.5rem, 6vw, 4.5rem)"
@@ -141,6 +153,7 @@ Palet *Pelayanan Sejuk & Berwibawa* memancarkan integritas civic yang teduh, dip
 **Character:** Tipografi humanis modern dengan keterbacaan kristal pada skala raksasa (TV Display & Kiosk) maupun densitas tinggi (Workstation Loket & Tabel Laporan).
 
 ### Hierarchy
+- **Mega** (900 font-black, clamp(5rem, 12vw, 8.5rem), line-height: 1): Nomor antrian raksasa pada pencetakan Kiosk dan TV Display.
 - **Display** (800 font-black, clamp(2.5rem, 6vw, 4.5rem), line-height: 1): Nomor tiket utama pada TV Display, Kiosk hasil cari tiket, dan nomor loket raksasa.
 - **Headline** (700 bold, 2rem / 32px, line-height: 1.2): Judul halaman publik, nama modul, dan kartu layanan utama.
 - **Title** (600 semibold, 1.25rem / 20px, line-height: 1.3): Nama loket, label kelompok layanan, dan judul modal dialog.

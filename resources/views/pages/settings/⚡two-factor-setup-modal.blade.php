@@ -155,125 +155,111 @@ new class extends Component {
     class="max-w-md md:min-w-md"
     @close="closeModal"
 >
-        <div class="space-y-6">
-            <div class="flex flex-col items-center space-y-4">
-                <div class="p-0.5 w-auto rounded-full border border-stone-100 dark:border-stone-600 bg-white dark:bg-stone-800 shadow-sm">
-                    <div class="p-2.5 rounded-full border border-stone-200 dark:border-stone-600 overflow-hidden bg-stone-100 dark:bg-stone-200 relative">
-                        <div class="flex items-stretch absolute inset-0 w-full h-full divide-x [&>div]:flex-1 divide-stone-200 dark:divide-stone-300 justify-around opacity-50">
-                            @for ($i = 1; $i <= 5; $i++)
-                                <div></div>
-                            @endfor
-                        </div>
+    <div class="space-y-6">
+        <div class="flex flex-col items-center space-y-3">
+            <div class="flex size-12 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700 shadow-2xs dark:bg-cyan-950/70 dark:text-cyan-300">
+                <flux:icon.qr-code class="size-6" />
+            </div>
 
-                        <div class="flex flex-col items-stretch absolute w-full h-full divide-y [&>div]:flex-1 inset-0 divide-stone-200 dark:divide-stone-300 justify-around opacity-50">
-                            @for ($i = 1; $i <= 5; $i++)
-                                <div></div>
-                            @endfor
-                        </div>
+            <div class="space-y-1 text-center">
+                <flux:heading size="lg" class="font-bold text-zinc-900 dark:text-white">{{ $this->modalConfig['title'] }}</flux:heading>
+                <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">{{ $this->modalConfig['description'] }}</flux:text>
+            </div>
+        </div>
 
-                        <flux:icon.qr-code class="relative z-20 dark:text-accent-foreground"/>
-                    </div>
+        @if ($showVerificationStep)
+            <div class="space-y-6">
+                <div class="flex flex-col items-center justify-center space-y-3">
+                    <flux:otp
+                        name="code"
+                        wire:model="code"
+                        length="6"
+                        label="OTP Code"
+                        label:sr-only
+                        class="mx-auto font-mono text-lg"
+                    />
                 </div>
 
-                <div class="space-y-2 text-center">
-                    <flux:heading size="lg">{{ $this->modalConfig['title'] }}</flux:heading>
-                    <flux:text>{{ $this->modalConfig['description'] }}</flux:text>
+                <div class="flex items-center space-x-3">
+                    <flux:button
+                        variant="filled"
+                        class="flex-1 font-semibold"
+                        wire:click="resetVerification"
+                    >
+                        {{ __('Back') }}
+                    </flux:button>
+
+                    <flux:button
+                        variant="primary"
+                        class="flex-1 bg-cyan-700 font-bold text-white shadow-sm hover:bg-cyan-600"
+                        wire:click="confirmTwoFactor"
+                        x-bind:disabled="$wire.code.length < 6"
+                    >
+                        {{ __('Confirm') }}
+                    </flux:button>
+                </div>
+            </div>
+        @else
+            @error('setupData')
+                <flux:callout variant="danger" icon="x-circle" heading="{{ $message }}"/>
+            @enderror
+
+            <div class="flex justify-center">
+                <div class="relative w-64 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm aspect-square dark:border-zinc-700 dark:bg-zinc-800">
+                    @empty($qrCodeSvg)
+                        <div class="absolute inset-0 flex items-center justify-center bg-white dark:bg-zinc-800 animate-pulse">
+                            <flux:icon.loading class="size-8 text-cyan-600"/>
+                        </div>
+                    @else
+                        <div x-data class="flex items-center justify-center h-full">
+                            <div
+                                class="bg-white p-2 rounded-xl"
+                                :style="($flux.appearance === 'dark' || ($flux.appearance === 'system' && $flux.dark)) ? 'filter: invert(1) brightness(1.5)' : ''"
+                            >
+                                {!! $qrCodeSvg !!}
+                            </div>
+                        </div>
+                    @endempty
                 </div>
             </div>
 
-            @if ($showVerificationStep)
-                <div class="space-y-6">
-                    <div class="flex flex-col items-center space-y-3 justify-center">
-                        <flux:otp
-                            name="code"
-                            wire:model="code"
-                            length="6"
-                            label="OTP Code"
-                            label:sr-only
-                            class="mx-auto"
-                        />
-                    </div>
+            <div>
+                <flux:button
+                    :disabled="$errors->has('setupData')"
+                    variant="primary"
+                    class="w-full bg-cyan-700 font-bold text-white shadow-sm hover:bg-cyan-600"
+                    wire:click="showVerificationIfNecessary"
+                >
+                    {{ $this->modalConfig['buttonText'] }}
+                </flux:button>
+            </div>
 
-                    <div class="flex items-center space-x-3">
-                        <flux:button
-                            variant="outline"
-                            class="flex-1"
-                            wire:click="resetVerification"
-                        >
-                            {{ __('Back') }}
-                        </flux:button>
-
-                        <flux:button
-                            variant="primary"
-                            class="flex-1"
-                            wire:click="confirmTwoFactor"
-                            x-bind:disabled="$wire.code.length < 6"
-                        >
-                            {{ __('Confirm') }}
-                        </flux:button>
-                    </div>
-                </div>
-            @else
-                @error('setupData')
-                    <flux:callout variant="danger" icon="x-circle" heading="{{ $message }}"/>
-                @enderror
-
-                <div class="flex justify-center">
-                    <div class="relative w-64 overflow-hidden border rounded-lg border-stone-200 dark:border-stone-700 aspect-square">
-                        @empty($qrCodeSvg)
-                            <div class="absolute inset-0 flex items-center justify-center bg-white dark:bg-stone-700 animate-pulse">
-                                <flux:icon.loading/>
-                            </div>
-                        @else
-                            <div x-data class="flex items-center justify-center h-full p-4">
-                                <div
-                                    class="bg-white p-3 rounded"
-                                    :style="($flux.appearance === 'dark' || ($flux.appearance === 'system' && $flux.dark)) ? 'filter: invert(1) brightness(1.5)' : ''"
-                                >
-                                    {!! $qrCodeSvg !!}
-                                </div>
-                            </div>
-                        @endempty
-                    </div>
+            <div class="space-y-3">
+                <div class="relative flex items-center justify-center w-full">
+                    <div class="absolute inset-0 w-full h-px top-1/2 bg-zinc-200 dark:bg-zinc-700"></div>
+                    <span class="relative px-3 text-xs bg-white dark:bg-zinc-900 text-zinc-500 font-medium">
+                        {{ __('or, enter the code manually') }}
+                    </span>
                 </div>
 
                 <div>
-                    <flux:button
-                        :disabled="$errors->has('setupData')"
-                        variant="primary"
-                        class="w-full"
-                        wire:click="showVerificationIfNecessary"
-                    >
-                        {{ $this->modalConfig['buttonText'] }}
-                    </flux:button>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="relative flex items-center justify-center w-full">
-                        <div class="absolute inset-0 w-full h-px top-1/2 bg-stone-200 dark:bg-stone-600"></div>
-                        <span class="relative px-2 text-sm bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-400">
-                            {{ __('or, enter the code manually') }}
-                        </span>
-                    </div>
-
-                    <div>
-                        <div class="flex items-stretch w-full">
-                            @empty($manualSetupKey)
-                                <div class="flex items-center justify-center w-full p-3 bg-stone-100 dark:bg-stone-700 rounded-xl">
-                                    <flux:icon.loading variant="mini"/>
-                                </div>
-                            @else
-                                <flux:input
-                                    type="text"
-                                    readonly
-                                    value="{{ $manualSetupKey }}"
-                                    class="flex-1!"
-                                    copyable
-                                />
-                            @endempty
-                        </div>
+                    <div class="flex items-stretch w-full">
+                        @empty($manualSetupKey)
+                            <div class="flex items-center justify-center w-full p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
+                                <flux:icon.loading variant="mini"/>
+                            </div>
+                        @else
+                            <flux:input
+                                type="text"
+                                readonly
+                                value="{{ $manualSetupKey }}"
+                                class="flex-1! font-mono text-xs"
+                                copyable
+                            />
+                        @endempty
                     </div>
                 </div>
-            @endif
-        </div>
+            </div>
+        @endif
+    </div>
 </flux:modal>

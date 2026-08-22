@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateWilayahScopeRequest;
 use App\Models\AppSetting;
 use App\Models\Wilayah;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -52,6 +53,15 @@ class WilayahSettingController extends Controller
 
             return redirect()->route('admin.wilayah.index')
                 ->with('status', 'Setting wilayah berhasil diperbarui.');
+        } catch (QueryException $e) {
+            Log::warning('[Admin][Wilayah] Gagal memperbarui setting (constraint)', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return back()->withInput()
+                ->with('error', 'Gagal menyimpan setting wilayah. Coba lagi.');
         } catch (Throwable $e) {
             Log::error('[Admin][Wilayah] Gagal memperbarui setting wilayah', [
                 'error' => $e->getMessage(),
@@ -59,8 +69,8 @@ class WilayahSettingController extends Controller
                 'input' => $request->except(['_token', '_method']),
             ]);
 
-            return redirect()->route('admin.wilayah.index')
-                ->with('error', 'Terjadi kesalahan saat memperbarui setting wilayah. Silakan coba lagi.');
+            return back()->withInput()
+                ->with('error', 'Terjadi kesalahan saat memperbarui setting wilayah. Periksa koneksi dan coba lagi.');
         }
     }
 }
