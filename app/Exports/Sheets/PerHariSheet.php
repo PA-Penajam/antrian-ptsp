@@ -5,9 +5,11 @@ namespace App\Exports\Sheets;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PerHariSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTitle
+class PerHariSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     /**
      * Data per hari dari report builder.
@@ -55,6 +57,18 @@ class PerHariSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTitle
             'Online',
             'Kiosk',
             'Langsung',
+        ];
+    }
+
+    /**
+     * Styling untuk worksheet Excel.
+     *
+     * @return array<int|string, array<string, mixed>>
+     */
+    public function styles(Worksheet $sheet): array
+    {
+        return [
+            1 => ['font' => ['bold' => true]],
         ];
     }
 

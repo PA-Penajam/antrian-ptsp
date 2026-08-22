@@ -6,9 +6,11 @@ use App\Exports\Concerns\SanitizesCellValues;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DetailPengunjungSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTitle
+class DetailPengunjungSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     use SanitizesCellValues;
 
@@ -49,6 +51,18 @@ class DetailPengunjungSheet implements FromArray, ShouldAutoSize, WithHeadings, 
             'Nama Pengunjung',
             'Alamat/Wilayah',
             'Layanan yang diambil',
+        ];
+    }
+
+    /**
+     * Styling untuk worksheet Excel.
+     *
+     * @return array<int|string, array<string, mixed>>
+     */
+    public function styles(Worksheet $sheet): array
+    {
+        return [
+            1 => ['font' => ['bold' => true]],
         ];
     }
 

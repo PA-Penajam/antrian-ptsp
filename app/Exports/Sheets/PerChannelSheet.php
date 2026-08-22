@@ -5,9 +5,11 @@ namespace App\Exports\Sheets;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PerChannelSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTitle
+class PerChannelSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     /**
      * Data per channel dari report builder.
@@ -49,6 +51,18 @@ class PerChannelSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTi
             'Kanal',
             'Total',
             'Persentase',
+        ];
+    }
+
+    /**
+     * Styling untuk worksheet Excel.
+     *
+     * @return array<int|string, array<string, mixed>>
+     */
+    public function styles(Worksheet $sheet): array
+    {
+        return [
+            1 => ['font' => ['bold' => true]],
         ];
     }
 
