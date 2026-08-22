@@ -248,7 +248,7 @@
                                                     variant="ghost"
                                                     icon="trash"
                                                     aria-label="Hapus {{ $counter->name }}"
-                                                    class="font-semibold text-zinc-600 hover:bg-red-50 hover:text-red-700 dark:text-zinc-400 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+                                                    class="font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                                                 >
                                                     Hapus
                                                 </flux:button>
@@ -380,7 +380,7 @@
                                                         variant="ghost"
                                                         icon="x-mark"
                                                         aria-label="Lepas {{ $session->user->name }} dari {{ $counter->name }}"
-                                                        class="font-semibold text-zinc-600 hover:bg-red-50 hover:text-red-700 dark:text-zinc-400 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+                                                        class="font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                                                     >
                                                         Lepas
                                                     </flux:button>
@@ -461,7 +461,7 @@
                                                 </flux:button>
                                             </flux:modal.trigger>
                                             <flux:modal.trigger name="delete-pool-{{ $pool->id }}">
-                                                <flux:button size="xs" variant="ghost" icon="trash" aria-label="Hapus pool {{ $pool->name }}" class="text-zinc-600 hover:bg-red-50 hover:text-red-700 dark:text-zinc-400 dark:hover:bg-red-950/40 dark:hover:text-red-300">
+                                                <flux:button size="xs" variant="ghost" icon="trash" aria-label="Hapus pool {{ $pool->name }}" class="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-950/40 dark:hover:text-red-400">
                                                     Hapus
                                                 </flux:button>
                                             </flux:modal.trigger>
@@ -484,7 +484,7 @@
             {{-- Create Form --}}
             <div class="space-y-3 rounded-2xl border border-cyan-200 bg-cyan-50/50 p-4 dark:border-cyan-800 dark:bg-cyan-900/10">
                 <p class="text-xs font-semibold uppercase tracking-wide text-cyan-700 dark:text-cyan-400">Tambah Pool Baru</p>
-                <form method="POST" action="{{ route('admin.loket.pool.store') }}" class="space-y-3">
+                <form method="POST" action="{{ route('admin.loket.pool.store') }}" class="space-y-3" x-data="{ submitting: false }" x-bind:aria-busy="submitting" @submit="submitting = true">
                     @csrf
                     <input type="hidden" name="is_active" value="1">
 
@@ -504,8 +504,15 @@
                             <flux:input name="letter_code" value="{{ old('letter_code') }}" placeholder="Contoh: A" maxlength="5" required />
                             <flux:error name="letter_code" />
                         </flux:field>
-                        <flux:button type="submit" variant="filled" icon="plus" class="self-end">
-                            Tambah Pool
+                        <flux:button type="submit" variant="filled" icon="plus" class="self-end" x-bind:disabled="submitting">
+                            <span x-show="!submitting">Tambah Pool</span>
+                            <span x-show="submitting" class="flex items-center gap-2">
+                                <svg class="size-4 animate-spin motion-reduce:hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Menyimpan...
+                            </span>
                         </flux:button>
                     </div>
                 </form>
@@ -516,7 +523,7 @@
     {{-- Edit Pool Modals --}}
     @foreach ($queuePools as $pool)
         <flux:modal name="edit-pool-{{ $pool->id }}" class="w-full max-w-md">
-            <form method="POST" action="{{ route('admin.loket.pool.update', $pool) }}" class="space-y-4">
+            <form method="POST" action="{{ route('admin.loket.pool.update', $pool) }}" class="space-y-4" x-data="{ submitting: false }" x-bind:aria-busy="submitting" @submit="submitting = true">
                 @csrf
                 @method('PUT')
 
@@ -558,7 +565,16 @@
                     <flux:modal.close>
                         <flux:button type="button" variant="ghost">Batal</flux:button>
                     </flux:modal.close>
-                    <flux:button type="submit" variant="primary">Simpan</flux:button>
+                    <flux:button type="submit" variant="primary" x-bind:disabled="submitting">
+                        <span x-show="!submitting">Simpan</span>
+                        <span x-show="submitting" class="flex items-center gap-2">
+                            <svg class="size-4 animate-spin motion-reduce:hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Menyimpan...
+                        </span>
+                    </flux:button>
                 </div>
             </form>
         </flux:modal>
@@ -728,13 +744,13 @@
                     Apakah Anda yakin ingin menghapus loket <strong>{{ $counter->name }}</strong>? Tindakan ini tidak dapat dibatalkan.
                 </flux:callout>
 
-                <form method="POST" action="{{ route('admin.loket.destroy', $counter) }}" class="flex justify-end gap-2 pt-2">
+                <form method="POST" action="{{ route('admin.loket.destroy', $counter) }}" class="flex justify-end gap-2 pt-2" x-data="{ submitting: false }" x-bind:aria-busy="submitting" @submit="submitting = true">
                     @csrf
                     @method('DELETE')
                     <flux:modal.close>
                         <flux:button type="button" variant="ghost">Batal</flux:button>
                     </flux:modal.close>
-                    <flux:button type="submit" variant="danger" icon="trash">Hapus</flux:button>
+                    <flux:button type="submit" variant="danger" icon="trash" x-bind:disabled="submitting">Hapus</flux:button>
                 </form>
             </div>
         </flux:modal>
@@ -755,13 +771,13 @@
                     Apakah Anda yakin ingin menghapus pool <strong>{{ $pool->name }}</strong>? Pool yang terhubung dengan layanan atau loket tidak dapat dihapus.
                 </flux:callout>
 
-                <form method="POST" action="{{ route('admin.loket.pool.destroy', $pool) }}" class="flex justify-end gap-2 pt-2">
+                <form method="POST" action="{{ route('admin.loket.pool.destroy', $pool) }}" class="flex justify-end gap-2 pt-2" x-data="{ submitting: false }" x-bind:aria-busy="submitting" @submit="submitting = true">
                     @csrf
                     @method('DELETE')
                     <flux:modal.close>
                         <flux:button type="button" variant="ghost">Batal</flux:button>
                     </flux:modal.close>
-                    <flux:button type="submit" variant="danger" icon="trash">Hapus</flux:button>
+                    <flux:button type="submit" variant="danger" icon="trash" x-bind:disabled="submitting">Hapus</flux:button>
                 </form>
             </div>
         </flux:modal>
@@ -770,7 +786,7 @@
     {{-- Assign Officer Modals --}}
     @foreach ($counters->where('is_active', true) as $counter)
         <flux:modal name="assign-counter-{{ $counter->id }}" class="w-full max-w-md">
-            <form method="POST" action="{{ route('admin.loket.assign', $counter) }}" class="space-y-4">
+            <form method="POST" action="{{ route('admin.loket.assign', $counter) }}" class="space-y-4" x-data="{ submitting: false }" x-bind:aria-busy="submitting" @submit="submitting = true">
                 @csrf
 
                 <div class="flex items-center gap-3 border-b border-zinc-100 pb-3 dark:border-zinc-800">
@@ -805,7 +821,16 @@
                             Batal
                         </flux:button>
                     </flux:modal.close>
-                    <flux:button type="submit" variant="primary" class="bg-blue-700 font-bold text-white shadow-md shadow-blue-700/20 hover:bg-blue-600 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-600">Tugaskan</flux:button>
+                    <flux:button type="submit" variant="primary" class="bg-blue-700 font-bold text-white shadow-md shadow-blue-700/20 hover:bg-blue-600 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-600" x-bind:disabled="submitting">
+                        <span x-show="!submitting">Tugaskan</span>
+                        <span x-show="submitting" class="flex items-center gap-2">
+                            <svg class="size-4 animate-spin motion-reduce:hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Menyimpan...
+                        </span>
+                    </flux:button>
                 </div>
             </form>
         </flux:modal>
