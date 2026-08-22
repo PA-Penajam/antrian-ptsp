@@ -107,11 +107,11 @@
                     aria-describedby="wilayah-list-scroll-hint"
                 >
                     <flux:table>
-                        <flux:table.columns>
-                            <flux:table.column class="whitespace-nowrap text-xs font-bold uppercase tracking-wider">Kode</flux:table.column>
-                            <flux:table.column class="whitespace-nowrap text-xs font-bold uppercase tracking-wider">Kabupaten/Kota</flux:table.column>
-                            <flux:table.column class="whitespace-nowrap text-xs font-bold uppercase tracking-wider">Status</flux:table.column>
-                            <flux:table.column class="whitespace-nowrap text-right text-xs font-bold uppercase tracking-wider">Aksi</flux:table.column>
+                        <flux:table.columns class="bg-cyan-50/30 dark:bg-cyan-900/10">
+                            <flux:table.column class="whitespace-nowrap text-xs font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300">Kode</flux:table.column>
+                            <flux:table.column class="whitespace-nowrap text-xs font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300">Kabupaten/Kota</flux:table.column>
+                            <flux:table.column class="whitespace-nowrap text-xs font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300">Status</flux:table.column>
+                            <flux:table.column class="whitespace-nowrap text-right text-xs font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300">Aksi</flux:table.column>
                         </flux:table.columns>
                         <flux:table.rows class="admin-row-stagger">
                             @forelse ($kabupatenList as $kabupaten)
@@ -139,7 +139,7 @@
                                                     variant="primary" 
                                                     icon="check" 
                                                     aria-label="Pilih {{ $kabupaten->nama }} sebagai wilayah aktif"
-                                                    class="font-semibold shadow-2xs"
+                                                    class="font-semibold shadow-md shadow-cyan-700/20 bg-cyan-700 hover:bg-cyan-600 dark:bg-cyan-700 dark:hover:bg-cyan-600 text-white"
                                                     x-bind:disabled="submitting"
                                                 >
                                                     Pilih
