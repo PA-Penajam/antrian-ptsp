@@ -331,3 +331,87 @@ test('pagination returns 10 items per page', function () {
     expect($counters)->toHaveCount(10);
     expect($counters->total())->toBe(15);
 });
+
+test('counter tabs expose accessible state and keep inactive content cloaked', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+
+    $this->actingAs($admin)
+        ->get('/admin/loket')
+        ->assertOk()
+        ->assertSee('role="tablist"', false)
+        ->assertSee('aria-label="Navigasi manajemen loket"', false)
+        ->assertSee('id="counter-list-tab"', false)
+        ->assertSee('aria-controls="counter-list-panel"', false)
+        ->assertSee('id="counter-list-panel"', false)
+        ->assertSee('role="tabpanel"', false)
+        ->assertSee('x-bind:aria-selected', false)
+        ->assertSee('x-on:keydown.right.prevent', false)
+        ->assertSee('x-cloak', false);
+});
+
+test('counter mutation buttons rely on a single native form submission', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create(['name' => 'Pool Umum']);
+    Counter::factory()->for($pool)->create(['name' => 'Loket Umum 1']);
+
+    $this->actingAs($admin)
+        ->get('/admin/loket')
+        ->assertOk()
+        ->assertDontSee('requestSubmit()', false);
+});
+
+test('counter management controls expose explicit and contextual labels', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    $pool = QueuePool::factory()->create(['name' => 'Pool Umum']);
+    Counter::factory()->for($pool)->create(['name' => 'Loket Umum 1']);
+
+    $this->actingAs($admin)
+        ->get('/admin/loket')
+        ->assertOk()
+        ->assertSee('aria-label="Cari loket"', false)
+        ->assertSee('aria-label="Cari penugasan petugas"', false)
+        ->assertSee('Nama pool')
+        ->assertSee('Kode pool')
+        ->assertSee('Kode huruf')
+        ->assertSee('aria-label="Edit Loket Umum 1"', false)
+        ->assertSee('aria-label="Hapus Loket Umum 1"', false)
+        ->assertDontSee('Queue Pool');
+});
+
+test('counter overview reports a factual total and neutral empty state', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+
+    $this->actingAs($admin)
+        ->get('/admin/loket')
+        ->assertOk()
+        ->assertSee('0 Loket')
+        ->assertSee('Tambahkan loket pertama')
+        ->assertDontSee('langsung bisa menerima antrian');
+});
+
+test('pool table keeps a semantic head and scoped column headers', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::Admin->value,
+        'email_verified_at' => now(),
+    ]);
+    QueuePool::factory()->create(['name' => 'Pool Umum']);
+
+    $this->actingAs($admin)
+        ->get('/admin/loket')
+        ->assertOk()
+        ->assertSee('<thead', false)
+        ->assertSee('<th scope="col"', false)
+        ->assertDontSee('scope="col"ead', false);
+});

@@ -268,6 +268,69 @@ select:focus[data-flux-control] {
     animation: hotkey-flash-rose 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* === Admin Loket Interaction System === */
+
+.admin-tab-btn {
+    position: relative;
+    isolation: isolate;
+}
+
+.admin-tab-indicator {
+    transition:
+        transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+        width 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-tab-label {
+    transition: color 180ms ease;
+}
+
+.admin-table-scroll {
+    scrollbar-color: #0891b2 transparent;
+    scrollbar-width: thin;
+}
+
+.admin-table-scroll::-webkit-scrollbar {
+    height: 0.5rem;
+}
+
+.admin-table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-table-scroll::-webkit-scrollbar-thumb {
+    background: #0891b2;
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-clip: padding-box;
+}
+
+.admin-table-scroll:focus-visible {
+    border-radius: 0.75rem;
+    outline: 2px solid #0891b2;
+    outline-offset: 4px;
+}
+
+:is(.dark, .dark *) .admin-table-scroll {
+    scrollbar-color: #0891b2 transparent;
+}
+
+:is(.dark, .dark *) .admin-table-scroll::-webkit-scrollbar-thumb {
+    background: #0891b2;
+    background-clip: padding-box;
+}
+
+:is(.dark, .dark *) .admin-table-scroll:focus-visible {
+    outline-color: #0891b2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-tab-indicator,
+    .admin-tab-label {
+        transition-duration: 0.01ms !important;
+    }
+}
+
 /* Accessible reduced motion override */
 @media (prefers-reduced-motion: reduce) {
     .animate-fade-in-up,
