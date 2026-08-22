@@ -228,7 +228,7 @@
         {{-- Activity Timeline Table Card --}}
         <div class="animate-fade-in-up" style="animation-delay: 225ms;">
             <flux:card class="admin-card-elevated rounded-3xl border border-zinc-200 bg-white p-5 sm:p-7 dark:border-zinc-800 dark:bg-zinc-900 print:shadow-none print:border-zinc-300">
-                <div class="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800 print:border-zinc-300">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800 print:border-zinc-300">
                     <div class="flex items-center gap-3">
                         <div class="admin-icon-box bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300 print:hidden">
                             <flux:icon.list-bullet class="size-5" />
@@ -246,7 +246,7 @@
                 @if ($activities->count() > 0)
                     <div class="admin-table-scroll mt-4 overflow-x-auto">
                         <flux:table aria-label="Tabel log audit trail aktivitas antrian">
-                            <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40 print:bg-transparent">
+                            <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40 print:bg-transparent print:table-header-group">
                                 <flux:table.column class="text-xs font-bold uppercase tracking-wider">Waktu</flux:table.column>
                                 <flux:table.column class="text-xs font-bold uppercase tracking-wider">Aksi</flux:table.column>
                                 <flux:table.column class="text-xs font-bold uppercase tracking-wider">Nomor Tiket</flux:table.column>
@@ -288,11 +288,22 @@
                                             </div>
                                         </flux:table.cell>
 
-                                        {{-- Aksi --}}
+                                        {{-- Aksi & Meta --}}
                                         <flux:table.cell class="whitespace-nowrap">
                                             <flux:badge size="sm" :color="$actionColor" class="font-bold">
                                                 {{ $actionLabel }}
                                             </flux:badge>
+                                            @if (!empty($activity->meta))
+                                                <div class="mt-1 flex flex-wrap gap-1">
+                                                    @foreach ($activity->meta as $metaKey => $metaVal)
+                                                        @if (is_scalar($metaVal))
+                                                            <span class="inline-flex rounded-md bg-zinc-100 px-1.5 py-0.5 text-xs font-mono text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                                                                {{ $metaKey }}: {{ $metaVal }}
+                                                            </span>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         </flux:table.cell>
 
                                         {{-- Nomor Tiket --}}
@@ -379,4 +390,5 @@
         </div>
     </div>
 </x-layouts::app>
+
 
