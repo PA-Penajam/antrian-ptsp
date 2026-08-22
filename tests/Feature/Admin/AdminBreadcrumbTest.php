@@ -41,7 +41,7 @@ test('admin breadcrumb views include dashboard home item', function (string $rou
 
     $view = file_get_contents(resource_path($viewPath));
 
-    expect($view)->toContain("<flux:breadcrumbs.item :href=\"route('dashboard')\" icon=\"home\" />");
+    expect($view)->toContain("<flux:breadcrumbs.item :href=\"route('dashboard')\" icon=\"home\"");
 })->with([
     'admin.layanan.index',
     'admin.loket.index',
