@@ -203,7 +203,7 @@
 
                         @if (count($report['per_layanan']) > 0)
                             <div class="admin-table-scroll mt-4 overflow-x-auto">
-                                <flux:table aria-label="Tabel rekapitulasi bulanan per layanan">
+                                <flux:table aria-label="Tabel rekapitulasi volume per jenis layanan">
                                     <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40 print:bg-transparent print:table-header-group">
                                         <flux:table.column class="text-xs font-bold uppercase tracking-wider">Nama Layanan</flux:table.column>
                                         <flux:table.column class="text-right text-xs font-bold uppercase tracking-wider">Total</flux:table.column>
@@ -258,7 +258,7 @@
                         </div>
 
                         <div class="admin-table-scroll mt-4 overflow-x-auto">
-                            <flux:table aria-label="Tabel distribusi kanal registrasi">
+                            <flux:table aria-label="Tabel distribusi pendaftar berdasarkan kanal registrasi">
                                 <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40 print:bg-transparent print:table-header-group">
                                     <flux:table.column class="text-xs font-bold uppercase tracking-wider">Kanal</flux:table.column>
                                     <flux:table.column class="text-right text-xs font-bold uppercase tracking-wider">Total</flux:table.column>
@@ -300,7 +300,7 @@
                 </div>
 
                 <div class="admin-table-scroll mt-4 overflow-x-auto">
-                    <flux:table aria-label="Tabel rincian aktivitas antrian per hari">
+                    <flux:table aria-label="Tabel kronologis aktivitas pendaftaran antrian harian">
                         <flux:table.columns class="bg-zinc-50/50 dark:bg-zinc-800/40 print:bg-transparent print:table-header-group">
                             <flux:table.column class="text-xs font-bold uppercase tracking-wider">Tanggal</flux:table.column>
                             <flux:table.column class="text-xs font-bold uppercase tracking-wider">Hari</flux:table.column>
@@ -362,4 +362,5 @@
         </flux:card>
     @endif
 </div>
+
 
