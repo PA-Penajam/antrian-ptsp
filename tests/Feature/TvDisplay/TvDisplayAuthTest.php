@@ -138,3 +138,39 @@ it('allows tv legacy video audio after samsung sound activation', function () {
         ->assertSee('tvPlayer.volume = soundActivated ? volume : 0', false)
         ->assertDontSee("tvPlayer.removeAttribute('src')", false);
 });
+
+// ── Legacy TV Login & PIN Authentication ────────────────────────────────────
+
+it('renders tv display legacy login page with PIN and on-screen keypad', function () {
+    $response = get(route('tv-display.legacy.login'));
+
+    $response->assertOk()
+        ->assertSee('Monitor Antrian')
+        ->assertSee('PIN TV Display')
+        ->assertSee('Masukkan PIN TV Display...')
+        ->assertSee('Papan Tombol PIN')
+        ->assertSee('tv-numpad-btn', false);
+});
+
+it('logs in to legacy tv display with correct PIN', function () {
+    config(['kiosk.tv_display_password' => bcrypt('654321')]);
+
+    $response = post(route('tv-display.legacy.authenticate'), [
+        'password' => '654321',
+    ]);
+
+    $response->assertRedirect(route('tv-display.legacy'))
+        ->assertSessionHas('tv_display_authenticated', true);
+});
+
+it('rejects wrong PIN on legacy tv display login', function () {
+    config(['kiosk.tv_display_password' => bcrypt('654321')]);
+
+    $response = from(route('tv-display.legacy.login'))
+        ->post(route('tv-display.legacy.authenticate'), [
+            'password' => '000000',
+        ]);
+
+    $response->assertRedirect(route('tv-display.legacy.login'))
+        ->assertSessionHasErrors(['password']);
+});

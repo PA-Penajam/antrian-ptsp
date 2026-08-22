@@ -185,3 +185,39 @@ it('renders printer status bar with polling js in legacy page', function () {
         ->assertSee('showPrinterFlash', false)
         ->assertSee('printer-status', false);
 });
+
+// ── Legacy Login & PIN Authentication ───────────────────────────────────────
+
+it('renders kiosk legacy login page with PIN and on-screen numpad', function () {
+    $response = $this->get(route('kiosk.legacy.login'));
+
+    $response->assertOk()
+        ->assertSee('Akses Kiosk Legacy')
+        ->assertSee('PIN Kiosk')
+        ->assertSee('Masukkan PIN Kiosk...')
+        ->assertSee('Papan Tombol PIN')
+        ->assertSee('login-numpad-btn', false);
+});
+
+it('logs in to legacy kiosk with correct PIN', function () {
+    config(['kiosk.kiosk_password' => bcrypt('123456')]);
+
+    $response = $this->post(route('kiosk.legacy.authenticate'), [
+        'password' => '123456',
+    ]);
+
+    $response->assertRedirect(route('kiosk.legacy'))
+        ->assertSessionHas('kiosk_authenticated', true);
+});
+
+it('rejects wrong PIN on legacy kiosk login', function () {
+    config(['kiosk.kiosk_password' => bcrypt('123456')]);
+
+    $response = $this->from(route('kiosk.legacy.login'))
+        ->post(route('kiosk.legacy.authenticate'), [
+            'password' => '000000',
+        ]);
+
+    $response->assertRedirect(route('kiosk.legacy.login'))
+        ->assertSessionHasErrors(['password']);
+});

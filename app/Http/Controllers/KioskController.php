@@ -73,7 +73,7 @@ class KioskController extends Controller
 
         if (! $hashedPassword || ! Hash::check($request->input('password'), $hashedPassword)) {
             return back()->withErrors([
-                'password' => 'Error: Password yang dimasukkan salah.',
+                'password' => 'Error: PIN yang dimasukkan salah.',
             ]);
         }
 

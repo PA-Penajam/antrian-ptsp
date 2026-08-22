@@ -92,12 +92,15 @@ components:
 
 Antrian PTSP mengadopsi suasana pelayanan peradilan yang hangat, terbuka, berwibawa, dan menenangkan. Antarmuka dirancang layaknya balai musyawarah modern: ruang yang rapi dan lapang, informasi yang langsung terbaca tanpa prasangka literasi digital, serta alur pelayanan yang memberikan ketenangan dan kepastian bagi setiap pengunjung masyarakat dan petugas di loket.
 
-Sistem visual memadukan keteduhan warna laut dan oasis (*Court Cyan* & *Oasis Emerald*) dengan latar terang yang higienis (*Soft Mist*). Kedalaman antarmuka dibangun secara halus melalui pelapisan permukaan (*layered surfaces*), gradasi latar sejuk, serta radius kurva yang ramah (*rounded-2xl* dan *rounded-3xl*), menghadirkan kesan sentuhan yang humanis dan meyakinkan di layar publik, terminal kiosk, TV display ruang tunggu, hingga workstation internal.
+Sistem visual memadukan dua jalur arsitektur:
+1. **Modern Dynamic Track (Web Public, Livewire Kiosk & TV Display):** Kesejukan warna laut dan oasis (*Court Cyan* & *Oasis Emerald*) dengan latar terang higienis (*Soft Mist*), pelapisan permukaan (*layered depth*), serta kurva lembut (*rounded-2xl* & *rounded-3xl*).
+2. **Resilient Legacy Track (Kiosk & TV Display Android 5 / Low-End LCD):** Tampilan *Solid Industrial High-Contrast*, bebas efek visual berat (zero blurs/nesting), dilengkapi *Built-in On-Screen Tactile PIN/Numpad Keypad* untuk respon sentuhan instan pada touchscreen resistif/kapasitif lama.
 
 **Key Characteristics:**
 - **Jernih & Menenangkan:** Mengeliminasi kecemasan menunggu antrian melalui tata letak lapang, warna sejuk, dan status antrian yang transparan.
-- **Ramah Sentuh & Inklusif:** Target interaksi berukuran besar dengan batas radius lembut untuk kenyamanan layar sentuh kiosk dan kemudahan membaca bagi berbagai rentang usia.
+- **Ramah Sentuh & Inklusif:** Target interaksi berukuran besar (min. 60px–64px) dengan batas radius lembut untuk kenyamanan layar sentuh kiosk dan kemudahan membaca bagi berbagai rentang usia.
 - **Hierarki Operasional Presisi:** Pemisahan tegas antara nomor tiket, nomor loket, nama layanan, dan tombol tindakan primer agar petugas dan pengunjung selalu sinkron.
+- **Dual-Track Reliability:** Kinerja maksimal di hardware modern maupun perangkat legacy Android 5 (Lollipop / Chromium 37–53) tanpa kompromi keandalan cetak tiket dan pemanggilan antrian.
 
 ## Colors
 
@@ -117,7 +120,7 @@ Palet *Pelayanan Sejuk & Berwibawa* memancarkan integritas civic yang teduh, dip
 - **Coral Crimson** (#ef4444): Status batal (*cancelled*), tiket terlewat (*skipped*), dan pesan validasi error.
 
 ### Neutral
-- **Deep Slate** (#0f172a): Warna tipografi utama pada mode terang; menghadirkan kontras teks tajam dan keterbacaan prima.
+- **Deep Slate** (#0f172a): Warna tipografi utama pada mode terang; latar belakang kanvas solid untuk terminal Kiosk Legacy dan TV Display.
 - **Slate Muted** (#64748b): Tipografi sekunder, label deskriptif, dan garis tepi lembut.
 - **Soft Mist** (#f8fcfd): Latar belakang utama kanvas publik dengan gradasi halus menuju putih bersih.
 - **Pure White** (#ffffff): Latar kartu, container input, dan permukaan elevated.
@@ -149,15 +152,16 @@ Palet *Pelayanan Sejuk & Berwibawa* memancarkan integritas civic yang teduh, dip
 
 ## Layout
 
-Tata letak Antrian PTSP terbagi menjadi empat pola spesifik sesuai konteks pengguna:
+Tata letak Antrian PTSP terbagi menjadi lima pola spesifik sesuai konteks pengguna:
 1. **Public Self-Service:** Container terpusat (`max-w-6xl` hingga `max-w-7xl`), header bertingkat dengan glassmorphism (`bg-white/95 backdrop-blur-md`), widget sinkronisasi live pantauan antrian hari ini, dan grid kartu layanan 1-3 kolom yang adaptif.
-2. **Kiosk Touch Station:** Layar penuh terpusat (`max-w-5xl`), padding vertikal luas, tombol berorientasi sentuh satu sentuhan (tinggi 64px), dan layout alur wizard tanpa scroll berlebih.
-3. **TV Display Hall:** Grid 2 kolom berimbang (`h-screen overflow-hidden`) — panel pemanggilan loket aktif di sisi kiri (60%) dan video edukasi / antrian antrean berjalan di sisi kanan (40%), dilengkapi running text marquee di bagian bawah.
-4. **Internal Workstation / Admin:** Sidebar tetap collapsible, area kerja berkepadatan efisien dengan tabel flux dan widget monitoring status loket.
+2. **Modern Kiosk Touch Station:** Layar penuh terpusat (`max-w-5xl`), padding vertikal luas, tombol sentuh tinggi 64px, dan layout alur wizard tanpa scroll berlebih.
+3. **Legacy Kiosk Station (Android 5):** Tata letak solid adaptive (Portrait 1080x1920 standing totem & Landscape 1366x768 / 1920x1080), kartu layanan berukuran lega, dan On-Screen Virtual Numpad terintegrasi di sisi form.
+4. **TV Display Hall (Modern & Legacy):** Grid 2 kolom berimbang (`h-screen overflow-hidden`) — panel pemanggilan loket aktif di sisi kiri (60%) dan video edukasi / antrean berjalan di sisi kanan (40%), dilengkapi running text marquee di bagian bawah.
+5. **Internal Workstation / Admin:** Sidebar tetap collapsible, area kerja berkepadatan efisien dengan tabel flux dan widget monitoring status loket.
 
 ## Elevation & Depth
 
-Sistem mengutamakan **Soft Layered & Ambient Depth** — kedalaman dibangun dari tumpukan permukaan putih dengan border tipis cyan/slate dan bayangan ambient sejuk, bukan bayangan hitam tajam.
+Sistem mengutamakan **Soft Layered & Ambient Depth** pada trek modern, serta **Solid Flat Structural Boundaries** pada trek legacy.
 
 ### Shadow Vocabulary
 - **Ambient Header:** `box-shadow: 0 18px 50px -32px rgba(14, 116, 144, 0.35)` — Menahan header mengapung lembut di atas kanvas publik.
@@ -186,6 +190,11 @@ Sistem mengutamakan **Soft Layered & Ambient Depth** — kedalaman dibangun dari
 - **Primary:** Latar gradien Court Cyan (`from-cyan-700 via-cyan-600 to-teal-700`), teks putih, shadow lembut `shadow-cyan-700/25`.
 - **Kiosk Touch Button:** Tinggi minimal 64px (`h-16`), font tebal berukuran besar (`text-xl font-bold`), padding ekstra `px-8`.
 - **Subtle / Ghost:** Latar `bg-white` atau `bg-cyan-50` dengan teks `text-cyan-950` dan border `border-cyan-200`.
+
+### On-Screen Tactile Keypad (PIN & Numpad)
+- **Key Button:** Tombol angka kotak membulat (`rounded-2xl` / 14px), tinggi 60px–68px, font angka tebal 1.65rem–1.85rem, dengan feedback sentuhan instan (`active: scale(0.92)`).
+- **Special Action Keys:** Tombol Hapus/Clear berwarna merah pastel kontras dan tombol Backspace berwarna amber dengan icon delete.
+- **Visual PIN Dots:** Baris titik bulat dinamis (`● ● ● ●`) yang menyala dan membesar saat angka dimasukkan.
 
 ### Live Queue Monitor Widget
 - **Sync Beacon:** Badge live sync emerald dengan dot animasi ping pulsing (`animate-ping`).
@@ -220,9 +229,11 @@ Sistem mengutamakan **Soft Layered & Ambient Depth** — kedalaman dibangun dari
 - **Do** sertakan visual feedback instan (indikator loading, spinner, atau bunyi TTS) ketika tombol panggil antrian ditekan.
 - **Do** jaga kontras teks nomor antrian dan nomor loket tetap tajam di segala sudut pandang TV Display.
 - **Do** sediakan layout responsif yang tetap rapi dari layar ponsel kecil hingga monitor TV 4K.
+- **Do** sediakan on-screen keypad PIN untuk terminal Kiosk dan TV Display legacy agar pengoperasian layar sentuh mandiri bebas gangguan keyboard OS.
 
 ### Don't:
 - **Don't** menggunakan warna merah atau kuning sebagai latar dekorasi umum karena dikhususkan untuk status penting (*batal* / *menunggu*).
 - **Don't** menjejalkan teks jargon hukum atau istilah teknis sistem ke layar publik.
 - **Don't** menggunakan font display dengan dekorasi rumit atau tipis yang sulit dibaca dari jarak jauh di ruang tunggu.
 - **Don't** menghilangkan mode kontras tinggi dan fallback HTML sederhana (*legacy mode*) demi menjaga kompatibilitas hardware kiosk/TV lama.
+- **Don't** menyertakan CSS/JS modern yang tidak didukung (seperti `backdrop-filter: blur()`, `color-mix()`, atau ES2018+ syntax) pada trek legacy Android 5.

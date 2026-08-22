@@ -41,11 +41,19 @@ class ServiceManagementController extends Controller
             ->orderBy('name')
             ->get();
 
+        $stats = [
+            'total' => Service::query()->count(),
+            'active' => Service::query()->where('is_active', true)->count(),
+            'booking_enabled' => Service::query()->where('booking_enabled', true)->count(),
+            'walk_in_enabled' => Service::query()->where('walk_in_enabled', true)->count(),
+        ];
+
         return view('pages.admin.layanan.index', [
             'services' => $services,
             'queuePools' => $queuePools,
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
+            'stats' => $stats,
         ]);
     }
 

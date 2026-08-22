@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-22T02:45:00.000Z",
+  "generatedAt": "2026-08-22T08:10:00.000Z",
   "title": "Design System: Antrian PTSP",
   "extensions": {
     "colorMeta": {
@@ -129,6 +129,14 @@
       "css": ".ds-btn-kiosk { display: flex; align-items: center; justify-content: center; gap: 12px; height: 64px; width: 100%; background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%); color: #ffffff; font-family: 'Instrument Sans', sans-serif; font-size: 20px; font-weight: 700; border-radius: 16px; border: none; box-shadow: 0 12px 24px -4px rgba(8, 145, 178, 0.3); cursor: pointer; transition: transform 0.15s, filter 0.15s; } .ds-btn-kiosk:hover { filter: brightness(1.08); transform: translateY(-2px); } .ds-btn-kiosk:active { transform: translateY(0); filter: brightness(0.95); } .ds-btn-kiosk-icon { display: flex; align-items: center; justify-content: center; }"
     },
     {
+      "name": "On-Screen PIN Keypad",
+      "kind": "custom",
+      "refersTo": "numpad-keypad",
+      "description": "Keypad angka virtual sentuh tactile untuk input PIN kiosk dan nomor telepon.",
+      "html": "<div class=\"ds-numpad-grid\"><button class=\"ds-numpad-btn\">1</button><button class=\"ds-numpad-btn\">2</button><button class=\"ds-numpad-btn\">3</button><button class=\"ds-numpad-btn\">4</button><button class=\"ds-numpad-btn\">5</button><button class=\"ds-numpad-btn\">6</button><button class=\"ds-numpad-btn\">7</button><button class=\"ds-numpad-btn\">8</button><button class=\"ds-numpad-btn\">9</button><button class=\"ds-numpad-btn ds-numpad-clear\">HAPUS</button><button class=\"ds-numpad-btn\">0</button><button class=\"ds-numpad-btn ds-numpad-del\">⌫</button></div>",
+      "css": ".ds-numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 320px; font-family: 'Instrument Sans', sans-serif; } .ds-numpad-btn { background: #ffffff; border: 2px solid #cbd5e1; border-radius: 14px; font-size: 24px; font-weight: 800; color: #0f172a; height: 56px; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: transform 0.1s, background-color 0.1s; } .ds-numpad-btn:active { transform: scale(0.92); background-color: #e2e8f0; } .ds-numpad-clear { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 800; } .ds-numpad-del { background: #fef3c7; border-color: #fcd34d; color: #b45309; }"
+    },
+    {
       "name": "Input Field",
       "kind": "input",
       "refersTo": "input-field",
@@ -163,11 +171,12 @@
   ],
   "narrative": {
     "northStar": "The Digital Balai",
-    "overview": "Antrian PTSP mengadopsi suasana pelayanan peradilan yang hangat, terbuka, berwibawa, dan menenangkan. Antarmuka dirancang layaknya balai musyawarah modern: ruang yang rapi dan lapang, informasi yang langsung terbaca tanpa prasangka literasi digital, serta alur pelayanan yang memberikan ketenangan dan kepastian bagi setiap pengunjung masyarakat dan petugas di loket.\n\nSistem visual memadukan keteduhan warna laut dan oasis (Court Cyan & Oasis Emerald) dengan latar terang yang higienis (Soft Mist). Kedalaman antarmuka dibangun secara halus melalui pelapisan permukaan (layered surfaces), gradasi latar sejuk, serta radius kurva yang ramah (rounded-2xl dan rounded-3xl), menghadirkan kesan sentuhan yang humanis dan meyakinkan di layar publik, terminal kiosk, TV display ruang tunggu, hingga workstation internal.",
+    "overview": "Antrian PTSP mengadopsi suasana pelayanan peradilan yang hangat, terbuka, berwibawa, dan menenangkan. Antarmuka dirancang layaknya balai musyawarah modern: ruang yang rapi dan lapang, informasi yang langsung terbaca tanpa prasangka literasi digital, serta alur pelayanan yang memberikan ketenangan dan kepastian bagi setiap pengunjung masyarakat dan petugas di loket.\n\nSistem visual memadukan dua jalur arsitektur: Modern Dynamic Track (Web Public, Livewire Kiosk & TV Display) dengan warna laut dan oasis (Court Cyan & Oasis Emerald), serta Resilient Legacy Track (Kiosk & TV Display Android 5 / Low-End LCD) dengan tampilan Solid Industrial High-Contrast, bebas efek visual berat (zero blurs/nesting), dan Built-in On-Screen Tactile PIN/Numpad Keypad untuk respon sentuhan instan pada touchscreen resistif/kapasitif lama.",
     "keyCharacteristics": [
       "Jernih & Menenangkan: Mengeliminasi kecemasan menunggu antrian melalui tata letak lapang, warna sejuk, dan status antrian yang transparan.",
-      "Ramah Sentuh & Inklusif: Target interaksi berukuran besar dengan batas radius lembut untuk kenyamanan layar sentuh kiosk dan kemudahan membaca bagi berbagai rentang usia.",
-      "Hierarki Operasional Presisi: Pemisahan tegas antara nomor tiket, nomor loket, nama layanan, dan tombol tindakan primer agar petugas dan pengunjung selalu sinkron."
+      "Ramah Sentuh & Inklusif: Target interaksi berukuran besar (min. 60px–64px) dengan batas radius lembut untuk kenyamanan layar sentuh kiosk dan kemudahan membaca bagi berbagai rentang usia.",
+      "Hierarki Operasional Presisi: Pemisahan tegas antara nomor tiket, nomor loket, nama layanan, dan tombol tindakan primer agar petugas dan pengunjung selalu sinkron.",
+      "Dual-Track Reliability: Kinerja maksimal di hardware modern maupun perangkat legacy Android 5 (Lollipop / Chromium 37–53) tanpa kompromi keandalan cetak tiket dan pemanggilan antrian."
     ],
     "rules": [
       {
@@ -196,14 +205,15 @@
       "Do berikan target sentuh minimal 48px (ideal 64px) untuk semua tombol yang dapat diakses di Kiosk publik.",
       "Do sertakan visual feedback instan (indikator loading, spinner, atau bunyi TTS) ketika tombol panggil antrian ditekan.",
       "Do jaga kontras teks nomor antrian dan nomor loket tetap tajam di segala sudut pandang TV Display.",
-      "Do sediakan layout responsif yang tetap rapi dari layar ponsel kecil hingga monitor TV 4K."
+      "Do sediakan layout responsif yang tetap rapi dari layar ponsel kecil hingga monitor TV 4K.",
+      "Do sediakan on-screen keypad PIN untuk terminal Kiosk dan TV Display legacy agar pengoperasian layar sentuh mandiri bebas gangguan keyboard OS."
     ],
     "donts": [
       "Don't menggunakan warna merah atau kuning sebagai latar dekorasi umum karena dikhususkan untuk status penting (batal / menunggu).",
       "Don't menjejalkan teks jargon hukum atau istilah teknis sistem ke layar publik.",
       "Don't menggunakan font display dengan dekorasi rumit atau tipis yang sulit dibaca dari jarak jauh di ruang tunggu.",
-      "Don't menghilangkan mode kontras tinggi dan fallback HTML sederhana (legacy mode) demi menjaga kompatibilitas hardware kiosk/TV lama."
+      "Don't menghilangkan mode kontras tinggi dan fallback HTML sederhana (legacy mode) demi menjaga kompatibilitas hardware kiosk/TV lama.",
+      "Don't menyertakan CSS/JS modern yang tidak didukung (seperti backdrop-filter: blur(), color-mix(), atau ES2018+ syntax) pada trek legacy Android 5."
     ]
   }
 }
-

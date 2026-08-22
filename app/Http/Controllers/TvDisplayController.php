@@ -69,7 +69,7 @@ class TvDisplayController extends Controller
 
         if (! $hashedPassword || ! Hash::check($request->input('password'), $hashedPassword)) {
             return back()->withErrors([
-                'password' => 'Password salah.',
+                'password' => 'PIN salah.',
             ]);
         }
 

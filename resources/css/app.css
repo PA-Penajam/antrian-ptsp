@@ -129,39 +129,143 @@ select:focus[data-flux-control] {
 .anim-delay-300 { animation-delay: 300ms; }
 .anim-delay-375 { animation-delay: 375ms; }
 
-/* Workstation Cockpit Specific Keyframes */
+/* Workstation Cockpit Specific Keyframes & Motion System */
+@keyframes ticket-arrive {
+    0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes stopwatch-beat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
 @keyframes workstation-beacon {
     0%, 100% {
         transform: scale(1);
         opacity: 0.9;
     }
     50% {
-        transform: scale(1.18);
-        opacity: 0.4;
+        transform: scale(1.15);
+        opacity: 0.5;
     }
 }
 
-@keyframes hotkey-flash {
+@keyframes hotkey-flash-cyan {
     0% {
-        transform: scale(1);
+        transform: translateY(0) scale(1);
         box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7);
     }
-    50% {
-        transform: scale(1.04);
-        box-shadow: 0 0 0 10px rgba(6, 182, 212, 0);
+    30% {
+        transform: translateY(2px) scale(0.97);
+        box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.4);
     }
     100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(6, 182, 212, 0);
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 10px rgba(6, 182, 212, 0);
     }
+}
+
+@keyframes hotkey-flash-sky {
+    0% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7);
+    }
+    30% {
+        transform: translateY(2px) scale(0.97);
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.4);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 10px rgba(14, 165, 233, 0);
+    }
+}
+
+@keyframes hotkey-flash-amber {
+    0% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+    }
+    30% {
+        transform: translateY(2px) scale(0.97);
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.4);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+    }
+}
+
+@keyframes hotkey-flash-emerald {
+    0% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    30% {
+        transform: translateY(2px) scale(0.97);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.4);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+}
+
+@keyframes hotkey-flash-rose {
+    0% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+    }
+    30% {
+        transform: translateY(2px) scale(0.97);
+        box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.4);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 10px rgba(244, 63, 94, 0);
+    }
+}
+
+.animate-ticket-arrive {
+    animation: ticket-arrive 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-stopwatch-beat {
+    animation: stopwatch-beat 1s ease-in-out infinite;
 }
 
 .animate-workstation-beacon {
-    animation: workstation-beacon 2s ease-in-out infinite;
+    animation: workstation-beacon 2.4s ease-in-out infinite;
 }
 
-.animate-hotkey-flash {
-    animation: hotkey-flash 350ms cubic-bezier(0.16, 1, 0.3, 1);
+.animate-hotkey-cyan {
+    animation: hotkey-flash-cyan 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-hotkey-sky {
+    animation: hotkey-flash-sky 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-hotkey-amber {
+    animation: hotkey-flash-amber 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-hotkey-emerald {
+    animation: hotkey-flash-emerald 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-hotkey-rose {
+    animation: hotkey-flash-rose 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Accessible reduced motion override */
@@ -172,7 +276,13 @@ select:focus[data-flux-control] {
     .animate-marquee,
     .animate-glow-shimmer,
     .animate-workstation-beacon,
-    .animate-hotkey-flash {
+    .animate-ticket-arrive,
+    .animate-stopwatch-beat,
+    .animate-hotkey-cyan,
+    .animate-hotkey-sky,
+    .animate-hotkey-amber,
+    .animate-hotkey-emerald,
+    .animate-hotkey-rose {
         animation: none !important;
         transform: none !important;
     }

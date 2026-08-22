@@ -1001,7 +1001,7 @@ new class extends Component
             <!-- Hero Calling Cockpit Stage -->
             @if ($this->hasActiveTicket)
                 <!-- ACTIVE TICKET STAGE: Electric Cyan & Emerald Glow -->
-                <div class="relative overflow-hidden rounded-3xl border-2 border-cyan-500/50 dark:border-cyan-500/40 bg-gradient-to-br from-cyan-50/90 via-white to-emerald-50/70 p-6 md:p-8 shadow-xl shadow-cyan-950/5 dark:from-cyan-950/40 dark:via-zinc-900 dark:to-emerald-950/30 transition-all duration-300">
+                <div class="relative overflow-hidden rounded-3xl border-2 border-cyan-500/50 dark:border-cyan-500/40 bg-gradient-to-br from-cyan-50/90 via-white to-emerald-50/70 p-6 md:p-8 shadow-xl shadow-cyan-950/5 dark:from-cyan-950/40 dark:via-zinc-900 dark:to-emerald-950/30 transition-all duration-300 animate-fade-in-up">
                     <!-- Subtle Ambient Background Light -->
                     <div class="absolute -right-16 -top-16 size-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"></div>
                     <div class="absolute -left-16 -bottom-16 size-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
@@ -1021,7 +1021,7 @@ new class extends Component
                         <!-- Live Service Stopwatch -->
                         <div class="flex items-center gap-2">
                             <div class="inline-flex items-center gap-2 rounded-2xl border px-3.5 py-1.5 text-xs font-semibold shadow-xs" :class="timerColorClass">
-                                <flux:icon.clock class="size-3.5" />
+                                <flux:icon.clock class="size-3.5 animate-stopwatch-beat" />
                                 <span>Durasi:</span>
                                 <span class="font-mono text-sm font-black tabular-nums tracking-wider" x-text="formattedTime">00:00</span>
                                 <span class="text-xs opacity-75 font-normal" x-text="timerPacingLabel"></span>
@@ -1034,7 +1034,7 @@ new class extends Component
                         <div class="text-xs font-bold uppercase tracking-[0.25em] text-cyan-600 dark:text-cyan-400">
                             Tiket Aktif
                         </div>
-                        <div class="mt-1 font-mono text-6xl font-black tracking-tight text-cyan-600 sm:text-8xl dark:text-cyan-300 drop-shadow-sm select-all break-all sm:break-normal max-w-full">
+                        <div class="mt-1 font-mono text-6xl font-black tracking-tight text-cyan-600 sm:text-8xl dark:text-cyan-300 drop-shadow-sm select-all break-all sm:break-normal max-w-full animate-ticket-arrive">
                             {{ $activeTicket->ticket_number }}
                         </div>
                         
@@ -1077,7 +1077,7 @@ new class extends Component
                             :disabled="! $this->hasSelectedCounter"
                             wire:loading.attr="disabled"
                             class="w-full bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white font-bold shadow-md shadow-cyan-600/25 active:scale-95 transition-all"
-                            :class="flashedKey === 'Space' ? 'ring-4 ring-cyan-300 animate-hotkey-flash' : ''"
+                            :class="(flashedKey === 'Space' || flashedKey === 'F2') ? 'animate-hotkey-cyan ring-4 ring-cyan-400/50' : ''"
                         >
                             <span>Panggil Berikutnya</span>
                             <kbd class="workstation-kbd bg-cyan-800/40 text-cyan-100 border-cyan-400/40 ml-1.5">Space</kbd>
@@ -1091,7 +1091,7 @@ new class extends Component
                             :disabled="! $this->hasActiveTicket"
                             wire:loading.attr="disabled"
                             class="w-full font-semibold active:scale-95 transition-all"
-                            :class="flashedKey === 'F1' ? 'ring-4 ring-cyan-300 animate-hotkey-flash' : ''"
+                            :class="flashedKey === 'F1' ? 'animate-hotkey-sky ring-4 ring-sky-400/50' : ''"
                         >
                             <span>Panggil Ulang</span>
                             <kbd class="workstation-kbd bg-sky-800/30 text-sky-200 border-sky-400/30 ml-1.5">F1</kbd>
@@ -1104,7 +1104,7 @@ new class extends Component
                             :disabled="! $this->hasActiveTicket"
                             wire:loading.attr="disabled"
                             class="w-full text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30 dark:hover:text-amber-300 font-semibold active:scale-95 transition-all"
-                            :class="flashedKey === 'F3' ? 'ring-4 ring-amber-300 animate-hotkey-flash' : ''"
+                            :class="flashedKey === 'F3' ? 'animate-hotkey-amber ring-4 ring-amber-400/50' : ''"
                         >
                             <span>Lewati (Skip)</span>
                             <kbd class="workstation-kbd bg-amber-800/30 text-amber-200 border-amber-400/30 ml-1.5">F3</kbd>
@@ -1118,7 +1118,7 @@ new class extends Component
                             :disabled="! $this->hasActiveTicket"
                             wire:loading.attr="disabled"
                             class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
-                            :class="flashedKey === 'F4' ? 'ring-4 ring-emerald-300 animate-hotkey-flash' : ''"
+                            :class="(flashedKey === 'F4' || flashedKey === 'Ctrl+Enter') ? 'animate-hotkey-emerald ring-4 ring-emerald-400/50' : ''"
                         >
                             <span>Selesai</span>
                             <kbd class="workstation-kbd bg-emerald-800/40 text-emerald-100 border-emerald-400/40 ml-1.5">F4</kbd>
@@ -1131,7 +1131,7 @@ new class extends Component
                             :disabled="! $this->hasActiveTicket"
                             wire:loading.attr="disabled"
                             class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-950/30 dark:hover:text-red-400 font-semibold active:scale-95 transition-all"
-                            :class="flashedKey === 'F8' ? 'ring-4 ring-red-300 animate-hotkey-flash' : ''"
+                            :class="flashedKey === 'F8' ? 'animate-hotkey-rose ring-4 ring-rose-400/50' : ''"
                         >
                             <span>Batalkan</span>
                             <kbd class="workstation-kbd bg-rose-800/30 text-rose-200 border-rose-400/30 ml-1.5">F8</kbd>
@@ -1140,7 +1140,7 @@ new class extends Component
                 </div>
             @else
                 <!-- STANDBY STAGE: Ready to Serve Cockpit -->
-                <div class="relative overflow-hidden rounded-3xl border-2 border-dashed border-zinc-300 dark:border-zinc-800 bg-gradient-to-b from-zinc-50/80 via-white to-zinc-100/50 p-8 text-center dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-zinc-950/80 shadow-sm transition-all duration-300">
+                <div class="relative overflow-hidden rounded-3xl border-2 border-dashed border-zinc-300 dark:border-zinc-800 bg-gradient-to-b from-zinc-50/80 via-white to-zinc-100/50 p-8 text-center dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-zinc-950/80 shadow-sm transition-all duration-300 animate-fade-in-up">
                     <div class="mx-auto flex size-16 items-center justify-center rounded-3xl bg-cyan-100 text-cyan-600 shadow-sm dark:bg-cyan-950/60 dark:text-cyan-400 animate-workstation-beacon">
                         <flux:icon.megaphone class="size-8" />
                     </div>
@@ -1170,7 +1170,7 @@ new class extends Component
                             :disabled="! $this->hasSelectedCounter || $waitingCount === 0"
                             wire:loading.attr="disabled"
                             class="w-full py-3 text-base bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white font-bold shadow-lg shadow-cyan-600/30 active:scale-95 transition-all"
-                            :class="flashedKey === 'Space' ? 'ring-4 ring-cyan-300 animate-hotkey-flash' : ''"
+                            :class="(flashedKey === 'Space' || flashedKey === 'F2') ? 'animate-hotkey-cyan ring-4 ring-cyan-400/50' : ''"
                         >
                             <span>Panggil Antrean Berikutnya</span>
                             <kbd class="workstation-kbd bg-cyan-800/40 text-cyan-100 border-cyan-400/40 ml-2">Space / F2</kbd>
