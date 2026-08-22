@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateCounterRequest extends FormRequest
 {
@@ -17,14 +19,14 @@ class UpdateCounterRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'queue_pool_id' => ['required', 'integer', 'exists:queue_pools,id'],
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:20', \Illuminate\Validation\Rule::unique('counters', 'code')->ignore($this->counter)],
+            'code' => ['required', 'string', 'max:20', Rule::unique('counters', 'code')->ignore($this->counter)],
             'is_active' => ['required', 'boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
         ];

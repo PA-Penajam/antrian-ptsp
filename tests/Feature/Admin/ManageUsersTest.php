@@ -1,7 +1,9 @@
 <?php
 
+use App\Enums\QueueStatus;
 use App\Enums\UserRole;
 use App\Models\QueuePool;
+use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
 
@@ -133,14 +135,14 @@ test('admin cannot delete user with active tickets', function () {
     ]);
 
     // Create an active ticket created by this user
-    $pool = \App\Models\QueuePool::factory()->create(['code' => 'UMUM']);
-    $service = \App\Models\Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
+    $pool = QueuePool::factory()->create(['code' => 'UMUM']);
+    $service = Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
 
-    \App\Models\QueueTicket::factory()->create([
+    QueueTicket::factory()->create([
         'service_id' => $service->id,
         'queue_pool_id' => $pool->id,
         'created_by' => $userWithTickets->id,
-        'status' => \App\Enums\QueueStatus::Waiting,
+        'status' => QueueStatus::Waiting,
         'ticket_number' => 'A001',
         'sequence_number' => 1,
     ]);
@@ -187,8 +189,8 @@ test('admin can create officer with services', function () {
         'email_verified_at' => now(),
     ]);
 
-    $pool = \App\Models\QueuePool::factory()->create(['code' => 'UMUM']);
-    $service = \App\Models\Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
+    $pool = QueuePool::factory()->create(['code' => 'UMUM']);
+    $service = Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
 
     $response = $this->actingAs($admin)->post('/admin/users', [
         'name' => 'Officer Dengan Layanan',
@@ -211,8 +213,8 @@ test('admin can update user to non-officer and detach services', function () {
         'email_verified_at' => now(),
     ]);
 
-    $pool = \App\Models\QueuePool::factory()->create(['code' => 'UMUM']);
-    $service = \App\Models\Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
+    $pool = QueuePool::factory()->create(['code' => 'UMUM']);
+    $service = Service::factory()->for($pool)->create(['name' => 'Pendaftaran']);
 
     $officer = User::factory()->create([
         'role' => UserRole::Officer->value,

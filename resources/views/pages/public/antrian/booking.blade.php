@@ -225,10 +225,7 @@
                 <flux:card class="space-y-6 border-cyan-200 bg-white/96 p-6 shadow-[0_24px_70px_-52px_rgba(14,116,144,0.45)] sm:p-7">
                     <div class="space-y-4">
                         <div class="flex flex-wrap items-center justify-between gap-3">
-                            <div class="space-y-1">
-                                <flux:text class="text-xs font-semibold tracking-[0.2em] text-cyan-700 uppercase">Wizard Booking</flux:text>
-                                <flux:heading size="lg" class="text-slate-900">Selesaikan booking dalam tiga langkah</flux:heading>
-                            </div>
+                            <flux:heading size="lg" class="text-slate-900">Selesaikan booking dalam tiga langkah</flux:heading>
 
                             <flux:badge color="zinc" rounded x-text="`Langkah ${step} dari 3`">Langkah 1 dari 3</flux:badge>
                         </div>
@@ -263,7 +260,6 @@
 
                     <section class="space-y-5" x-show="step === 1" x-transition.opacity.duration.250ms>
                         <div class="space-y-2">
-                            <flux:text class="text-xs font-semibold tracking-[0.18em] text-cyan-700 uppercase">Layanan</flux:text>
                             <flux:heading size="lg" class="text-slate-900">Pilih layanan yang ingin Anda booking</flux:heading>
                             <flux:text class="max-w-3xl text-sm leading-6 text-slate-600">
                                 Setiap kartu menampilkan gambaran layanan, persyaratan, dan informasi kuota hari ini. Pilih satu layanan untuk melanjutkan.
@@ -355,7 +351,6 @@
 
                     <section class="space-y-5" x-show="step === 2" x-transition.opacity.duration.250ms>
                         <div class="space-y-2">
-                            <flux:text class="text-xs font-semibold tracking-[0.18em] text-emerald-700 uppercase">Isi Data</flux:text>
                             <flux:heading size="lg" class="text-slate-900">Lengkapi detail kunjungan Anda</flux:heading>
                             <flux:text class="max-w-3xl text-sm leading-6 text-slate-600">
                                 Pastikan nama dan tanggal layanan sudah benar. Informasi tambahan membantu petugas memahami kebutuhan Anda sebelum kedatangan.
@@ -365,7 +360,6 @@
                         <flux:card class="border-cyan-200 bg-[linear-gradient(180deg,#effbff_0%,#f8fdff_100%)] p-5 shadow-none">
                             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                 <div class="space-y-2">
-                                    <flux:text class="text-xs font-semibold tracking-[0.18em] text-cyan-700 uppercase">Layanan terpilih</flux:text>
                                     <flux:heading size="base" class="text-slate-900" x-text="selectedService ? selectedService.name : 'Pilih layanan terlebih dahulu'">
                                         Pilih layanan terlebih dahulu
                                     </flux:heading>
@@ -442,7 +436,6 @@
 
                     <section class="space-y-5" x-show="step === 3" x-transition.opacity.duration.250ms>
                         <div class="space-y-2">
-                            <flux:text class="text-xs font-semibold tracking-[0.18em] text-amber-700 uppercase">Konfirmasi</flux:text>
                             <flux:heading size="lg" class="text-slate-900">Periksa ringkasan booking sebelum dikirim</flux:heading>
                             <flux:text class="max-w-3xl text-sm leading-6 text-slate-600">
                                 Pastikan layanan, tanggal, dan data pengunjung sudah sesuai. Setelah dikirim, booking akan diproses ke halaman konfirmasi tiket.
@@ -509,8 +502,7 @@
 
                 <div class="space-y-4">
                     <flux:card class="space-y-4 border-slate-200 bg-white/92 p-5 shadow-[0_24px_60px_-52px_rgba(15,23,42,0.35)]">
-                        <div class="space-y-2">
-                            <flux:text class="text-xs font-semibold tracking-[0.18em] text-slate-500 uppercase">Ringkasan aktif</flux:text>
+                        <div class="space-y-1">
                             <flux:heading size="base" class="text-slate-900">Pilihan Anda saat ini</flux:heading>
                         </div>
 

@@ -21,7 +21,7 @@
                             <flux:icon.printer class="size-5 text-white" />
                             <span class="ml-2 text-base font-semibold text-white">Cetak Ulang Tiket</span>
                         </div>
-                        <flux:heading level="1" size="3xl" class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black text-transparent">
+                        <flux:heading level="1" size="3xl" class="text-4xl font-black text-slate-900 tracking-tight">
                             Cari Tiket Anda
                         </flux:heading>
                         <flux:text class="text-xl text-slate-600">
@@ -75,7 +75,7 @@
 
                                 {{-- Nomor Tiket --}}
                                 <div class="text-center">
-                                    <div class="bg-gradient-to-br from-cyan-600 via-blue-600 to-violet-600 bg-clip-text text-8xl font-black tracking-wider text-transparent">
+                                    <div class="text-8xl font-black tracking-wider text-cyan-950">
                                         {{ $reprintTicket->ticket_number }}
                                     </div>
                                 </div>
@@ -140,7 +140,7 @@
                             <flux:icon.queue-list class="size-5 text-white" />
                             <span class="ml-2 text-base font-semibold text-white">Langkah 1 dari 4</span>
                         </div>
-                        <flux:heading level="1" size="3xl" class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black text-transparent">
+                        <flux:heading level="1" size="3xl" class="text-4xl font-black text-slate-900 tracking-tight">
                             Pilih Layanan
                         </flux:heading>
                         <flux:text class="mx-auto max-w-2xl text-xl leading-relaxed text-slate-600">
@@ -244,7 +244,7 @@
                             <flux:icon.user class="size-5 text-white" />
                             <span class="ml-2 text-base font-semibold text-white">Langkah 2 dari 4</span>
                         </div>
-                        <h1 class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black text-transparent text-center sm:text-left">
+                        <h1 class="text-4xl font-black text-slate-900 tracking-tight text-center sm:text-left">
                             Isi Data Pengunjung
                         </h1>
                         
@@ -367,7 +367,7 @@
                             <flux:icon.clipboard-document-check class="size-5 text-white" />
                             <span class="ml-2 text-base font-semibold text-white">Langkah 3 dari 4</span>
                         </div>
-                        <flux:heading level="1" size="3xl" class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black text-transparent">
+                        <flux:heading level="1" size="3xl" class="text-4xl font-black text-slate-900 tracking-tight">
                             Konfirmasi Data
                         </flux:heading>
                         <flux:text class="text-xl text-slate-600">
@@ -502,7 +502,7 @@
                             Tiket Berhasil Dibuat
                         </flux:badge>
                         
-                        <flux:heading level="1" size="3xl" class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black text-transparent">
+                        <flux:heading level="1" size="3xl" class="text-4xl font-black text-slate-900 tracking-tight">
                             Nomor Antrian Anda
                         </flux:heading>
                     </div>
@@ -518,7 +518,7 @@
                         <div class="relative space-y-8">
                             {{-- Ticket Number dengan Typography Bold --}}
                             <div class="text-center">
-                                <div class="bg-gradient-to-br from-cyan-600 via-blue-600 to-violet-600 bg-clip-text text-9xl font-black tracking-wider text-transparent drop-shadow-sm sm:text-[10rem]">
+                                <div class="text-9xl font-black tracking-wider text-slate-900 drop-shadow-xs sm:text-[10rem]">
                                     {{ $ticket->ticket_number }}
                                 </div>
                             </div>

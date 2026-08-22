@@ -1,12 +1,9 @@
 <x-layouts::app :title="__('Audit Trail')">
-    <div class="mx-auto w-full max-w-6xl space-y-6">
+    <div class="w-full space-y-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div class="space-y-3">
-                <flux:badge color="blue" rounded>Laporan</flux:badge>
-                <div>
-                    <flux:heading size="xl" level="1">Audit Trail</flux:heading>
-                    <flux:subheading class="mt-1">Log aktivitas antrian, pemanggilan, dan aksi pengguna.</flux:subheading>
-                </div>
+            <div>
+                <flux:heading size="xl" level="1">Audit Trail</flux:heading>
+                <flux:subheading class="mt-1">Log aktivitas antrian, pemanggilan, dan aksi pengguna.</flux:subheading>
             </div>
         </div>
 

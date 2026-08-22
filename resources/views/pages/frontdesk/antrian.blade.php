@@ -1,11 +1,8 @@
 <x-layouts::app :title="__('Frontdesk Antrian')">
-        <div class="max-w-3xl mx-auto space-y-6">
-            <div class="space-y-3">
-                <flux:badge color="cyan" rounded>Frontdesk</flux:badge>
-                <div>
-                    <flux:heading size="xl" level="1">Frontdesk Antrian</flux:heading>
-                    <flux:subheading class="mt-1">Buat tiket antrian baru atau lakukan check-in tiket yang sudah ada.</flux:subheading>
-                </div>
+        <div class="w-full space-y-6">
+            <div>
+                <flux:heading size="xl" level="1">Frontdesk Antrian</flux:heading>
+                <flux:subheading class="mt-1">Buat tiket antrian baru atau lakukan check-in tiket yang sudah ada.</flux:subheading>
             </div>
 
             @if (session('status'))

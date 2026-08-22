@@ -2,6 +2,7 @@
 
 use App\Models\QueuePool;
 use App\Models\Service;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 
 it('rate limits public booking submissions', function () {
     $pool = QueuePool::factory()->create(['code' => 'UMUM']);
@@ -10,7 +11,7 @@ it('rate limits public booking submissions', function () {
         'booking_enabled' => true,
     ]);
 
-    $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+    $this->withoutMiddleware(ValidateCsrfToken::class);
 
     for ($i = 0; $i < 10; $i++) {
         $this->post('/antrian', [

@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Queue\CheckPrinterConnectivity;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -43,7 +44,7 @@ it('returns connected true even when printer responds with 404', function () {
 
 it('returns connected false with error message when connection times out', function () {
     Http::fake(function () {
-        throw new \Illuminate\Http\Client\ConnectionException('cURL error 28: Operation timed out');
+        throw new ConnectionException('cURL error 28: Operation timed out');
     });
 
     $result = app(CheckPrinterConnectivity::class)->handle();
@@ -54,7 +55,7 @@ it('returns connected false with error message when connection times out', funct
 
 it('returns connected false with error message when connection is refused', function () {
     Http::fake(function () {
-        throw new \Illuminate\Http\Client\ConnectionException('cURL error 7: Failed to connect');
+        throw new ConnectionException('cURL error 7: Failed to connect');
     });
 
     $result = app(CheckPrinterConnectivity::class)->handle();

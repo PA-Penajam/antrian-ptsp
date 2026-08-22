@@ -2,8 +2,7 @@
     <flux:main container>
         <div class="mx-auto flex w-full max-w-4xl flex-col gap-8 py-6 sm:gap-10 sm:py-8">
             {{-- Hero Section --}}
-            <div class="space-y-3 text-center">
-                <flux:badge color="cyan" rounded icon="magnifying-glass">Cek Status</flux:badge>
+            <div class="space-y-2 text-center">
                 <flux:heading size="xl" level="1" class="text-slate-900">Cek Status Antrian</flux:heading>
                 <flux:subheading class="mx-auto max-w-2xl text-base leading-7 text-slate-600">
                     Masukkan nomor antrian dan tanggal layanan untuk melihat status tiket Anda.

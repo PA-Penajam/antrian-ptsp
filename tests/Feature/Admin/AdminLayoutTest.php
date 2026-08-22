@@ -3,7 +3,7 @@
 use App\Enums\UserRole;
 use App\Models\User;
 
-test('admin dashboard uses constrained content width wrapper', function () {
+test('admin dashboard renders correctly for admin role', function () {
     $admin = User::factory()->create([
         'role' => UserRole::Admin->value,
     ]);
@@ -12,7 +12,7 @@ test('admin dashboard uses constrained content width wrapper', function () {
         ->get(route('dashboard'))
         ->assertOk()
         ->assertSee('Shortcut Manajemen')
-        ->assertSee('max-w-6xl', false);
+        ->assertSee('Health Aplikasi');
 });
 
 test('admin navigation template highlights every admin subpage', function () {

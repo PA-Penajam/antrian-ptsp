@@ -10,16 +10,20 @@
         
         {{-- 1. HERO BALAI SECTION --}}
         <div class="relative overflow-hidden rounded-3xl border border-cyan-200/80 bg-gradient-to-b from-white via-[#f7fcfd] to-[#edf8fa] p-5 sm:p-8 lg:p-12 shadow-[0_24px_60px_-36px_rgba(14,116,144,0.35)] print:bg-white print:border-slate-300 print:shadow-none">
-            <div class="grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(19rem,0.9fr)] lg:items-stretch">
+            {{-- Ambient radial background highlights --}}
+            <div aria-hidden="true" class="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-cyan-400/15 blur-3xl print:hidden"></div>
+            <div aria-hidden="true" class="pointer-events-none absolute -left-20 -bottom-20 size-72 rounded-full bg-teal-400/15 blur-3xl print:hidden"></div>
+
+            <div class="relative grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(19rem,0.9fr)] lg:items-stretch">
                 <div class="flex flex-col justify-between space-y-6 text-center lg:text-left">
                     <div class="space-y-3.5 sm:space-y-4">
-                        <div class="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50/90 px-3.5 py-1.5 shadow-xs print:border-slate-300 print:bg-slate-100">
+                        <div class="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50/90 px-3.5 py-1.5 shadow-xs transition-all hover:bg-cyan-100/70 print:border-slate-300 print:bg-slate-100">
                             <flux:icon.building-office-2 class="size-4 text-cyan-700 print:text-slate-800" />
                             <span class="text-xs font-semibold tracking-wider text-cyan-900 uppercase print:text-slate-900">{{ $institutionName }}</span>
                         </div>
 
                         <div class="space-y-2.5 sm:space-y-3">
-                            <flux:heading level="1" size="xl" class="text-balance font-black text-slate-900 text-3xl sm:text-4xl lg:text-5xl">
+                            <flux:heading level="1" size="xl" class="text-balance font-black text-slate-900 text-3xl sm:text-4xl lg:text-5xl tracking-tight">
                                 Sistem Antrian PTSP
                             </flux:heading>
 
@@ -29,13 +33,13 @@
                         </div>
                     </div>
 
-                    {{-- Action Buttons (Optimized for touch thumb zones on mobile and cursor on desktop) --}}
+                    {{-- Action Buttons --}}
                     <div class="flex flex-col justify-center gap-3 sm:flex-row lg:justify-start print:hidden">
                         <flux:button
                             href="{{ url('/antrian') }}"
                             variant="primary"
                             icon="ticket"
-                            class="h-14 w-full justify-center rounded-2xl bg-gradient-to-r from-cyan-700 via-cyan-600 to-teal-700 px-7 text-base font-bold text-white shadow-lg shadow-cyan-700/25 transition-all duration-200 hover:brightness-105 active:scale-[0.99] touch-manipulation sm:w-auto"
+                            class="h-14 w-full justify-center rounded-2xl bg-gradient-to-r from-cyan-700 via-cyan-600 to-teal-700 px-7 text-base font-bold text-white shadow-lg shadow-cyan-700/25 transition-all duration-200 hover:brightness-105 hover:shadow-cyan-700/35 active:scale-[0.99] touch-manipulation sm:w-auto"
                         >
                             Ambil Nomor Antrian
                         </flux:button>
@@ -44,7 +48,7 @@
                             href="{{ url('/antrian/cek') }}"
                             variant="subtle"
                             icon="magnifying-glass"
-                            class="h-14 w-full justify-center rounded-2xl border-2 border-cyan-200/90 bg-white px-7 text-base font-bold text-cyan-950 shadow-xs transition-all duration-200 hover:border-cyan-300 hover:bg-cyan-50/70 touch-manipulation sm:w-auto"
+                            class="h-14 w-full justify-center rounded-2xl border-2 border-cyan-200/90 bg-white px-7 text-base font-bold text-cyan-950 shadow-xs transition-all duration-200 hover:border-cyan-300 hover:bg-cyan-50/70 active:scale-[0.99] touch-manipulation sm:w-auto"
                         >
                             Cek Status Antrian
                         </flux:button>
@@ -52,7 +56,7 @@
                 </div>
 
                 {{-- Hero Operational Card --}}
-                <div class="flex flex-col justify-between space-y-4 rounded-3xl border border-cyan-200/90 bg-white/95 p-4.5 sm:p-6 shadow-sm backdrop-blur-sm print:border-slate-300">
+                <div class="flex flex-col justify-between space-y-4 rounded-3xl border border-cyan-200/90 bg-white/95 p-4.5 sm:p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md print:border-slate-300">
                     <div class="space-y-1">
                         <flux:heading size="lg" class="font-bold text-slate-900">Informasi Pelayanan</flux:heading>
                         <flux:text class="text-xs leading-relaxed text-slate-600 sm:text-sm">
@@ -61,8 +65,8 @@
                     </div>
 
                     <div class="grid gap-3">
-                        <div class="flex items-start gap-3.5 rounded-2xl border border-cyan-100 bg-gradient-to-br from-cyan-50/80 to-white p-3.5 sm:p-4 shadow-xs print:border-slate-200">
-                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-cyan-600 text-white shadow-xs sm:size-11">
+                        <div class="group flex items-start gap-3.5 rounded-2xl border border-cyan-100 bg-gradient-to-br from-cyan-50/80 to-white p-3.5 sm:p-4 shadow-xs transition-all duration-200 hover:border-cyan-200 hover:bg-cyan-50/90 print:border-slate-200">
+                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-cyan-600 text-white shadow-xs transition-transform group-hover:scale-105 motion-reduce:transform-none sm:size-11">
                                 <flux:icon.clock class="size-5" />
                             </div>
                             <div class="min-w-0 space-y-0.5">
@@ -73,8 +77,8 @@
                             </div>
                         </div>
 
-                        <div class="flex items-start gap-3.5 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/80 to-white p-3.5 sm:p-4 shadow-xs print:border-slate-200">
-                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs sm:size-11">
+                        <div class="group flex items-start gap-3.5 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/80 to-white p-3.5 sm:p-4 shadow-xs transition-all duration-200 hover:border-emerald-200 hover:bg-emerald-50/90 print:border-slate-200">
+                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs transition-transform group-hover:scale-105 motion-reduce:transform-none sm:size-11">
                                 <flux:icon.identification class="size-5" />
                             </div>
                             <div class="space-y-0.5">
@@ -89,94 +93,8 @@
             </div>
         </div>
 
-        {{-- 2. LIVE ANTRIAN RINGKAS (MINI-MONITOR WIDGET) --}}
-        <div class="rounded-3xl border border-cyan-100 bg-gradient-to-b from-white via-white to-cyan-50/30 p-5 sm:p-8 shadow-[0_18px_45px_-30px_rgba(14,116,144,0.22)] print:border-slate-300 print:shadow-none">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div class="space-y-0.5 sm:space-y-1">
-                    <flux:heading level="2" size="xl" class="font-bold text-slate-900">Pantauan Antrian Hari Ini</flux:heading>
-                    <flux:text class="text-xs text-slate-600 sm:text-sm">
-                        Ringkasan aktivitas tiket dan panggilan loket di ruang tunggu PTSP saat ini.
-                    </flux:text>
-                </div>
-
-                <div class="inline-flex items-center gap-2.5 self-start rounded-full border border-emerald-200 bg-emerald-50/90 px-3 py-1 text-xs font-bold tracking-wider text-emerald-800 uppercase shadow-xs sm:self-auto sm:px-3.5 sm:py-1.5 print:hidden">
-                    <span class="relative flex size-2.5">
-                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75 motion-reduce:hidden"></span>
-                        <span class="relative inline-flex size-2.5 rounded-full bg-emerald-600"></span>
-                    </span>
-                    <span>Live Sinkronisasi</span>
-                </div>
-            </div>
-
-            {{-- Stats Grid (Adaptive 1 col on mobile, 3 cols on sm+) --}}
-            <div class="mt-5 sm:mt-6 grid gap-3.5 sm:grid-cols-3">
-                <div class="flex items-center gap-4 rounded-2xl border border-cyan-200/80 bg-gradient-to-br from-cyan-50/90 via-cyan-50/40 to-white p-4 sm:p-4.5 shadow-xs transition hover:border-cyan-300">
-                    <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-600 to-cyan-800 text-white shadow-md shadow-cyan-600/20 sm:size-13">
-                        <flux:icon.ticket class="size-6 sm:size-6.5" />
-                    </div>
-                    <div>
-                        <p class="text-2xl font-black text-cyan-950 sm:text-3xl lg:text-4xl">{{ $todayStats['total'] }}</p>
-                        <p class="text-xs font-bold tracking-[0.14em] text-cyan-800 uppercase">Total Tiket Terdaftar</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-4 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/90 via-amber-50/40 to-white p-4 sm:p-4.5 shadow-xs transition hover:border-amber-300">
-                    <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-md shadow-amber-600/20 sm:size-13">
-                        <flux:icon.clock class="size-6 sm:size-6.5" />
-                    </div>
-                    <div>
-                        <p class="text-2xl font-black text-amber-950 sm:text-3xl lg:text-4xl">{{ $todayStats['waiting'] }}</p>
-                        <p class="text-xs font-bold tracking-[0.14em] text-amber-800 uppercase">Sedang Menunggu</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-4 rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-emerald-50/40 to-white p-4 sm:p-4.5 shadow-xs transition hover:border-emerald-300">
-                    <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-md shadow-emerald-600/20 sm:size-13">
-                        <flux:icon.check-circle class="size-6 sm:size-6.5" />
-                    </div>
-                    <div>
-                        <p class="text-2xl font-black text-emerald-950 sm:text-3xl lg:text-4xl">{{ $todayStats['completed'] }}</p>
-                        <p class="text-xs font-bold tracking-[0.14em] text-emerald-800 uppercase">Selesai Dilayani</p>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Active Calling Display Cards --}}
-            @if ($activeCallingTickets->isNotEmpty())
-                <div class="mt-6 border-t border-cyan-100 pt-5 sm:pt-6">
-                    <div class="mb-3.5 flex items-center gap-2">
-                        <flux:icon.megaphone class="size-4 text-emerald-700" />
-                        <p class="text-xs font-bold tracking-[0.16em] text-slate-700 uppercase">Sedang Dipanggil di Loket PTSP</p>
-                    </div>
-                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        @foreach ($activeCallingTickets as $callingTicket)
-                            <div class="flex items-center justify-between rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-white p-3.5 sm:p-4 shadow-xs transition-all duration-200 hover:shadow-md hover:border-emerald-400">
-                                <div class="min-w-0 pr-2">
-                                    <div class="inline-flex items-center gap-1.5 rounded-md bg-emerald-700 px-2 py-0.5 text-xs font-bold text-white uppercase shadow-2xs">
-                                        <span class="inline-flex size-1.5 rounded-full bg-emerald-300 animate-pulse motion-reduce:hidden"></span>
-                                        {{ $callingTicket->counter?->name ?? 'Loket' }}
-                                    </div>
-                                    <p class="mt-1 truncate text-xs font-medium text-slate-600">{{ $callingTicket->service?->name }}</p>
-                                </div>
-                                <div class="shrink-0 font-black text-xl sm:text-2xl tracking-wider text-emerald-800 animate-pulse-gentle rounded-xl px-2 py-0.5">
-                                    {{ $callingTicket->ticket_number }}
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @else
-                <div class="mt-5 sm:mt-6 flex flex-col gap-2 rounded-2xl border border-cyan-100 bg-cyan-50/70 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5 text-xs text-cyan-900">
-                    <div class="flex items-center gap-2">
-                        <flux:icon.sparkles class="size-4 text-cyan-700 shrink-0" />
-                        <span>Semua loket siap melayani antrian Anda dengan tertib dan transparan.</span>
-                    </div>
-                    <a href="{{ url('/antrian') }}" class="font-semibold text-cyan-800 hover:underline print:hidden">
-                        Ambil nomor sekarang &rarr;
-                    </a>
-                </div>
-            @endif
-        </div>
+        {{-- 2. LIVE ANTRIAN RINGKAS (REACTIVE LIVEWIRE COMPONENT) --}}
+        <livewire:public-queue-monitor />
 
         {{-- 3. KATALOG LAYANAN INTERAKTIF --}}
         <section
@@ -191,13 +109,13 @@
                     </flux:text>
                 </div>
 
-                {{-- Quick Filter Pills (Smooth scroll on narrow screens) --}}
+                {{-- Quick Filter Pills --}}
                 <div class="flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-cyan-100 bg-white p-1.5 shadow-2xs print:hidden touch-manipulation">
                     <button
                         type="button"
                         x-on:click="filter = 'all'"
                         :class="filter === 'all' ? 'bg-cyan-800 text-white shadow-xs' : 'text-cyan-900 hover:text-cyan-950 hover:bg-cyan-50'"
-                        class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer"
+                        class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer"
                     >
                         Semua Layanan
                     </button>
@@ -205,7 +123,7 @@
                         type="button"
                         x-on:click="filter = 'booking'"
                         :class="filter === 'booking' ? 'bg-emerald-800 text-white shadow-xs' : 'text-emerald-900 hover:text-emerald-950 hover:bg-emerald-50'"
-                        class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer"
+                        class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer"
                     >
                         Booking Online
                     </button>
@@ -213,7 +131,7 @@
                         type="button"
                         x-on:click="filter = 'walkin'"
                         :class="filter === 'walkin' ? 'bg-blue-800 text-white shadow-xs' : 'text-blue-900 hover:text-blue-950 hover:bg-blue-50'"
-                        class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer"
+                        class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer"
                     >
                         Walk-in
                     </button>
@@ -232,7 +150,7 @@
                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                             x-transition:leave-end="opacity-0 translate-y-1 scale-[0.98]"
                             x-data="{ showRequirements: false }"
-                            class="flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_14px_34px_-24px_rgba(15,23,42,0.14)] transition-all duration-200 ease-out hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_48px_-24px_rgba(14,116,144,0.22)] motion-reduce:transform-none print:shadow-none print:border-slate-300"
+                            class="group flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_14px_34px_-24px_rgba(15,23,42,0.14)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_48px_-24px_rgba(14,116,144,0.22)] motion-reduce:transform-none print:shadow-none print:border-slate-300"
                         >
                             <div class="space-y-4">
                                 {{-- Header Service --}}
@@ -242,7 +160,7 @@
                                         <p class="text-xs font-semibold tracking-[0.14em] text-cyan-800 uppercase">Pelayanan PTSP</p>
                                     </div>
 
-                                    <span class="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-100 to-teal-100 font-black text-base text-cyan-900 border border-cyan-200/60 shadow-2xs">
+                                    <span class="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-100 to-teal-100 font-black text-base text-cyan-900 border border-cyan-200/60 shadow-2xs transition-transform duration-200 group-hover:scale-105 motion-reduce:transform-none">
                                         {{ filled($service->letter_code) ? $service->letter_code : 'U' }}
                                     </span>
                                 </div>
@@ -276,15 +194,15 @@
                                     @endif
                                 </div>
 
-                                {{-- Requirements Accordion (Auto-expanded on print, interactive on screen) --}}
+                                {{-- Requirements Accordion --}}
                                 <div class="border-t border-slate-100 pt-3.5">
                                     <button
                                         type="button"
                                         x-on:click="showRequirements = !showRequirements"
-                                        class="group flex w-full min-h-[44px] items-center justify-between rounded-xl py-1.5 text-xs font-bold tracking-[0.14em] text-cyan-800 uppercase transition hover:text-cyan-950 cursor-pointer touch-manipulation print:hidden"
+                                        class="group/req flex w-full min-h-[44px] items-center justify-between rounded-xl py-1.5 text-xs font-bold tracking-[0.14em] text-cyan-800 uppercase transition hover:text-cyan-950 cursor-pointer touch-manipulation print:hidden"
                                     >
                                         <span class="flex items-center gap-1.5">
-                                            <flux:icon.document-text class="size-3.5 text-cyan-600 group-hover:text-cyan-800" />
+                                            <flux:icon.document-text class="size-3.5 text-cyan-600 group-hover/req:text-cyan-800 transition-colors" />
                                             Persyaratan Berkas
                                         </span>
                                         <svg
@@ -321,13 +239,13 @@
                                 </div>
                             </div>
 
-                            {{-- Action Button (48px high for touch comfort) --}}
+                            {{-- Action Button --}}
                             <div class="mt-6 pt-2 print:hidden">
                                 <flux:button
                                     href="{{ url('/antrian?service_id=' . $service->id) }}"
                                     variant="primary"
                                     icon="ticket"
-                                    class="h-12 w-full justify-center rounded-2xl bg-gradient-to-r from-cyan-700 to-teal-700 font-bold text-white shadow-xs transition hover:brightness-105 active:scale-[0.99] touch-manipulation"
+                                    class="h-12 w-full justify-center rounded-2xl bg-gradient-to-r from-cyan-700 to-teal-700 font-bold text-white shadow-xs transition-all duration-200 hover:brightness-105 active:scale-[0.99] touch-manipulation"
                                 >
                                     Pilih Layanan
                                 </flux:button>
@@ -362,9 +280,9 @@
             </div>
 
             <div class="mt-6 sm:mt-8 grid gap-4 sm:gap-5 sm:grid-cols-3 items-stretch">
-                <div class="flex flex-col justify-between space-y-4 rounded-3xl border border-cyan-200/90 bg-white p-5 sm:p-6 shadow-xs transition hover:border-cyan-300 print:border-slate-200">
+                <div class="group flex flex-col justify-between space-y-4 rounded-3xl border border-cyan-200/90 bg-white p-5 sm:p-6 shadow-xs transition-all duration-300 hover:border-cyan-300 hover:shadow-md hover:-translate-y-0.5 motion-reduce:transform-none print:border-slate-200">
                     <div class="space-y-3.5">
-                        <div class="flex size-11 sm:size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-600 to-cyan-800 font-black text-base sm:text-lg text-white shadow-md shadow-cyan-600/20">
+                        <div class="flex size-11 sm:size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-600 to-cyan-800 font-black text-base sm:text-lg text-white shadow-md shadow-cyan-600/20 transition-transform duration-200 group-hover:scale-105 motion-reduce:transform-none">
                             1
                         </div>
                         <div class="space-y-1.5">
@@ -376,9 +294,9 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col justify-between space-y-4 rounded-3xl border border-emerald-200/90 bg-white p-5 sm:p-6 shadow-xs transition hover:border-emerald-300 print:border-slate-200">
+                <div class="group flex flex-col justify-between space-y-4 rounded-3xl border border-emerald-200/90 bg-white p-5 sm:p-6 shadow-xs transition-all duration-300 hover:border-emerald-300 hover:shadow-md hover:-translate-y-0.5 motion-reduce:transform-none print:border-slate-200">
                     <div class="space-y-3.5">
-                        <div class="flex size-11 sm:size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 font-black text-base sm:text-lg text-white shadow-md shadow-emerald-600/20">
+                        <div class="flex size-11 sm:size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 font-black text-base sm:text-lg text-white shadow-md shadow-emerald-600/20 transition-transform duration-200 group-hover:scale-105 motion-reduce:transform-none">
                             2
                         </div>
                         <div class="space-y-1.5">
@@ -390,9 +308,9 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col justify-between space-y-4 rounded-3xl border border-blue-200/90 bg-white p-5 sm:p-6 shadow-xs transition hover:border-blue-300 print:border-slate-200">
+                <div class="group flex flex-col justify-between space-y-4 rounded-3xl border border-blue-200/90 bg-white p-5 sm:p-6 shadow-xs transition-all duration-300 hover:border-blue-300 hover:shadow-md hover:-translate-y-0.5 motion-reduce:transform-none print:border-slate-200">
                     <div class="space-y-3.5">
-                        <div class="flex size-11 sm:size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-800 font-black text-base sm:text-lg text-white shadow-md shadow-blue-600/20">
+                        <div class="flex size-11 sm:size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-800 font-black text-base sm:text-lg text-white shadow-md shadow-blue-600/20 transition-transform duration-200 group-hover:scale-105 motion-reduce:transform-none">
                             3
                         </div>
                         <div class="space-y-1.5">
@@ -413,11 +331,11 @@
                 </div>
                 <div class="print:hidden">
                     @auth
-                        <flux:button href="{{ route('dashboard') }}" variant="subtle" icon="squares-2x2" size="sm" class="rounded-xl border border-cyan-200 bg-white text-cyan-950 font-semibold shadow-xs">
+                        <flux:button href="{{ route('dashboard') }}" variant="subtle" icon="squares-2x2" size="sm" class="rounded-xl border border-cyan-200 bg-white text-cyan-950 font-semibold shadow-xs hover:bg-cyan-50">
                             Buka Dashboard
                         </flux:button>
                     @else
-                        <flux:button href="{{ route('login') }}" variant="subtle" icon="arrow-right-start-on-rectangle" size="sm" class="rounded-xl border border-cyan-200 bg-white text-cyan-950 font-semibold shadow-xs">
+                        <flux:button href="{{ route('login') }}" variant="subtle" icon="arrow-right-start-on-rectangle" size="sm" class="rounded-xl border border-cyan-200 bg-white text-cyan-950 font-semibold shadow-xs hover:bg-cyan-50">
                             Masuk Petugas
                         </flux:button>
                     @endauth

@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\CounterSessionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CounterSession extends Model
 {
-    /** @use HasFactory<\Database\Factories\CounterSessionFactory> */
+    /** @use HasFactory<CounterSessionFactory> */
     use HasFactory;
 
     protected $fillable = [

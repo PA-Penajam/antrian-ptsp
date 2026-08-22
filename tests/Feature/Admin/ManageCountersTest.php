@@ -3,7 +3,10 @@
 use App\Enums\QueueStatus;
 use App\Enums\UserRole;
 use App\Models\Counter;
+use App\Models\CounterSession;
 use App\Models\QueuePool;
+use App\Models\QueueTicket;
+use App\Models\Service;
 use App\Models\User;
 
 test('admin can list counters and update pool assignment with active status', function () {
@@ -88,10 +91,10 @@ test('admin cannot delete counter with active tickets', function () {
     ]);
     $pool = QueuePool::factory()->create();
     $counter = Counter::factory()->for($pool)->create();
-    $service = \App\Models\Service::factory()->create();
+    $service = Service::factory()->create();
 
     // Create active ticket (waiting status)
-    \App\Models\QueueTicket::factory()->create([
+    QueueTicket::factory()->create([
         'counter_id' => $counter->id,
         'service_id' => $service->id,
         'queue_pool_id' => $pool->id,
@@ -194,7 +197,7 @@ test('admin cannot delete pool with services', function () {
         'email_verified_at' => now(),
     ]);
     $pool = QueuePool::factory()->create();
-    \App\Models\Service::factory()->for($pool)->create();
+    Service::factory()->for($pool)->create();
 
     $response = $this->actingAs($admin)->delete("/admin/loket/pool/{$pool->id}");
 
@@ -226,8 +229,8 @@ test('admin cannot delete pool with tickets', function () {
         'email_verified_at' => now(),
     ]);
     $pool = QueuePool::factory()->create();
-    $service = \App\Models\Service::factory()->create();
-    \App\Models\QueueTicket::factory()->create([
+    $service = Service::factory()->create();
+    QueueTicket::factory()->create([
         'queue_pool_id' => $pool->id,
         'service_id' => $service->id,
     ]);
@@ -264,7 +267,7 @@ test('admin cannot delete counter with active sessions', function () {
     $counter = Counter::factory()->for($pool)->create();
 
     // Create active counter session
-    \App\Models\CounterSession::factory()->create([
+    CounterSession::factory()->create([
         'counter_id' => $counter->id,
         'status' => 'open',
     ]);

@@ -5,6 +5,8 @@ use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR | \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST | \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT | \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO);
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO);
 
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
@@ -23,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->api(prepend: [
-            \Illuminate\Http\Middleware\HandleCors::class,
+            HandleCors::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

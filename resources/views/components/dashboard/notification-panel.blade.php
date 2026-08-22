@@ -65,7 +65,7 @@ new class extends Component
         <flux:icon name="bell" class="relative size-5 text-zinc-700 transition group-hover:scale-105 group-hover:text-sky-600 dark:text-zinc-200 dark:group-hover:text-sky-300" />
 
         @if ($unreadCount > 0)
-            <span class="absolute -end-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full border border-white bg-rose-500 px-1.5 text-[11px] font-semibold leading-none text-white shadow-sm shadow-rose-500/30 dark:border-zinc-900">
+            <span class="absolute -end-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full border border-white bg-rose-500 px-1.5 text-xs font-semibold leading-none text-white shadow-sm shadow-rose-500/30 dark:border-zinc-900">
                 {{ min($unreadCount, 99) }}
             </span>
         @endif
@@ -82,7 +82,7 @@ new class extends Component
                 </div>
 
                 @if ($unreadCount > 0)
-                    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-700 dark:bg-sky-400/15 dark:text-sky-300">
+                    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-sky-700 dark:bg-sky-400/15 dark:text-sky-300">
                         {{ min($unreadCount, 99) }} baru
                     </span>
                 @endif
@@ -110,7 +110,7 @@ new class extends Component
                         class="group rounded-2xl border border-transparent px-3 py-3 transition hover:border-sky-200/70 hover:bg-sky-50/70 dark:hover:border-sky-800/60 dark:hover:bg-sky-500/10"
                     >
                         <div class="flex items-start gap-3">
-                            <div class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-600 transition group-hover:bg-sky-100 group-hover:text-sky-700 dark:bg-zinc-800 dark:text-zinc-300 dark:group-hover:bg-sky-500/20 dark:group-hover:text-sky-200">
+                            <div class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200">
                                 <flux:icon name="sparkles" class="size-4" />
                             </div>
 
@@ -121,12 +121,12 @@ new class extends Component
                                             {{ $activity['action_label'] }}
                                         </p>
 
-                                        <p class="mt-1 text-[11px] uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+                                        <p class="mt-1 text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                             {{ $activity['action'] }}
                                         </p>
                                     </div>
 
-                                    <span class="shrink-0 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                                    <span class="shrink-0 text-xs font-medium text-zinc-500 dark:text-zinc-400">
                                         {{ $activity['relative_time'] }}
                                     </span>
                                 </div>

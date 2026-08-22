@@ -3,6 +3,7 @@
 use App\Livewire\KioskBooking;
 use App\Models\AppSetting;
 use App\Models\QueuePool;
+use App\Models\QueueTicket;
 use App\Models\Service;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
@@ -304,7 +305,7 @@ it('finds ticket by visitor identifier for today', function () {
         'is_active' => true,
         'walk_in_enabled' => true,
     ]);
-    $ticket = \App\Models\QueueTicket::factory()->for($service)->create([
+    $ticket = QueueTicket::factory()->for($service)->create([
         'visitor_identifier' => '3507XXXXXXXXXXXX',
         'service_date' => today(),
         'status' => 'waiting',
@@ -326,7 +327,7 @@ it('finds ticket by visitor phone for today', function () {
         'is_active' => true,
         'walk_in_enabled' => true,
     ]);
-    $ticket = \App\Models\QueueTicket::factory()->for($service)->create([
+    $ticket = QueueTicket::factory()->for($service)->create([
         'visitor_phone' => '081234567890',
         'service_date' => today(),
         'status' => 'waiting',
@@ -359,7 +360,7 @@ it('ignores tickets from other dates in reprint search', function () {
         'is_active' => true,
         'walk_in_enabled' => true,
     ]);
-    \App\Models\QueueTicket::factory()->for($service)->create([
+    QueueTicket::factory()->for($service)->create([
         'visitor_identifier' => '3507XXXXXXXXXXXX',
         'service_date' => today()->subDay(),
         'status' => 'waiting',

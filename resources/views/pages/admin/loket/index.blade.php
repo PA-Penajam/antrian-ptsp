@@ -1,27 +1,23 @@
 <x-layouts::app :title="__('Manajemen Loket')">
-    <div class="mx-auto w-full max-w-6xl space-y-6" x-data="{ tab: '{{ request('tab', 'list') }}' }">
+    <div class="w-full space-y-6" x-data="{ tab: '{{ request('tab', 'list') }}', searchAssignment: '' }">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div class="space-y-3">
-                <flux:badge color="amber" rounded>Admin Panel</flux:badge>
-                <div>
-                    <flux:heading size="xl" level="1">Manajemen Loket</flux:heading>
-                    <flux:subheading class="mt-1">Kelola loket antrian, mapping pool, dan status aktif.</flux:subheading>
-                </div>
-                <flux:breadcrumbs>
+            <div class="space-y-1">
+                <flux:breadcrumbs class="mb-1">
                     <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
                     <flux:breadcrumbs.item>Loket</flux:breadcrumbs.item>
                 </flux:breadcrumbs>
+                <flux:heading size="xl" level="1">Manajemen Loket</flux:heading>
+                <flux:subheading>Kelola daftar loket pelayanan PTSP, pool antrian, dan status aktif.</flux:subheading>
             </div>
-
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <flux:modal.trigger name="pool-manager">
-                    <flux:button variant="filled" icon="folder-plus">
-                        Pool
+                    <flux:button variant="outline" icon="folder-open" class="w-full sm:w-auto">
+                        Kelola Pool
                     </flux:button>
                 </flux:modal.trigger>
                 <flux:modal.trigger name="create-counter">
-                    <flux:button variant="primary" icon="plus">
-                        Tambah Loket
+                    <flux:button variant="primary" icon="plus" class="w-full sm:w-auto">
+                        Tambah Loket Baru
                     </flux:button>
                 </flux:modal.trigger>
             </div>
@@ -34,18 +30,18 @@
         @endif
 
         @if (session('error'))
-            <flux:callout icon="exclamation-circle" color="red">
+            <flux:callout icon="x-circle" color="red">
                 {{ session('error') }}
             </flux:callout>
         @endif
 
         {{-- Tabs Navigation --}}
-        <div class="flex gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-800/50 max-w-fit">
+        <div class="flex w-full overflow-x-auto p-1 gap-1 rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/50 max-w-fit">
             <button
                 type="button"
                 x-on:click="tab = 'list'"
                 :class="tab === 'list' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'"
-                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all whitespace-nowrap"
             >
                 <flux:icon.building-office class="size-4" />
                 Daftar Loket
@@ -54,7 +50,7 @@
                 type="button"
                 x-on:click="tab = 'assignment'"
                 :class="tab === 'assignment' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'"
-                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all whitespace-nowrap"
             >
                 <flux:icon.users class="size-4" />
                 Penugasan Petugas
@@ -64,195 +60,217 @@
         {{-- Tab 1: Daftar Loket --}}
         <div x-show="tab === 'list'" x-cloak>
             <flux:card class="space-y-4">
-                <div class="flex items-center gap-3">
-                    <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
-                        <flux:icon.building-office class="size-5" />
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="admin-icon-box bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
+                            <flux:icon.building-office class="size-5" />
+                        </div>
+                        <flux:heading size="lg">Daftar Loket</flux:heading>
                     </div>
-                    <flux:heading size="lg">Daftar Loket</flux:heading>
+                    <form method="GET" action="{{ route('admin.loket.index') }}" class="w-full sm:w-auto">
+                        <flux:input
+                            name="search"
+                            value="{{ request('search') }}"
+                            placeholder="Cari nama atau kode..."
+                            icon="magnifying-glass"
+                            class="w-full sm:w-64"
+                        />
+                    </form>
                 </div>
-                <form method="GET" action="{{ route('admin.loket.index') }}" class="w-full sm:w-auto">
-                    <flux:input
-                        name="search"
-                        value="{{ request('search') }}"
-                        placeholder="Cari nama atau kode..."
-                        icon="magnifying-glass"
-                        class="w-full sm:w-64"
-                    />
-                </form>
 
-            <flux:table>
-                <flux:table.columns>
-                    <flux:table.column>
-                        <a href="{{ route('admin.loket.index', ['sort_by' => 'name', 'sort_direction' => $sortBy === 'name' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
-                            Loket
-                            @if ($sortBy === 'name')
-                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
-                            @endif
-                        </a>
-                    </flux:table.column>
-                    <flux:table.column>
-                        <a href="{{ route('admin.loket.index', ['sort_by' => 'code', 'sort_direction' => $sortBy === 'code' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
-                            Kode
-                            @if ($sortBy === 'code')
-                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
-                            @endif
-                        </a>
-                    </flux:table.column>
-                    <flux:table.column>Pool</flux:table.column>
-                    <flux:table.column>
-                        <a href="{{ route('admin.loket.index', ['sort_by' => 'sort_order', 'sort_direction' => $sortBy === 'sort_order' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
-                            Urutan
-                            @if ($sortBy === 'sort_order')
-                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
-                            @endif
-                        </a>
-                    </flux:table.column>
-                    <flux:table.column>
-                        <a href="{{ route('admin.loket.index', ['sort_by' => 'is_active', 'sort_direction' => $sortBy === 'is_active' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
-                            Status
-                            @if ($sortBy === 'is_active')
-                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
-                            @endif
-                        </a>
-                    </flux:table.column>
-                    <flux:table.column>Aksi</flux:table.column>
-                </flux:table.columns>
-                <flux:table.rows>
-                    @forelse ($counters as $counter)
-                        <flux:table.row>
-                            <flux:table.cell class="font-medium">{{ $counter->name }}</flux:table.cell>
-                            <flux:table.cell>
-                                <flux:badge size="sm" color="zinc">{{ $counter->code }}</flux:badge>
-                            </flux:table.cell>
-                            <flux:table.cell>
-                                {{ $counter->queuePool?->name ?? '-' }}
-                                <span class="ml-1 text-xs text-zinc-400">({{ $counter->queuePool?->letter_code ?? '-' }})</span>
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $counter->sort_order }}</flux:table.cell>
-                            <flux:table.cell>
-                                @if ($counter->is_active)
-                                    <flux:badge size="sm" color="green" icon="check-circle">Aktif</flux:badge>
-                                @else
-                                    <flux:badge size="sm" color="zinc" icon="x-circle">Nonaktif</flux:badge>
-                                @endif
-                            </flux:table.cell>
-                            <flux:table.cell>
-                                <div class="flex items-center gap-2">
-                                    <flux:modal.trigger name="edit-counter-{{ $counter->id }}">
-                                        <flux:button size="sm" variant="filled" icon="pencil">
-                                            Edit
-                                        </flux:button>
-                                    </flux:modal.trigger>
-                                    <flux:modal.trigger name="delete-counter-{{ $counter->id }}">
-                                        <flux:button size="sm" variant="danger" icon="trash">
-                                            Hapus
-                                        </flux:button>
-                                    </flux:modal.trigger>
-                                </div>
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @empty
-                        <flux:table.row>
-                            <flux:table.cell colspan="6">
-                                <div class="flex flex-col items-center justify-center py-8 text-center">
-                                    <flux:icon name="inbox" class="h-12 w-12 text-zinc-300 dark:text-zinc-600" />
-                                    <p class="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">Belum ada loket</p>
-                                    <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Silakan tambah loket baru menggunakan tombol di atas.</p>
-                                </div>
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @endforelse
-                </flux:table.rows>
-            </flux:table>
-
-            @if ($counters->hasPages())
-                <div class="mt-4">
-                    {{ $counters->appends(['search' => request('search')])->links() }}
+                <div class="overflow-x-auto">
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column>
+                                <a href="{{ route('admin.loket.index', ['sort_by' => 'name', 'sort_direction' => $sortBy === 'name' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                                    Loket
+                                    @if ($sortBy === 'name')
+                                        <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                                    @endif
+                                </a>
+                            </flux:table.column>
+                            <flux:table.column>
+                                <a href="{{ route('admin.loket.index', ['sort_by' => 'code', 'sort_direction' => $sortBy === 'code' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                                    Kode
+                                    @if ($sortBy === 'code')
+                                        <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                                    @endif
+                                </a>
+                            </flux:table.column>
+                            <flux:table.column>Pool</flux:table.column>
+                            <flux:table.column>
+                                <a href="{{ route('admin.loket.index', ['sort_by' => 'sort_order', 'sort_direction' => $sortBy === 'sort_order' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                                    Urutan
+                                    @if ($sortBy === 'sort_order')
+                                        <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                                    @endif
+                                </a>
+                            </flux:table.column>
+                            <flux:table.column>
+                                <a href="{{ route('admin.loket.index', ['sort_by' => 'is_active', 'sort_direction' => $sortBy === 'is_active' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
+                                    Status
+                                    @if ($sortBy === 'is_active')
+                                        <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                                    @endif
+                                </a>
+                            </flux:table.column>
+                            <flux:table.column>Aksi</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @forelse ($counters as $counter)
+                                <flux:table.row>
+                                    <flux:table.cell class="font-medium whitespace-nowrap">{{ $counter->name }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        <flux:badge size="sm" color="zinc">{{ $counter->code }}</flux:badge>
+                                    </flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">{{ $counter->queuePool?->name ?? '-' }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">{{ $counter->sort_order }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        @if ($counter->is_active)
+                                            <flux:badge size="sm" color="green" icon="check-circle">Aktif</flux:badge>
+                                        @else
+                                            <flux:badge size="sm" color="zinc" icon="x-circle">Nonaktif</flux:badge>
+                                        @endif
+                                    </flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                            <form method="POST" action="{{ route('admin.loket.update', $counter) }}" class="inline">
+                                                @csrf
+                                                @method('PUT')
+                                                <input type="hidden" name="name" value="{{ $counter->name }}">
+                                                <input type="hidden" name="code" value="{{ $counter->code }}">
+                                                <input type="hidden" name="queue_pool_id" value="{{ $counter->queue_pool_id }}">
+                                                <input type="hidden" name="sort_order" value="{{ $counter->sort_order }}">
+                                                <input type="hidden" name="is_active" value="{{ $counter->is_active ? '0' : '1' }}">
+                                                <flux:button type="submit" size="sm" variant="ghost" icon="{{ $counter->is_active ? 'pause' : 'play' }}">
+                                                    {{ $counter->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                                </flux:button>
+                                            </form>
+                                            <flux:modal.trigger name="edit-counter-{{ $counter->id }}">
+                                                <flux:button size="sm" variant="filled" icon="pencil">Edit</flux:button>
+                                            </flux:modal.trigger>
+                                            <flux:modal.trigger name="delete-counter-{{ $counter->id }}">
+                                                <flux:button size="sm" variant="danger" icon="trash">
+                                                    Hapus
+                                                </flux:button>
+                                            </flux:modal.trigger>
+                                        </div>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @empty
+                                <flux:table.row>
+                                    <flux:table.cell colspan="6">
+                                        <div class="flex flex-col items-center justify-center py-8 text-center">
+                                            <flux:icon name="inbox" class="h-12 w-12 text-zinc-300 dark:text-zinc-600" />
+                                            <p class="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">Belum ada loket</p>
+                                            <p class="mt-1 text-xs text-zinc-500">Mulai dengan menambahkan loket baru menggunakan tombol di atas.</p>
+                                        </div>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforelse
+                        </flux:table.rows>
+                    </flux:table>
                 </div>
-            @endif
-        </flux:card>
+
+                @if ($counters->hasPages())
+                    <div class="mt-4">
+                        {{ $counters->appends(['search' => request('search')])->links() }}
+                    </div>
+                @endif
+            </flux:card>
         </div>
 
         {{-- Tab 2: Penugasan Petugas --}}
         <div x-show="tab === 'assignment'" x-cloak>
             <flux:card class="space-y-4">
-                <div class="flex items-center gap-3">
-                    <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
-                        <flux:icon.users class="size-5" />
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
+                            <flux:icon.users class="size-5" />
+                        </div>
+                        <flux:heading size="lg">Penugasan Petugas ke Loket</flux:heading>
                     </div>
-                    <flux:heading size="lg">Penugasan Petugas ke Loket</flux:heading>
+                    <flux:input
+                        x-model="searchAssignment"
+                        placeholder="Cari loket, pool, atau petugas..."
+                        icon="magnifying-glass"
+                        clearable
+                        class="w-full sm:w-64"
+                    />
                 </div>
 
-                <flux:table>
-                    <flux:table.columns>
-                        <flux:table.column>Loket</flux:table.column>
-                        <flux:table.column>Pool</flux:table.column>
-                        <flux:table.column>Petugas Aktif</flux:table.column>
-                        <flux:table.column>Jenis Penugasan</flux:table.column>
-                        <flux:table.column>Aksi</flux:table.column>
-                    </flux:table.columns>
-                    <flux:table.rows>
-                        @forelse ($counters->where('is_active', true) as $counter)
-                            @php
-                                $session = $activeSessions->get($counter->id);
-                            @endphp
-                            <flux:table.row>
-                                <flux:table.cell class="font-medium">{{ $counter->name }}</flux:table.cell>
-                                <flux:table.cell>{{ $counter->queuePool?->name ?? '-' }}</flux:table.cell>
-                                <flux:table.cell>
-                                    @if ($session)
-                                        <div class="flex items-center gap-2">
-                                            <div class="h-6 w-6 rounded-full bg-zinc-200 text-xs font-bold leading-6 text-center dark:bg-zinc-700">
-                                                {{ $session->user->initials() }}
-                                            </div>
-                                            <span>{{ $session->user->name }}</span>
-                                        </div>
-                                    @else
-                                        <flux:text class="text-zinc-500">-</flux:text>
-                                    @endif
-                                </flux:table.cell>
-                                <flux:table.cell>
-                                    @if ($session)
-                                        @if ($session->assigned_by)
-                                            <flux:badge size="sm" color="violet">Ditunjuk Admin</flux:badge>
-                                        @else
-                                            <flux:badge size="sm" color="emerald">Dipilih Sendiri</flux:badge>
-                                        @endif
-                                    @else
-                                        <flux:text class="text-zinc-500">-</flux:text>
-                                    @endif
-                                </flux:table.cell>
-                                <flux:table.cell>
-                                    <div class="flex items-center gap-2">
+                <div class="overflow-x-auto">
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column>Loket</flux:table.column>
+                            <flux:table.column>Pool</flux:table.column>
+                            <flux:table.column>Petugas Aktif</flux:table.column>
+                            <flux:table.column>Jenis Penugasan</flux:table.column>
+                            <flux:table.column>Aksi</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @forelse ($counters->where('is_active', true) as $counter)
+                                @php
+                                    $session = $activeSessions->get($counter->id);
+                                @endphp
+                                <flux:table.row x-show="!searchAssignment || '{{ strtolower(addslashes($counter->name . ' ' . ($counter->queuePool?->name ?? '') . ' ' . ($session?->user?->name ?? ''))) }}'.includes(searchAssignment.toLowerCase())">
+                                    <flux:table.cell class="font-medium whitespace-nowrap">{{ $counter->name }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">{{ $counter->queuePool?->name ?? '-' }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
                                         @if ($session)
-                                            <form method="POST" action="{{ route('admin.loket.release', $counter) }}" class="inline">
-                                                @csrf
-                                                <flux:button type="submit" size="sm" variant="ghost" icon="x-mark" class="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400">
-                                                    Lepas
-                                                </flux:button>
-                                            </form>
+                                            <div class="flex items-center gap-2">
+                                                <div class="h-6 w-6 rounded-full bg-zinc-200 text-xs font-bold leading-6 text-center dark:bg-zinc-700">
+                                                    {{ $session->user->initials() }}
+                                                </div>
+                                                <span>{{ $session->user->name }}</span>
+                                            </div>
                                         @else
-                                            <flux:modal.trigger name="assign-counter-{{ $counter->id }}">
-                                                <flux:button size="sm" variant="filled" icon="user-plus" color="violet">
-                                                    Tugaskan
-                                                </flux:button>
-                                            </flux:modal.trigger>
+                                            <flux:text class="text-zinc-500">-</flux:text>
                                         @endif
-                                    </div>
-                                </flux:table.cell>
-                            </flux:table.row>
-                        @empty
-                            <flux:table.row>
-                                <flux:table.cell colspan="5">
-                                    <div class="flex flex-col items-center justify-center py-8 text-center">
-                                        <flux:icon name="inbox" class="h-12 w-12 text-zinc-300 dark:text-zinc-600" />
-                                        <p class="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">Belum ada loket aktif</p>
-                                    </div>
-                                </flux:table.cell>
-                            </flux:table.row>
-                        @endforelse
-                    </flux:table.rows>
-                </flux:table>
+                                    </flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        @if ($session)
+                                            @if ($session->assigned_by)
+                                                <flux:badge size="sm" color="violet">Ditunjuk Admin</flux:badge>
+                                            @else
+                                                <flux:badge size="sm" color="emerald">Dipilih Sendiri</flux:badge>
+                                            @endif
+                                        @else
+                                            <flux:text class="text-zinc-500">-</flux:text>
+                                        @endif
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        <div class="flex items-center gap-2">
+                                            @if ($session)
+                                                <form method="POST" action="{{ route('admin.loket.release', $counter) }}" class="inline">
+                                                    @csrf
+                                                    <flux:button type="submit" size="sm" variant="ghost" icon="x-mark" class="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400">
+                                                        Lepas
+                                                    </flux:button>
+                                                </form>
+                                            @else
+                                                <flux:modal.trigger name="assign-counter-{{ $counter->id }}">
+                                                    <flux:button size="sm" variant="filled" icon="user-plus" color="violet">
+                                                        Tugaskan
+                                                    </flux:button>
+                                                </flux:modal.trigger>
+                                            @endif
+                                        </div>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @empty
+                                <flux:table.row>
+                                    <flux:table.cell colspan="5">
+                                        <div class="flex flex-col items-center justify-center py-8 text-center">
+                                            <flux:icon name="inbox" class="h-12 w-12 text-zinc-300 dark:text-zinc-600" />
+                                            <p class="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">Belum ada loket aktif</p>
+                                        </div>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforelse
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
             </flux:card>
         </div>
     </div>
@@ -272,29 +290,29 @@
 
             {{-- Table List --}}
             @if ($queuePools->count() > 0)
-                <div class="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                <div class="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead class="bg-zinc-50 dark:bg-zinc-800">
                             <tr>
-                                <th class="px-4 py-2.5 text-left font-medium text-zinc-600 dark:text-zinc-400">Nama</th>
-                                <th class="px-4 py-2.5 text-left font-medium text-zinc-600 dark:text-zinc-400">Kode</th>
-                                <th class="px-4 py-2.5 text-left font-medium text-zinc-600 dark:text-zinc-400">Huruf</th>
-                                <th class="px-4 py-2.5 text-center font-medium text-zinc-600 dark:text-zinc-400">Layanan</th>
-                                <th class="px-4 py-2.5 text-center font-medium text-zinc-600 dark:text-zinc-400">Aksi</th>
+                                <th class="px-4 py-2.5 text-left font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap">Nama</th>
+                                <th class="px-4 py-2.5 text-left font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap">Kode</th>
+                                <th class="px-4 py-2.5 text-left font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap">Huruf</th>
+                                <th class="px-4 py-2.5 text-center font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap">Layanan</th>
+                                <th class="px-4 py-2.5 text-center font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-100 dark:divide-zinc-700">
                             @foreach ($queuePools as $pool)
                                 <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                                    <td class="px-4 py-2.5 font-medium text-zinc-900 dark:text-zinc-100">{{ $pool->name }}</td>
-                                    <td class="px-4 py-2.5">
+                                    <td class="px-4 py-2.5 font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">{{ $pool->name }}</td>
+                                    <td class="px-4 py-2.5 whitespace-nowrap">
                                         <span class="inline-flex items-center rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">{{ $pool->code }}</span>
                                     </td>
-                                    <td class="px-4 py-2.5">
+                                    <td class="px-4 py-2.5 whitespace-nowrap">
                                         <span class="inline-flex items-center rounded-md bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{{ $pool->letter_code ?? '-' }}</span>
                                     </td>
-                                    <td class="px-4 py-2.5 text-center text-zinc-500">{{ $pool->services()->count() }}</td>
-                                    <td class="px-4 py-2.5 text-center">
+                                    <td class="px-4 py-2.5 text-center text-zinc-500 whitespace-nowrap">{{ $pool->services()->count() }}</td>
+                                    <td class="px-4 py-2.5 text-center whitespace-nowrap">
                                         <div class="flex items-center justify-center gap-2">
                                             <flux:modal.trigger name="edit-pool-{{ $pool->id }}">
                                                 <flux:button size="xs" variant="filled" icon="pencil">
@@ -327,7 +345,7 @@
                     @csrf
                     <input type="hidden" name="is_active" value="1">
 
-                    <div class="grid gap-3 sm:grid-cols-4">
+                    <div class="grid gap-3 grid-cols-1 sm:grid-cols-4">
                         <div>
                             <input type="text" name="name" value="{{ old('name') }}" placeholder="Nama pool" required
                                 class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500" />

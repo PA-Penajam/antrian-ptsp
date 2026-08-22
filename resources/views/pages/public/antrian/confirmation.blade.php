@@ -41,103 +41,108 @@
     <div class="max-w-2xl mx-auto">
         <!-- Header -->
         <div class="space-y-2 text-center mb-8 no-print">
-            <flux:badge color="emerald" rounded icon="check-circle">Berhasil</flux:badge>
-            <flux:heading size="xl" level="1" class="text-slate-900">Konfirmasi Antrian</flux:heading>
-            <flux:subheading>Terima kasih telah melakukan pendaftaran antrian</flux:subheading>
+            <flux:heading size="xl" level="1" class="text-slate-900 font-bold">Konfirmasi Antrian</flux:heading>
+            <flux:subheading class="text-slate-600">Pendaftaran antrian Anda telah berhasil dikonfirmasi</flux:subheading>
         </div>
 
         <!-- Ticket Card -->
-        <div id="printable-ticket" class="bg-white rounded-3xl shadow-lg border border-cyan-100 overflow-hidden mb-8">
+        <div id="printable-ticket" class="bg-white rounded-3xl shadow-[0_20px_60px_-25px_rgba(14,116,144,0.35)] border border-cyan-200 overflow-hidden mb-8 print:shadow-none print:border-slate-300">
             <!-- Ticket Header -->
-            <div class="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4">
+            <div class="bg-gradient-to-r from-cyan-700 to-teal-800 px-6 py-4.5 text-white">
                 <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                        <flux:icon name="ticket" class="text-white" size="xl" />
-                        <flux:heading size="lg" class="text-white">Detail Tiket Antrian</flux:heading>
+                    <div class="flex items-center gap-2.5">
+                        <flux:icon name="ticket" class="text-cyan-200 size-6" />
+                        <span class="font-bold text-lg text-white">Detail Tiket Antrian</span>
                     </div>
-                    <flux:badge :color="$ticket->status->color()" class="text-sm">
+                    <flux:badge :color="$ticket->status->color()" class="text-xs font-semibold uppercase tracking-wider">
                         {{ $ticket->status->label() }}
                     </flux:badge>
                 </div>
             </div>
 
             <!-- Ticket Body -->
-            <div class="p-6 space-y-6">
+            <div class="p-6 sm:p-8 space-y-6">
                 <!-- Ticket Number -->
-                <div class="text-center">
-                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Nomor Tiket</flux:text>
-                    <p class="text-6xl font-bold text-slate-900">{{ $ticket->ticket_number }}</p>
+                <div class="text-center py-2">
+                    <flux:text class="text-xs font-bold tracking-[0.18em] text-slate-500 uppercase">Nomor Tiket Antrian</flux:text>
+                    <p class="text-6xl font-black text-slate-900 tracking-tight mt-1">{{ $ticket->ticket_number }}</p>
+                </div>
+
+                <!-- Perforation / Divider line -->
+                <div class="relative flex items-center justify-center">
+                    <div class="w-full border-t border-dashed border-slate-200"></div>
                 </div>
 
                 <!-- Service Info -->
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <flux:text class="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Layanan</flux:text>
-                        <flux:text class="font-semibold text-slate-900">{{ $ticket->service->name }}</flux:text>
+                    <div class="space-y-1">
+                        <flux:text class="text-xs font-bold tracking-[0.14em] text-slate-500 uppercase">Layanan</flux:text>
+                        <p class="font-bold text-slate-900 text-sm sm:text-base">{{ $ticket->service->name }}</p>
                     </div>
-                    <div class="space-y-2">
-                        <flux:text class="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Tanggal</flux:text>
-                        <flux:text class="font-semibold text-slate-900">{{ $ticket->service_date->format('d M Y') }}</flux:text>
+                    <div class="space-y-1">
+                        <flux:text class="text-xs font-bold tracking-[0.14em] text-slate-500 uppercase">Tanggal Layanan</flux:text>
+                        <p class="font-bold text-slate-900 text-sm sm:text-base">{{ $ticket->service_date->format('d M Y') }}</p>
                     </div>
                 </div>
 
                 <!-- Visitor Info -->
-                <div class="space-y-2">
-                    <flux:text class="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">Nama Pengunjung</flux:text>
-                    <flux:text class="font-semibold text-slate-900">{{ $ticket->visitor_name }}</flux:text>
+                <div class="space-y-1">
+                    <flux:text class="text-xs font-bold tracking-[0.14em] text-slate-500 uppercase">Nama Pemohon</flux:text>
+                    <p class="font-bold text-slate-900 text-sm sm:text-base">{{ $ticket->visitor_name }}</p>
                 </div>
 
                 <!-- Queue Position -->
                 @if($queuePosition > 0)
-                    <div class="bg-orange-50 border border-orange-100 rounded-xl p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <flux:icon name="clock" class="text-orange-600" />
-                            <flux:text class="text-orange-700 font-semibold text-sm">Posisi Antrian</flux:text>
+                    <div class="bg-amber-50/90 border border-amber-200 rounded-2xl p-4.5">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <flux:icon name="clock" class="size-4 text-amber-700" />
+                            <span class="text-amber-800 font-bold text-xs uppercase tracking-wider">Posisi Antrian</span>
                         </div>
-                        <flux:text class="text-orange-900 text-lg font-bold">
+                        <p class="text-amber-950 text-base sm:text-lg font-bold">
                             Anda adalah antrian ke-{{ $queuePosition }} hari ini
-                        </flux:text>
+                        </p>
                     </div>
                 @endif
 
                 <!-- Instructions -->
-                <div class="bg-cyan-50 border border-cyan-100 rounded-xl p-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <flux:icon name="information-circle" class="text-cyan-600" />
-                        <flux:text class="text-cyan-700 font-semibold text-sm">Panduan</flux:text>
+                <div class="bg-cyan-50/70 border border-cyan-100 rounded-2xl p-4.5">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <flux:icon name="information-circle" class="size-4 text-cyan-700" />
+                        <span class="text-cyan-800 font-bold text-xs uppercase tracking-wider">Panduan Layanan</span>
                     </div>
-                    <flux:text class="text-cyan-900 text-sm">
-                        Silakan datang ke kantor pada jam operasional. Tunjukkan nomor tiket ini kepada petugas.
-                    </flux:text>
+                    <p class="text-slate-700 text-xs sm:text-sm leading-relaxed">
+                        Silakan datang ke ruang tunggu PTSP pada jam operasional. Tunjukkan tiket atau nomor antrian ini kepada petugas saat nomor Anda dipanggil.
+                    </p>
                 </div>
             </div>
 
             <!-- Ticket Footer -->
             <div class="bg-slate-50 px-6 py-4 border-t border-slate-100">
-                <div class="flex justify-between items-center">
-                    <flux:text class="text-xs text-slate-500">
-                        Dibuat pada {{ $ticket->created_at->format('d M Y H:i') }}
-                    </flux:text>
-                    <flux:text class="text-xs text-slate-500">
-                        {{ $institutionName }}
-                    </flux:text>
+                <div class="flex justify-between items-center text-xs text-slate-500 font-medium">
+                    <span>Dibuat: {{ $ticket->created_at->format('d M Y H:i') }}</span>
+                    <span>{{ $institutionName }}</span>
                 </div>
             </div>
         </div>
 
         <!-- Actions -->
-        <div class="flex flex-col gap-3 mb-8 no-print">
-            <flux:button onclick="window.print()" icon="printer" class="w-full">
-                Cetak Tiket
+        <div class="flex flex-col gap-3 mb-6 no-print">
+            <flux:button
+                onclick="window.print()"
+                variant="primary"
+                icon="printer"
+                class="h-12 w-full justify-center rounded-2xl bg-gradient-to-r from-cyan-700 to-teal-700 font-bold text-white shadow-xs hover:brightness-105"
+            >
+                Cetak Tiket Antrian
             </flux:button>
         </div>
 
         <!-- Links -->
-        <div class="flex flex-col gap-2 text-center no-print">
-            <flux:button href="{{ route('queue.cek') }}" variant="subtle" icon="magnifying-glass" class="justify-center">
+        <div class="flex flex-col sm:flex-row gap-3 justify-center text-center no-print">
+            <flux:button href="{{ route('queue.cek') }}" variant="subtle" icon="magnifying-glass" class="justify-center rounded-2xl">
                 Cek Status Antrian
             </flux:button>
-            <flux:button href="{{ route('home') }}" variant="ghost" icon="home" class="justify-center">
+            <flux:button href="{{ route('home') }}" variant="ghost" icon="home" class="justify-center rounded-2xl">
                 Kembali ke Beranda
             </flux:button>
         </div>

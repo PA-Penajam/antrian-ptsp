@@ -519,251 +519,858 @@ new class extends Component
 };
 ?>
 
-<div class="space-y-6" wire:poll.10s.visible="refreshBoard">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div class="space-y-3">
-            <flux:badge color="blue" rounded>Workstation</flux:badge>
+<div 
+    x-data="{
+        calledAt: @js($activeTicket?->called_at?->toIso8601String()),
+        elapsedSeconds: 0,
+        timerInterval: null,
+        soundEnabled: localStorage.getItem('officer_sound_enabled') !== 'false',
+        showHotkeysModal: false,
+        showOnboardingModal: false,
+        onboardingStep: 1,
+        showShiftBanner: false,
+        todayDateStr: new Date().toISOString().slice(0, 10),
+        flashedKey: null,
+        toastMessage: '',
+        toastTimeout: null,
+        isBusy: false,
+        audioCtx: null,
+        
+        init() {
+            this.updateTimer();
+            if (this.calledAt) {
+                this.startTimer();
+            }
+            this.$watch('calledAt', (val) => {
+                if (val) {
+                    this.startTimer();
+                } else {
+                    this.stopTimer();
+                }
+            });
+            
+            // Check if onboarding or shift starter banner should appear
+            const onboardingSeen = localStorage.getItem('officer_onboarding_seen') === 'true';
+            const bannerDismissed = localStorage.getItem('officer_shift_banner_' + this.todayDateStr) === 'true';
+            
+            if (!onboardingSeen && @js($stats['served_today'] === 0 && ! $this->hasActiveTicket)) {
+                this.showOnboardingModal = true;
+            } else if (!bannerDismissed && @js($stats['served_today'] === 0 && ! $this->hasActiveTicket)) {
+                this.showShiftBanner = true;
+            }
+        },
+        
+        openOnboarding(step = 1) {
+            this.onboardingStep = step;
+            this.showOnboardingModal = true;
+        },
+        
+        nextOnboardingStep() {
+            if (this.onboardingStep < 4) {
+                this.onboardingStep++;
+            } else {
+                this.completeOnboarding();
+            }
+        },
+        
+        prevOnboardingStep() {
+            if (this.onboardingStep > 1) {
+                this.onboardingStep--;
+            }
+        },
+        
+        completeOnboarding() {
+            try {
+                localStorage.setItem('officer_onboarding_seen', 'true');
+            } catch (e) {}
+            this.showOnboardingModal = false;
+            this.showToast('Selamat bertugas! Silakan panggil antrean pertama Anda 🎉');
+        },
+        
+        dismissShiftBanner() {
+            this.showShiftBanner = false;
+            try {
+                localStorage.setItem('officer_shift_banner_' + this.todayDateStr, 'true');
+            } catch (e) {}
+        },
+        
+        toggleSound() {
+            this.soundEnabled = !this.soundEnabled;
+            try {
+                localStorage.setItem('officer_sound_enabled', this.soundEnabled);
+            } catch (e) {}
+            this.showToast(this.soundEnabled ? 'Suara notifikasi aktif 🔊' : 'Suara notifikasi dimatikan 🔇');
+        },
+        
+        startTimer() {
+            this.stopTimer();
+            this.updateTimer();
+            this.timerInterval = setInterval(() => this.updateTimer(), 1000);
+        },
+        
+        stopTimer() {
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
+            this.elapsedSeconds = 0;
+        },
+        
+        updateTimer() {
+            if (!this.calledAt) {
+                this.elapsedSeconds = 0;
+                return;
+            }
+            const start = new Date(this.calledAt).getTime();
+            const now = Date.now();
+            this.elapsedSeconds = Math.max(0, Math.floor((now - start) / 1000));
+        },
+        
+        get formattedTime() {
+            const h = Math.floor(this.elapsedSeconds / 3600);
+            const m = Math.floor((this.elapsedSeconds % 3600) / 60);
+            const s = this.elapsedSeconds % 60;
+            const pad = (n) => n.toString().padStart(2, '0');
+            if (h > 0) {
+                return `${pad(h)}:${pad(m)}:${pad(s)}`;
+            }
+            return `${pad(m)}:${pad(s)}`;
+        },
+        
+        get timerColorClass() {
+            if (this.elapsedSeconds < 600) return 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30';
+            if (this.elapsedSeconds < 1200) return 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/30';
+            return 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border-rose-300 dark:border-rose-500/30 animate-pulse';
+        },
+        
+        get timerPacingLabel() {
+            if (this.elapsedSeconds < 600) return 'Normal (< 10m)';
+            if (this.elapsedSeconds < 1200) return 'Sedang (10-20m)';
+            return 'Lama (> 20m)';
+        },
+        
+        getAudioContext() {
+            if (!this.audioCtx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    this.audioCtx = new AudioCtx();
+                }
+            }
+            if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                this.audioCtx.resume().catch(() => {});
+            }
+            return this.audioCtx;
+        },
+        
+        playChime() {
+            if (!this.soundEnabled) return;
+            try {
+                const ctx = this.getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(880, now);
+                gain1.gain.setValueAtTime(0.12, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.45);
+                
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1320, now + 0.12);
+                gain2.gain.setValueAtTime(0.15, now + 0.12);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.12);
+                osc2.stop(now + 0.65);
+            } catch(e) {}
+        },
+        
+        playSuccessChime() {
+            if (!this.soundEnabled) return;
+            try {
+                const ctx = this.getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                
+                const notes = [523.25, 659.25, 783.99];
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + (i * 0.08));
+                    gain.gain.setValueAtTime(0.1, now + (i * 0.08));
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.08) + 0.35);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + (i * 0.08));
+                    osc.stop(now + (i * 0.08) + 0.35);
+                });
+            } catch(e) {}
+        },
+        
+        flashKey(keyName, actionLabel) {
+            this.flashedKey = keyName;
+            this.showToast(`[${keyName}] ${actionLabel}`);
+            setTimeout(() => {
+                if (this.flashedKey === keyName) this.flashedKey = null;
+            }, 500);
+        },
+        
+        showToast(msg) {
+            this.toastMessage = msg;
+            if (this.toastTimeout) clearTimeout(this.toastTimeout);
+            this.toastTimeout = setTimeout(() => {
+                this.toastMessage = '';
+            }, 2500);
+        },
+        
+        async executeAction(actionName, payload = null) {
+            if (this.isBusy) return;
+            this.isBusy = true;
+            try {
+                if (payload !== null) {
+                    await $wire[actionName](payload);
+                } else {
+                    await $wire[actionName]();
+                }
+            } catch (e) {
+                console.error('Action failed:', e);
+            } finally {
+                this.isBusy = false;
+            }
+        },
+        
+        handleKeydown(e) {
+            const tag = e.target.tagName;
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || e.target.isContentEditable) return;
+            if (e.isComposing) return;
+            
+            // Allow Escape to close modals
+            if (e.key === 'Escape' && (this.showHotkeysModal || this.showOnboardingModal)) {
+                this.showHotkeysModal = false;
+                this.showOnboardingModal = false;
+                return;
+            }
+            
+            // Allow '?' to toggle hotkeys HUD
+            if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                e.preventDefault();
+                this.showHotkeysModal = !this.showHotkeysModal;
+                return;
+            }
+            
+            // Ignore if busy or if modifier keys like Alt or Meta (Windows/Cmd) are pressed
+            if (this.isBusy || e.altKey || e.metaKey) return;
+            
+            // Check if any dialog or modal is open
+            const isAnyModalOpen = document.querySelector('[data-flux-modal][open], dialog[open]') || this.showHotkeysModal || this.showOnboardingModal;
+            if (isAnyModalOpen) return;
+            
+            if (e.code === 'Space' || e.code === 'F2') {
+                if (e.ctrlKey) return;
+                e.preventDefault();
+                this.flashKey(e.code === 'Space' ? 'Space' : 'F2', 'Panggil Berikutnya');
+                this.playChime();
+                this.executeAction('callNext');
+            } else if (e.code === 'F1') {
+                if (e.ctrlKey) return;
+                e.preventDefault();
+                this.flashKey('F1', 'Panggil Ulang');
+                this.playChime();
+                this.executeAction('recall');
+            } else if (e.code === 'F3') {
+                if (e.ctrlKey) return;
+                e.preventDefault();
+                this.flashKey('F3', 'Lewati Tiket');
+                Flux.modal('confirm-skip-ticket').show();
+            } else if (e.code === 'F4' || (e.ctrlKey && e.key === 'Enter')) {
+                e.preventDefault();
+                this.flashKey(e.code === 'F4' ? 'F4' : 'Ctrl+Enter', 'Selesai Dilayani');
+                this.playSuccessChime();
+                this.executeAction('complete');
+            } else if (e.code === 'F8') {
+                if (e.ctrlKey) return;
+                e.preventDefault();
+                this.flashKey('F8', 'Batalkan Tiket');
+                Flux.modal('confirm-cancel-ticket').show();
+            }
+        }
+    }"
+    x-on:keydown.window="handleKeydown($event)"
+    x-on:beforeunload.window="if (calledAt) { $event.preventDefault(); $event.returnValue = ''; }"
+    wire:poll.10s.visible="refreshBoard"
+    class="relative space-y-6"
+>
+    <!-- Offline Resilient Banner -->
+    <div wire:offline class="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-800 dark:text-amber-300 shadow-sm flex items-center justify-between gap-3 animate-fade-in">
+        <div class="flex items-center gap-3">
+            <span class="size-2.5 rounded-full bg-amber-500 animate-ping"></span>
             <div>
-                <flux:heading size="xl" level="1">Workstation Petugas</flux:heading>
-                <flux:subheading class="mt-1">Pilih loket, panggil tiket berikutnya, lalu lanjutkan status layanan.</flux:subheading>
+                <p class="text-sm font-bold">Koneksi Terputus (Mode Offline)</p>
+                <p class="text-xs text-amber-700/80 dark:text-amber-400">Sistem akan otomatis tersambung kembali saat internet tersedia.</p>
             </div>
         </div>
-        <div class="flex items-center gap-2">
+        <flux:button wire:click="refreshBoard" size="sm" variant="subtle" color="amber" icon="arrow-path">
+            Coba Hubungkan
+        </flux:button>
+    </div>
+
+    <!-- Floating HUD Action Toast -->
+    <div 
+        x-cloak
+        x-show="toastMessage !== ''"
+        x-transition:enter="transition ease-out duration-250"
+        x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+        x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+        class="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-cyan-500/40 bg-zinc-900/95 px-4 py-2.5 text-sm font-semibold text-cyan-300 shadow-2xl backdrop-blur-md dark:bg-zinc-950/95 dark:text-cyan-200"
+    >
+        <span class="size-2 rounded-full bg-cyan-400 animate-ping"></span>
+        <span x-text="toastMessage"></span>
+    </div>
+
+    <!-- Header Navigation & Controls Strip -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <div class="flex items-center gap-3">
+                <flux:heading size="xl" level="1" class="font-extrabold tracking-tight">Workstation Petugas</flux:heading>
+                @if ($this->hasSelectedCounter)
+                    <flux:badge color="cyan" size="sm" class="font-semibold shadow-xs">
+                        <span class="size-1.5 rounded-full bg-cyan-500 animate-pulse mr-1.5"></span>
+                        {{ $this->selectedCounterName }}
+                    </flux:badge>
+                @endif
+            </div>
+            <flux:subheading class="mt-1 text-zinc-500 dark:text-zinc-400">
+                Pusat kendali panggilan loket, durasi stopwatch live, dan manajemen antrean terpadu.
+            </flux:subheading>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <!-- Onboarding Quick-Start Tour Button -->
+            <flux:button
+                x-on:click="openOnboarding()"
+                variant="subtle"
+                size="sm"
+                icon="sparkles"
+                class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 text-cyan-700 dark:text-cyan-400 font-semibold"
+                title="Buka Panduan Interaktif Loket"
+            >
+                <span class="hidden sm:inline text-xs">Panduan Loket</span>
+            </flux:button>
+
+            <!-- Sound FX Toggle Button -->
+            <flux:button
+                x-on:click="toggleSound()"
+                variant="subtle"
+                size="sm"
+                class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+                aria-label="Toggle Sound Effects"
+            >
+                <span x-show="soundEnabled" class="inline-flex items-center"><flux:icon.speaker-wave class="size-4" /></span>
+                <span x-show="!soundEnabled" class="inline-flex items-center"><flux:icon.speaker-x-mark class="size-4" /></span>
+                <span class="hidden md:inline text-xs" x-text="soundEnabled ? 'Audio Aktif' : 'Audio Senyap'"></span>
+            </flux:button>
+
+            <!-- Hotkeys HUD Modal Button -->
+            <flux:button
+                x-on:click="showHotkeysModal = true"
+                variant="subtle"
+                size="sm"
+                icon="command-line"
+                class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+            >
+                <span class="hidden sm:inline text-xs">Hotkeys</span>
+                <kbd class="ml-1 text-xs font-mono px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700">?</kbd>
+            </flux:button>
+
             @if (! $fullScreen && $this->hasSelectedCounter)
-                <flux:button :href="route('officer.counter.show', ['counter' => $selectedCounterId])" variant="ghost" icon="arrows-pointing-out">
-                    Mode Layar Penuh
+                <flux:button :href="route('officer.counter.show', ['counter' => $selectedCounterId])" variant="subtle" size="sm" icon="arrows-pointing-out" class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+                    <span class="hidden sm:inline">Layar Penuh</span>
                 </flux:button>
             @endif
-            <flux:badge color="zinc" icon="arrow-path">Auto-refresh 10s</flux:badge>
+
+            <flux:badge color="zinc" icon="arrow-path" class="text-xs font-mono">
+                10s sync
+            </flux:badge>
+        </div>
+    </div>
+
+    <!-- First-Run / Shift Starter Activation Banner -->
+    <div 
+        x-cloak
+        x-show="showShiftBanner"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 -translate-y-2"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        class="relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 via-sky-500/5 to-emerald-500/10 p-4 sm:p-5 shadow-sm dark:border-cyan-500/20"
+    >
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-start sm:items-center gap-3.5">
+                <div class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-cyan-500/20 text-cyan-600 dark:text-cyan-400">
+                    <flux:icon.sparkles class="size-5" />
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-bold text-zinc-900 dark:text-white">Siap Memulai Shift Pelayanan Hari Ini?</span>
+                        <flux:badge size="sm" color="cyan" class="font-semibold">Shift Starter</flux:badge>
+                    </div>
+                    <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                        Tekan tombol <kbd class="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-xs font-mono font-bold text-cyan-700 dark:text-cyan-300">Space</kbd> untuk memanggil antrean pertama atau buka tur panduan loket.
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <flux:button size="sm" variant="filled" color="cyan" x-on:click="openOnboarding()" class="font-semibold shadow-xs">
+                    Buka Tur Loket
+                </flux:button>
+                <flux:button size="sm" variant="ghost" x-on:click="dismissShiftBanner()">
+                    Tutup
+                </flux:button>
+            </div>
         </div>
     </div>
 
     @if ($feedbackMessage !== '')
-        <flux:callout icon="information-circle" color="{{ $feedbackTone }}">
-            {{ $feedbackMessage }}
-        </flux:callout>
+        <div class="animate-fade-in-up">
+            <flux:callout icon="information-circle" color="{{ $feedbackTone }}" class="shadow-xs rounded-2xl flex items-center justify-between">
+                <div>{{ $feedbackMessage }}</div>
+                <button wire:click="$set('feedbackMessage', '')" class="ml-3 text-xs opacity-70 hover:opacity-100 transition-opacity" title="Tutup Notifikasi">
+                    <flux:icon.x-mark class="size-4" />
+                </button>
+            </flux:callout>
+        </div>
     @endif
 
-    <flux:card class="admin-card-elevated space-y-4">
-        <div class="grid gap-4 lg:grid-cols-[minmax(0,20rem)_repeat(3,minmax(0,1fr))]">
-            @if ($this->isCounterLocked)
-                <div class="rounded-xl border border-zinc-700 bg-zinc-900/70 p-4">
-                    <flux:text class="text-xs uppercase tracking-wide text-zinc-400">Loket Aktif</flux:text>
-                    <flux:heading size="md" class="mt-1 text-white">{{ $this->selectedCounterName }}</flux:heading>
-                </div>
-            @else
-                <flux:field>
-                    <div class="flex items-center gap-2">
-                        <flux:label>Pilih Loket Anda</flux:label>
-                        @if ($sessionAssignmentType === 'admin')
-                            <flux:badge size="sm" color="violet">Ditunjuk Admin</flux:badge>
-                        @elseif ($sessionAssignmentType === 'self')
-                            <flux:badge size="sm" color="emerald">Dipilih Sendiri</flux:badge>
-                        @endif
-                    </div>
-                    <flux:select wire:model.live="selectedCounterId" class="mt-1">
-                        @if (count($counters) === 0)
-                            <flux:select.option value="">Belum ada loket aktif</flux:select.option>
-                        @else
-                            @foreach ($counters as $counter)
-                                <flux:select.option value="{{ $counter['id'] }}">
-                                    {{ $counter['name'] }} - {{ $counter['pool_name'] }}
-                                </flux:select.option>
-                            @endforeach
-                        @endif
-                    </flux:select>
-                </flux:field>
-            @endif
-
-            <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800/50">
-                <flux:text class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Antrian Menunggu</flux:text>
-                <flux:heading size="2xl" class="mt-2">{{ $waitingCount }}</flux:heading>
-            </div>
-
-            <div class="rounded-xl border border-cyan-200 bg-cyan-50 p-4 shadow-sm dark:border-cyan-900/50 dark:bg-cyan-950/30">
-                <flux:text class="text-xs font-semibold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">Tiket Aktif</flux:text>
-                <flux:heading size="2xl" class="mt-2 text-cyan-900 dark:text-cyan-300">{{ $activeTicket?->ticket_number ?? '-' }}</flux:heading>
-            </div>
-
-            <div class="flex flex-col justify-center rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800/50">
-                <flux:text class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Layanan Aktif</flux:text>
-                <flux:heading size="md" class="mt-1">{{ $activeTicket?->service?->name ?? 'Belum ada tiket' }}</flux:heading>
-            </div>
-        </div>
-
-        <flux:separator variant="subtle" />
-
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 pt-2">
-            <flux:button
-                variant="primary"
-                icon="megaphone"
-                wire:click="callNext"
-                :disabled="! $this->hasSelectedCounter"
-                wire:loading.attr="disabled"
-                class="w-full"
-            >
-                Panggil Berikutnya
-            </flux:button>
-            <flux:button
-                variant="ghost"
-                icon="speaker-wave"
-                wire:click="recall"
-                :disabled="! $this->hasActiveTicket"
-                wire:loading.attr="disabled"
-                class="w-full"
-            >
-                Panggil Ulang
-            </flux:button>
-            <flux:button
-                variant="ghost"
-                icon="forward"
-                x-on:click="Flux.modal('confirm-skip-ticket').show()"
-                :disabled="! $this->hasActiveTicket"
-                wire:loading.attr="disabled"
-                class="w-full text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-                Lewati (Skip)
-            </flux:button>
-            <flux:button
-                variant="filled"
-                color="emerald"
-                icon="check-circle"
-                wire:click="complete"
-                :disabled="! $this->hasActiveTicket"
-                wire:loading.attr="disabled"
-                class="w-full"
-            >
-                Selesai Dilayani
-            </flux:button>
-            <flux:button
-                variant="ghost"
-                icon="x-circle"
-                x-on:click="Flux.modal('confirm-cancel-ticket').show()"
-                :disabled="! $this->hasActiveTicket"
-                wire:loading.attr="disabled"
-                class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-950/30 dark:hover:text-red-400"
-            >
-                Batalkan Tiket
-            </flux:button>
-        </div>
-    </flux:card>
-
-    <div class="grid gap-6 xl:grid-cols-3">
-        <flux:card class="admin-card-elevated space-y-4 xl:col-span-2">
-            <div class="flex items-center gap-3 mb-2">
-                <div class="admin-icon-box bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
-                    <flux:icon.list-bullet class="size-5" />
-                </div>
-                <flux:heading size="lg">Antrean Menunggu Prioritas</flux:heading>
-            </div>
-            @if (count($waitingTickets) === 0)
-                <div class="flex flex-col items-center justify-center py-8 text-center">
-                    <flux:icon name="inbox" class="h-10 w-10 text-zinc-300 dark:text-zinc-600" />
-                    <p class="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">Antrean kosong</p>
-                    <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Belum ada pengunjung yang menunggu di loket ini.</p>
-                </div>
-            @else
-                <flux:table>
-                    <flux:table.columns>
-                        <flux:table.column>No. Tiket</flux:table.column>
-                        <flux:table.column>Urutan</flux:table.column>
-                        <flux:table.column>Layanan</flux:table.column>
-                        <flux:table.column>Pengunjung</flux:table.column>
-                    </flux:table.columns>
-                    <flux:table.rows>
-                        @foreach ($waitingTickets as $ticket)
-                            <flux:table.row>
-                                <flux:table.cell>
-                                    <flux:badge size="sm" color="zinc" class="font-mono">{{ $ticket['ticket_number'] }}</flux:badge>
-                                </flux:table.cell>
-                                <flux:table.cell>{{ $ticket['sequence_number'] }}</flux:table.cell>
-                                <flux:table.cell>{{ $ticket['service_name'] }}</flux:table.cell>
-                                <flux:table.cell>{{ $ticket['visitor_name'] }}</flux:table.cell>
-                            </flux:table.row>
-                        @endforeach
-                    </flux:table.rows>
-                </flux:table>
-            @endif
-        </flux:card>
-
+    <!-- Main Cockpit: Balanced 2-Column Desktop Grid -->
+    <div class="grid gap-6 lg:grid-cols-2 items-start">
+        
+        <!-- Left: Loket Session, Calling Cockpit & Hotkeys Guide -->
         <div class="space-y-6">
-            <flux:card class="admin-card-elevated space-y-4">
-                <div class="flex items-center gap-3 mb-2">
+            
+            <!-- Loket Selector Strip (if not locked) -->
+            <flux:card class="admin-card-elevated border border-zinc-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 p-4 rounded-2xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    @if ($this->isCounterLocked)
+                        <div class="flex items-center gap-3">
+                            <div class="admin-icon-box bg-cyan-100 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-400">
+                                <flux:icon.building-office class="size-5" />
+                            </div>
+                            <div>
+                                <flux:text class="text-xs uppercase font-bold tracking-wider text-zinc-400">Loket Aktif Anda</flux:text>
+                                <flux:heading size="md" class="text-zinc-900 dark:text-white font-bold">{{ $this->selectedCounterName }}</flux:heading>
+                            </div>
+                        </div>
+                        <flux:badge color="cyan" size="sm" class="self-start sm:self-auto font-semibold">Terkunci</flux:badge>
+                    @else
+                        <div class="w-full">
+                            <div class="flex items-center justify-between gap-2 mb-1.5">
+                                <flux:label class="text-xs font-bold uppercase tracking-wider text-zinc-500">Pilih Loket Bertugas</flux:label>
+                                @if ($sessionAssignmentType === 'admin')
+                                    <flux:badge size="sm" color="violet">Ditunjuk Admin</flux:badge>
+                                @elseif ($sessionAssignmentType === 'self')
+                                    <flux:badge size="sm" color="emerald">Dipilih Sendiri</flux:badge>
+                                @endif
+                            </div>
+                            <flux:select wire:model.live="selectedCounterId" class="w-full">
+                                @if (count($counters) === 0)
+                                    <flux:select.option value="">Belum ada loket aktif</flux:select.option>
+                                @else
+                                    @foreach ($counters as $counter)
+                                        <flux:select.option value="{{ $counter['id'] }}">
+                                            {{ $counter['name'] }} - {{ $counter['pool_name'] }}
+                                        </flux:select.option>
+                                    @endforeach
+                                @endif
+                            </flux:select>
+                        </div>
+                    @endif
+                </div>
+            </flux:card>
+
+            <!-- Hero Calling Cockpit Stage -->
+            @if ($this->hasActiveTicket)
+                <!-- ACTIVE TICKET STAGE: Electric Cyan & Emerald Glow -->
+                <div class="relative overflow-hidden rounded-3xl border-2 border-cyan-500/50 dark:border-cyan-500/40 bg-gradient-to-br from-cyan-50/90 via-white to-emerald-50/70 p-6 md:p-8 shadow-xl shadow-cyan-950/5 dark:from-cyan-950/40 dark:via-zinc-900 dark:to-emerald-950/30 transition-all duration-300">
+                    <!-- Subtle Ambient Background Light -->
+                    <div class="absolute -right-16 -top-16 size-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"></div>
+                    <div class="absolute -left-16 -bottom-16 size-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+
+                    <!-- Top Stage Row: Status Beacon + Stopwatch -->
+                    <div class="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-200/60 pb-4 dark:border-cyan-900/40">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-700 shadow-xs dark:text-emerald-300">
+                                <span class="size-2 rounded-full bg-emerald-500 animate-ping"></span>
+                                Sedang Melayani
+                            </span>
+                            <flux:badge size="sm" color="zinc" class="font-mono text-xs">
+                                Urutan #{{ $activeTicket->sequence_number }}
+                            </flux:badge>
+                        </div>
+
+                        <!-- Live Service Stopwatch -->
+                        <div class="flex items-center gap-2">
+                            <div class="inline-flex items-center gap-2 rounded-2xl border px-3.5 py-1.5 text-xs font-semibold shadow-xs" :class="timerColorClass">
+                                <flux:icon.clock class="size-3.5" />
+                                <span>Durasi:</span>
+                                <span class="font-mono text-sm font-black tabular-nums tracking-wider" x-text="formattedTime">00:00</span>
+                                <span class="text-xs opacity-75 font-normal" x-text="timerPacingLabel"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Center Hero: Massive Ticket Number & Visitor Profile -->
+                    <div class="relative z-10 my-6 flex flex-col items-center justify-center text-center">
+                        <div class="text-xs font-bold uppercase tracking-[0.25em] text-cyan-600 dark:text-cyan-400">
+                            Tiket Aktif
+                        </div>
+                        <div class="mt-1 font-mono text-6xl font-black tracking-tight text-cyan-600 sm:text-8xl dark:text-cyan-300 drop-shadow-sm select-all break-all sm:break-normal max-w-full">
+                            {{ $activeTicket->ticket_number }}
+                        </div>
+                        
+                        <div class="mt-3 flex flex-wrap items-center justify-center gap-2 max-w-xl">
+                            <flux:heading size="xl" class="font-extrabold text-zinc-900 dark:text-white break-words">
+                                {{ $activeTicket->service?->name ?? 'Layanan Umum' }}
+                            </flux:heading>
+                        </div>
+
+                        <!-- Visitor Details Meta Row -->
+                        <div class="mt-4 flex flex-wrap items-center justify-center gap-4 text-sm text-zinc-600 dark:text-zinc-300">
+                            @if (!empty($activeTicket->visitor_name))
+                                <div class="inline-flex items-center gap-1.5 rounded-xl bg-zinc-100/80 px-3 py-1 dark:bg-zinc-800/80 max-w-xs" title="{{ $activeTicket->visitor_name }}">
+                                    <flux:icon.user class="size-4 text-zinc-400 shrink-0" />
+                                    <span class="font-semibold text-zinc-800 dark:text-zinc-200 truncate">{{ $activeTicket->visitor_name }}</span>
+                                </div>
+                            @endif
+
+                            @if (!empty($activeTicket->visit_purpose))
+                                <div class="inline-flex items-center gap-1.5 rounded-xl bg-zinc-100/80 px-3 py-1 dark:bg-zinc-800/80 max-w-md" title="{{ $activeTicket->visit_purpose }}">
+                                    <flux:icon.document-text class="size-4 text-zinc-400 shrink-0" />
+                                    <span class="line-clamp-1">{{ Str::limit($activeTicket->visit_purpose, 45) }}</span>
+                                </div>
+                            @endif
+
+                            @if (!empty($activeTicket->channel))
+                                <flux:badge size="sm" color="zinc" class="capitalize">
+                                    {{ $activeTicket->channel }}
+                                </flux:badge>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Action Controls Cockpit Bar -->
+                    <div class="relative z-10 grid gap-3 pt-4 border-t border-cyan-200/60 dark:border-cyan-900/40 sm:grid-cols-2 lg:grid-cols-5">
+                        <flux:button
+                            variant="primary"
+                            icon="megaphone"
+                            wire:click="callNext"
+                            :disabled="! $this->hasSelectedCounter"
+                            wire:loading.attr="disabled"
+                            class="w-full bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white font-bold shadow-md shadow-cyan-600/25 active:scale-95 transition-all"
+                            :class="flashedKey === 'Space' ? 'ring-4 ring-cyan-300 animate-hotkey-flash' : ''"
+                        >
+                            <span>Panggil Berikutnya</span>
+                            <kbd class="workstation-kbd bg-cyan-800/40 text-cyan-100 border-cyan-400/40 ml-1.5">Space</kbd>
+                        </flux:button>
+
+                        <flux:button
+                            variant="filled"
+                            color="cyan"
+                            icon="speaker-wave"
+                            wire:click="recall"
+                            :disabled="! $this->hasActiveTicket"
+                            wire:loading.attr="disabled"
+                            class="w-full font-semibold active:scale-95 transition-all"
+                            :class="flashedKey === 'F1' ? 'ring-4 ring-cyan-300 animate-hotkey-flash' : ''"
+                        >
+                            <span>Panggil Ulang</span>
+                            <kbd class="workstation-kbd bg-sky-800/30 text-sky-200 border-sky-400/30 ml-1.5">F1</kbd>
+                        </flux:button>
+
+                        <flux:button
+                            variant="ghost"
+                            icon="forward"
+                            x-on:click="Flux.modal('confirm-skip-ticket').show()"
+                            :disabled="! $this->hasActiveTicket"
+                            wire:loading.attr="disabled"
+                            class="w-full text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30 dark:hover:text-amber-300 font-semibold active:scale-95 transition-all"
+                            :class="flashedKey === 'F3' ? 'ring-4 ring-amber-300 animate-hotkey-flash' : ''"
+                        >
+                            <span>Lewati (Skip)</span>
+                            <kbd class="workstation-kbd bg-amber-800/30 text-amber-200 border-amber-400/30 ml-1.5">F3</kbd>
+                        </flux:button>
+
+                        <flux:button
+                            variant="filled"
+                            color="emerald"
+                            icon="check-circle"
+                            wire:click="complete"
+                            :disabled="! $this->hasActiveTicket"
+                            wire:loading.attr="disabled"
+                            class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
+                            :class="flashedKey === 'F4' ? 'ring-4 ring-emerald-300 animate-hotkey-flash' : ''"
+                        >
+                            <span>Selesai</span>
+                            <kbd class="workstation-kbd bg-emerald-800/40 text-emerald-100 border-emerald-400/40 ml-1.5">F4</kbd>
+                        </flux:button>
+
+                        <flux:button
+                            variant="ghost"
+                            icon="x-circle"
+                            x-on:click="Flux.modal('confirm-cancel-ticket').show()"
+                            :disabled="! $this->hasActiveTicket"
+                            wire:loading.attr="disabled"
+                            class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-950/30 dark:hover:text-red-400 font-semibold active:scale-95 transition-all"
+                            :class="flashedKey === 'F8' ? 'ring-4 ring-red-300 animate-hotkey-flash' : ''"
+                        >
+                            <span>Batalkan</span>
+                            <kbd class="workstation-kbd bg-rose-800/30 text-rose-200 border-rose-400/30 ml-1.5">F8</kbd>
+                        </flux:button>
+                    </div>
+                </div>
+            @else
+                <!-- STANDBY STAGE: Ready to Serve Cockpit -->
+                <div class="relative overflow-hidden rounded-3xl border-2 border-dashed border-zinc-300 dark:border-zinc-800 bg-gradient-to-b from-zinc-50/80 via-white to-zinc-100/50 p-8 text-center dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-zinc-950/80 shadow-sm transition-all duration-300">
+                    <div class="mx-auto flex size-16 items-center justify-center rounded-3xl bg-cyan-100 text-cyan-600 shadow-sm dark:bg-cyan-950/60 dark:text-cyan-400 animate-workstation-beacon">
+                        <flux:icon.megaphone class="size-8" />
+                    </div>
+
+                    <flux:heading size="xl" class="mt-4 font-extrabold text-zinc-900 dark:text-white">
+                        Loket Siap Melayani
+                    </flux:heading>
+                    <flux:text class="mx-auto mt-1 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
+                        Tidak ada tiket yang sedang aktif. Tekan tombol panggil atau tekan hotkey <kbd class="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-xs font-mono font-bold">Space</kbd> untuk memanggil antrean berikutnya.
+                    </flux:text>
+
+                    <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-100/80 dark:bg-zinc-800/80 px-3.5 py-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                            Tiket Aktif: <strong class="text-zinc-800 dark:text-zinc-100">Belum ada</strong>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                            <span class="size-2 rounded-full bg-amber-500 {{ $waitingCount > 0 ? 'animate-pulse' : '' }}"></span>
+                            {{ $waitingCount }} Antrean Menunggu di Pool Ini
+                        </span>
+                    </div>
+
+                    <div class="mt-6 max-w-sm mx-auto">
+                        <flux:button
+                            variant="primary"
+                            icon="megaphone"
+                            wire:click="callNext"
+                            :disabled="! $this->hasSelectedCounter || $waitingCount === 0"
+                            wire:loading.attr="disabled"
+                            class="w-full py-3 text-base bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white font-bold shadow-lg shadow-cyan-600/30 active:scale-95 transition-all"
+                            :class="flashedKey === 'Space' ? 'ring-4 ring-cyan-300 animate-hotkey-flash' : ''"
+                        >
+                            <span>Panggil Antrean Berikutnya</span>
+                            <kbd class="workstation-kbd bg-cyan-800/40 text-cyan-100 border-cyan-400/40 ml-2">Space / F2</kbd>
+                        </flux:button>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Quick Hotkey Cheat Sheet Card -->
+            <flux:card class="admin-card-elevated p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/50 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Pintasan Keyboard Loket</span>
+                    <button type="button" x-on:click="Flux.modal('workstation-hotkeys-modal').show()" class="text-xs text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 font-semibold inline-flex items-center gap-1">
+                        <span>Lihat Semua</span>
+                        <flux:icon.arrow-top-right-on-square class="size-3" />
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/80 shadow-2xs">
+                        <span class="text-zinc-600 dark:text-zinc-300 font-medium">Panggil Baru</span>
+                        <kbd class="font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-900 border text-cyan-600 dark:text-cyan-400">Space</kbd>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/80 shadow-2xs">
+                        <span class="text-zinc-600 dark:text-zinc-300 font-medium">Panggil Ulang</span>
+                        <kbd class="font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-900 border text-sky-600 dark:text-sky-400">F1</kbd>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/80 shadow-2xs">
+                        <span class="text-zinc-600 dark:text-zinc-300 font-medium">Lewati Tiket</span>
+                        <kbd class="font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-900 border text-amber-600 dark:text-amber-400">F3</kbd>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/80 shadow-2xs">
+                        <span class="text-zinc-600 dark:text-zinc-300 font-medium">Selesai Layani</span>
+                        <kbd class="font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-900 border text-emerald-600 dark:text-emerald-400">F4</kbd>
+                    </div>
+                </div>
+            </flux:card>
+        </div>
+
+        <!-- Right: Queue Streams & Performance Analytics -->
+        <div class="space-y-6">
+            
+            <!-- Performance & Analytics Card -->
+            <flux:card class="admin-card-elevated space-y-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <div class="flex items-center gap-3 border-b border-zinc-100 pb-3 dark:border-zinc-800/80">
                     <div class="admin-icon-box bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
                         <flux:icon.chart-bar class="size-5" />
                     </div>
-                    <flux:heading size="lg">Kinerja Hari Ini</flux:heading>
-                </div>
-                
-                <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30">
-                    <flux:text class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">Total Selesai Dilayani</flux:text>
-                    <flux:heading size="3xl" class="mt-1 text-emerald-800 dark:text-emerald-300">{{ $stats['served_today'] }}</flux:heading>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-3 text-sm">
-                    <div class="rounded-xl border border-zinc-200 bg-white p-3 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-800/50">
-                        <div class="text-xs font-medium uppercase tracking-wide text-zinc-500">Dilewati (Skip)</div>
-                        <div class="mt-1 text-xl font-semibold text-zinc-700 dark:text-zinc-300">{{ $stats['action_counts']['skipped'] }}</div>
+                    <div>
+                        <flux:heading size="lg" class="font-bold">Kinerja Hari Ini</flux:heading>
+                        <flux:text class="text-xs text-zinc-500">Statistik real-time loket petugas.</flux:text>
                     </div>
-                    <div class="rounded-xl border border-zinc-200 bg-white p-3 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-800/50">
-                        <div class="text-xs font-medium uppercase tracking-wide text-zinc-500">Dipanggil Ulang</div>
-                        <div class="mt-1 text-xl font-semibold text-zinc-700 dark:text-zinc-300">{{ $stats['action_counts']['recalled'] }}</div>
+                </div>
+                
+                <!-- Completed Count Hero Box -->
+                <div class="admin-stat-success rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <flux:text class="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Total Selesai Dilayani</flux:text>
+                        <flux:badge size="sm" color="emerald" class="font-bold">Hari Ini</flux:badge>
+                    </div>
+                    <div class="mt-2 flex items-baseline gap-2">
+                        <div class="font-mono text-4xl font-black text-emerald-900 dark:text-emerald-200 tabular-nums">{{ $stats['served_today'] }}</div>
+                        <span class="text-xs font-medium text-emerald-700 dark:text-emerald-400">pemohon</span>
+                    </div>
+                    @if ($stats['served_today'] >= 10)
+                        <div class="mt-3 flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                            <span>🎉 Pencapaian prima: {{ $stats['served_today'] }} tiket tuntas!</span>
+                        </div>
+                    @endif
+                </div>
+                
+                <!-- Secondary Counters Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="admin-stat-warning rounded-xl p-3 text-center border shadow-xs">
+                        <div class="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">Dilewati (Skip)</div>
+                        <div class="mt-1 font-mono text-2xl font-black text-amber-900 dark:text-amber-200 tabular-nums">{{ $stats['action_counts']['skipped'] }}</div>
+                    </div>
+                    <div class="admin-stat-total rounded-xl p-3 text-center border shadow-xs">
+                        <div class="text-xs font-bold uppercase tracking-wider text-sky-800 dark:text-sky-300">Dipanggil Ulang</div>
+                        <div class="mt-1 font-mono text-2xl font-black text-sky-900 dark:text-sky-200 tabular-nums">{{ $stats['action_counts']['recalled'] }}</div>
                     </div>
                 </div>
             </flux:card>
 
-            <flux:card class="admin-card-elevated space-y-4">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="admin-icon-box bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
-                        <flux:icon.forward class="size-5" />
+            <!-- Waiting Queue Priority Stream (Main Table) -->
+            <flux:card class="admin-card-elevated space-y-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <div class="flex items-center justify-between gap-3 border-b border-zinc-100 pb-3 dark:border-zinc-800/80">
+                    <div class="flex items-center gap-3">
+                        <div class="admin-icon-box bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
+                            <flux:icon.list-bullet class="size-5" />
+                        </div>
+                        <div>
+                            <flux:heading size="lg" class="font-bold">Antrean Menunggu Prioritas</flux:heading>
+                            <flux:text class="text-xs text-zinc-500">Daftar urutan kedatangan pemohon yang siap dipanggil.</flux:text>
+                        </div>
                     </div>
-                    <flux:heading size="lg">Daftar Skip</flux:heading>
+                    <flux:badge color="zinc" size="sm" class="font-mono font-bold">{{ count($waitingTickets) }} antrean</flux:badge>
                 </div>
-                @if (count($skippedTickets) === 0)
-                    <div class="flex flex-col items-center justify-center py-6 text-center">
-                        <flux:text class="text-sm text-zinc-500">Belum ada tiket yang dilewati hari ini.</flux:text>
+
+                @if (count($waitingTickets) === 0)
+                    <div class="flex flex-col items-center justify-center py-10 px-4 text-center rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30">
+                        <div class="flex size-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+                            <flux:icon.check class="size-7" />
+                        </div>
+                        <p class="mt-3 text-sm font-bold text-zinc-900 dark:text-zinc-100">Antrean Bersih & Terlayani</p>
+                        <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400 max-w-sm">
+                            Semua pemohon di pool ini telah terlayani atau belum ada pengunjung baru yang check-in di kiosk/resepsionis.
+                        </p>
+                        <div class="mt-3 flex items-center gap-2">
+                            <flux:badge size="sm" color="zinc" icon="information-circle">
+                                Otomatis sinkron tiap 10 detik
+                            </flux:badge>
+                        </div>
                     </div>
                 @else
                     <flux:table>
                         <flux:table.columns>
-                            <flux:table.column>Tiket</flux:table.column>
+                            <flux:table.column class="w-16">Urutan</flux:table.column>
+                            <flux:table.column>No. Tiket</flux:table.column>
                             <flux:table.column>Layanan</flux:table.column>
-                            <flux:table.column />
+                            <flux:table.column>Nama Pengunjung</flux:table.column>
                         </flux:table.columns>
                         <flux:table.rows>
-                            @foreach ($skippedTickets as $ticket)
-                                <flux:table.row>
+                            @foreach ($waitingTickets as $index => $ticket)
+                                <flux:table.row class="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                                     <flux:table.cell>
-                                        <flux:badge size="sm" color="amber" class="font-mono">{{ $ticket['ticket_number'] }}</flux:badge>
+                                        <span class="inline-flex size-6 items-center justify-center rounded-full bg-zinc-100 text-xs font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                                            {{ $ticket['sequence_number'] }}
+                                        </span>
                                     </flux:table.cell>
-                                    <flux:table.cell class="text-xs">{{ $ticket['service_name'] }}</flux:table.cell>
                                     <flux:table.cell>
-                                        <flux:button 
-                                            variant="subtle" 
-                                            size="sm" 
-                                            icon="speaker-wave" 
-                                            wire:click="restoreSkipped({{ $ticket['id'] }})"
-                                            wire:loading.attr="disabled"
-                                            class="h-6 w-8! px-0 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 dark:text-cyan-400 dark:hover:text-cyan-300 dark:hover:bg-cyan-900/50"
-                                            aria-label="Panggil Ulang"
-                                        />
+                                        <flux:badge size="sm" color="cyan" class="font-mono font-bold whitespace-nowrap">{{ $ticket['ticket_number'] }}</flux:badge>
                                     </flux:table.cell>
+                                    <flux:table.cell class="font-medium text-zinc-900 dark:text-zinc-100 max-w-[200px] truncate" title="{{ $ticket['service_name'] }}">{{ $ticket['service_name'] }}</flux:table.cell>
+                                    <flux:table.cell class="text-zinc-600 dark:text-zinc-300 max-w-[200px] truncate" title="{{ $ticket['visitor_name'] ?: 'Pengunjung Walk-in' }}">{{ $ticket['visitor_name'] ?: 'Pengunjung Walk-in' }}</flux:table.cell>
                                 </flux:table.row>
                             @endforeach
                         </flux:table.rows>
                     </flux:table>
                 @endif
             </flux:card>
+
+            <!-- Skipped Tickets Tray (Daftar Skip) -->
+            <flux:card class="admin-card-elevated space-y-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <div class="flex items-center justify-between gap-3 border-b border-zinc-100 pb-3 dark:border-zinc-800/80">
+                    <div class="flex items-center gap-3">
+                        <div class="admin-icon-box bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
+                            <flux:icon.forward class="size-5" />
+                        </div>
+                        <div>
+                            <flux:heading size="lg" class="font-bold">Daftar Skip</flux:heading>
+                            <flux:text class="text-xs text-zinc-500">Tiket terlewati yang dapat dipanggil kembali.</flux:text>
+                        </div>
+                    </div>
+                    <flux:badge color="amber" size="sm" class="font-mono font-bold">{{ count($skippedTickets) }}</flux:badge>
+                </div>
+
+                @if (count($skippedTickets) === 0)
+                    <div class="flex flex-col items-center justify-center py-6 px-4 text-center rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/40 dark:bg-zinc-900/30">
+                        <flux:icon.check-circle class="size-8 text-zinc-300 dark:text-zinc-600" />
+                        <flux:text class="mt-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300">Belum ada tiket terlewati</flux:text>
+                        <flux:text class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400 max-w-xs">
+                            Jika pemohon belum hadir saat dipanggil, tekan <kbd class="px-1 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-xs font-mono font-bold">F3</kbd> untuk memarkir tiket di sini.
+                        </flux:text>
+                    </div>
+                @else
+                    <div class="space-y-2">
+                        @foreach ($skippedTickets as $ticket)
+                            <div class="flex items-center justify-between gap-2 rounded-xl border border-zinc-200 p-2.5 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 transition-colors hover:bg-amber-50/50 dark:hover:bg-amber-950/20">
+                                <div class="min-w-0 flex-1">
+                                    <flux:badge size="sm" color="amber" class="font-mono font-bold whitespace-nowrap">{{ $ticket['ticket_number'] }}</flux:badge>
+                                    <div class="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400" title="{{ $ticket['service_name'] }}">{{ $ticket['service_name'] }}</div>
+                                </div>
+                                <flux:button 
+                                    variant="filled" 
+                                    color="cyan" 
+                                    size="sm" 
+                                    icon="speaker-wave" 
+                                    wire:click="restoreSkipped({{ $ticket['id'] }})"
+                                    wire:loading.attr="disabled"
+                                    class="h-7 px-2.5 text-xs font-semibold shadow-xs shrink-0"
+                                    title="Panggil Ulang Tiket Terlewati"
+                                >
+                                    Panggil
+                                </flux:button>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </flux:card>
         </div>
     </div>
 
+    <!-- Modals -->
     <flux:modal name="confirm-skip-ticket" class="w-full max-w-md">
         <div class="space-y-4">
-            <flux:heading size="lg">Konfirmasi Lewati Tiket</flux:heading>
+            <flux:heading size="lg" class="font-bold">Konfirmasi Lewati Tiket</flux:heading>
             <flux:text>
-                Tiket aktif <strong>{{ $activeTicket?->ticket_number ?? '-' }}</strong> akan dipindahkan ke status skip.
+                Tiket aktif <strong class="font-mono text-amber-600 dark:text-amber-400">{{ $activeTicket?->ticket_number ?? '-' }}</strong> akan dipindahkan ke daftar skip. Anda dapat memanggilnya kembali kapan saja dari panel daftar skip.
             </flux:text>
-            <div class="flex justify-end gap-2">
+            <div class="flex justify-end gap-2 pt-2">
                 <flux:button type="button" variant="ghost" x-on:click="Flux.modal('confirm-skip-ticket').close()">
                     Batal
                 </flux:button>
@@ -774,6 +1381,7 @@ new class extends Component
                     wire:click="skip"
                     x-on:click="Flux.modal('confirm-skip-ticket').close()"
                     wire:loading.attr="disabled"
+                    class="font-bold"
                 >
                     Ya, Lewati
                 </flux:button>
@@ -783,11 +1391,11 @@ new class extends Component
 
     <flux:modal name="confirm-cancel-ticket" class="w-full max-w-md">
         <div class="space-y-4">
-            <flux:heading size="lg">Konfirmasi Batalkan Tiket</flux:heading>
+            <flux:heading size="lg" class="font-bold">Konfirmasi Batalkan Tiket</flux:heading>
             <flux:text>
-                Tiket aktif <strong>{{ $activeTicket?->ticket_number ?? '-' }}</strong> akan dibatalkan dari antrean.
+                Tiket aktif <strong class="font-mono text-red-600 dark:text-red-400">{{ $activeTicket?->ticket_number ?? '-' }}</strong> akan dibatalkan permanen dari antrean hari ini.
             </flux:text>
-            <div class="flex justify-end gap-2">
+            <div class="flex justify-end gap-2 pt-2">
                 <flux:button type="button" variant="ghost" x-on:click="Flux.modal('confirm-cancel-ticket').close()">
                     Batal
                 </flux:button>
@@ -798,10 +1406,267 @@ new class extends Component
                     wire:click="cancel"
                     x-on:click="Flux.modal('confirm-cancel-ticket').close()"
                     wire:loading.attr="disabled"
+                    class="font-bold"
                 >
                     Ya, Batalkan
                 </flux:button>
             </div>
         </div>
     </flux:modal>
+
+    <!-- Hotkey HUD Guide Modal -->
+    <div 
+        x-cloak
+        x-show="showHotkeysModal" 
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+        x-on:click.self="showHotkeysModal = false"
+    >
+        <div class="w-full max-w-lg rounded-3xl border border-zinc-700 bg-zinc-900 p-6 shadow-2xl text-zinc-100 space-y-5">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <flux:icon.command-line class="size-6 text-cyan-400" />
+                    <flux:heading size="lg" class="text-white font-bold">Panduan Pintasan Keyboard (Hotkeys)</flux:heading>
+                </div>
+                <button x-on:click="showHotkeysModal = false" class="rounded-xl p-1 text-zinc-400 hover:bg-zinc-800 hover:text-white">
+                    <flux:icon.x-mark class="size-5" />
+                </button>
+            </div>
+
+            <div class="space-y-3 text-sm">
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                    <div>
+                        <div class="font-bold text-white">Panggil Antrean Berikutnya</div>
+                        <div class="text-xs text-zinc-400">Memanggil tiket terdepan di pool loket aktif</div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-cyan-400">Space</kbd>
+                        <span class="text-xs text-zinc-500">atau</span>
+                        <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-cyan-400">F2</kbd>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                    <div>
+                        <div class="font-bold text-white">Panggil Ulang (Recall)</div>
+                        <div class="text-xs text-zinc-400">Memanggil ulang tiket yang sedang aktif</div>
+                    </div>
+                    <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-sky-400">F1</kbd>
+                </div>
+
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                    <div>
+                        <div class="font-bold text-white">Lewati Tiket (Skip)</div>
+                        <div class="text-xs text-zinc-400">Membuka dialog konfirmasi untuk skip</div>
+                    </div>
+                    <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-amber-400">F3</kbd>
+                </div>
+
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                    <div>
+                        <div class="font-bold text-white">Selesai Dilayani (Complete)</div>
+                        <div class="text-xs text-zinc-400">Menandai pelayanan tiket selesai</div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-emerald-400">F4</kbd>
+                        <span class="text-xs text-zinc-500">atau</span>
+                        <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-emerald-400">Ctrl+Enter</kbd>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                    <div>
+                        <div class="font-bold text-white">Batalkan Tiket</div>
+                        <div class="text-xs text-zinc-400">Membuka dialog konfirmasi pembatalan</div>
+                    </div>
+                    <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-rose-400">F8</kbd>
+                </div>
+
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                    <div>
+                        <div class="font-bold text-white">Buka Panduan Ini</div>
+                        <div class="text-xs text-zinc-400">Menampilkan atau menutup popup hotkeys</div>
+                    </div>
+                    <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-zinc-300">?</kbd>
+                </div>
+            </div>
+
+            <div class="pt-2 text-right">
+                <flux:button variant="filled" color="cyan" x-on:click="showHotkeysModal = false">
+                    Tutup Panduan
+                </flux:button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Workstation Onboarding Modal -->
+    <div 
+        x-cloak
+        x-show="showOnboardingModal" 
+        x-transition:enter="transition ease-out duration-250"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4"
+        x-on:click.self="completeOnboarding()"
+    >
+        <div class="w-full max-w-xl rounded-3xl border border-zinc-700 bg-zinc-900 p-6 sm:p-7 shadow-2xl text-zinc-100 space-y-6">
+            <!-- Header & Step Indicator -->
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex size-9 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-400">
+                        <flux:icon.sparkles class="size-5" />
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold uppercase tracking-wider text-cyan-400">Panduan Operasional Loket</div>
+                        <flux:heading size="lg" class="text-white font-black">Tur Cepat Workstation Petugas</flux:heading>
+                    </div>
+                </div>
+                <button x-on:click="completeOnboarding()" class="rounded-xl p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors" title="Tutup Panduan">
+                    <flux:icon.x-mark class="size-5" />
+                </button>
+            </div>
+
+            <!-- Step Progress Indicator -->
+            <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-semibold text-zinc-400">
+                    <span>Langkah <strong class="text-cyan-400" x-text="onboardingStep"></strong> dari 4</span>
+                    <span x-show="onboardingStep === 1">1. Pemilihan Loket & Pool</span>
+                    <span x-show="onboardingStep === 2">2. Panggilan & Stopwatch</span>
+                    <span x-show="onboardingStep === 3">3. Panggil Ulang & Skip</span>
+                    <span x-show="onboardingStep === 4">4. Penyelesaian & Kinerja</span>
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 1 ? 'bg-cyan-500' : 'bg-zinc-800'"></div>
+                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 2 ? 'bg-cyan-500' : 'bg-zinc-800'"></div>
+                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 3 ? 'bg-cyan-500' : 'bg-zinc-800'"></div>
+                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 4 ? 'bg-cyan-500' : 'bg-zinc-800'"></div>
+                </div>
+            </div>
+
+            <!-- Dynamic Step Content Body -->
+            <div class="min-h-[220px]">
+                <!-- Step 1: Counter Selection -->
+                <div x-show="onboardingStep === 1" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4">
+                    <div class="rounded-2xl border border-cyan-500/30 bg-cyan-950/30 p-4 flex items-start gap-3.5">
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-400">
+                            <flux:icon.building-office class="size-6" />
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-sm font-bold text-white">1. Pilih & Kunci Loket Shift Anda</h4>
+                            <p class="text-xs text-zinc-300 leading-relaxed">
+                                Workstation ini terhubung dengan <strong>Pool Antrean</strong> pelayanan PTSP. Pastikan Anda memilih loket yang tepat sebelum mulai bertugas agar antrean pemohon diarahkan ke loket Anda.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="rounded-xl bg-zinc-800/60 p-3 text-xs text-zinc-400 border border-zinc-700/50 flex items-center justify-between">
+                        <span>Loket yang saat ini aktif:</span>
+                        <flux:badge color="cyan" size="sm" class="font-bold">{{ $this->selectedCounterName }}</flux:badge>
+                    </div>
+                </div>
+
+                <!-- Step 2: Calling & Live Stopwatch -->
+                <div x-show="onboardingStep === 2" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4">
+                    <div class="rounded-2xl border border-emerald-500/30 bg-emerald-950/30 p-4 flex items-start gap-3.5">
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+                            <flux:icon.megaphone class="size-6" />
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-sm font-bold text-white">2. Panggil Antrean & Pantau Stopwatch</h4>
+                            <p class="text-xs text-zinc-300 leading-relaxed">
+                                Tekan tombol <strong>Panggil Berikutnya</strong> atau tekan tombol <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-cyan-400">Space</kbd> / <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-cyan-400">F2</kbd>. Suara panggilan otomatis berbunyi dan stopwatch durasi live mulai menghitung.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                        <div class="rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-2 text-emerald-300 font-semibold">
+                            &lt; 10m: Normal
+                        </div>
+                        <div class="rounded-xl border border-amber-500/30 bg-amber-950/40 p-2 text-amber-300 font-semibold">
+                            10-20m: Sedang
+                        </div>
+                        <div class="rounded-xl border border-rose-500/30 bg-rose-950/40 p-2 text-rose-300 font-semibold">
+                            &gt; 20m: Lama
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Recall & Skip Tray -->
+                <div x-show="onboardingStep === 3" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4">
+                    <div class="rounded-2xl border border-amber-500/30 bg-amber-950/30 p-4 flex items-start gap-3.5">
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+                            <flux:icon.forward class="size-6" />
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-sm font-bold text-white">3. Panggil Ulang (F1) & Lewati/Skip (F3)</h4>
+                            <p class="text-xs text-zinc-300 leading-relaxed">
+                                Bila pemohon belum mendekat, panggil ulang dengan tombol <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-sky-400">F1</kbd>. Jika tetap tidak hadir, tekan <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-amber-400">F3</kbd> (Lewati) untuk memarkir tiket ke <strong>Daftar Skip</strong> dan lanjut melayani antrean berikutnya.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="rounded-xl bg-zinc-800/60 p-3 text-xs text-zinc-300 border border-zinc-700/50 flex items-center justify-between">
+                        <span>Tiket di Daftar Skip dapat dipanggil kembali kapan saja:</span>
+                        <flux:badge color="amber" size="sm" class="font-bold">1-Klik Panggil</flux:badge>
+                    </div>
+                </div>
+
+                <!-- Step 4: Complete & Daily Stats -->
+                <div x-show="onboardingStep === 4" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4">
+                    <div class="rounded-2xl border border-emerald-500/30 bg-emerald-950/30 p-4 flex items-start gap-3.5">
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+                            <flux:icon.check-circle class="size-6" />
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-sm font-bold text-white">4. Tuntaskan Layanan & Pantau Kinerja</h4>
+                            <p class="text-xs text-zinc-300 leading-relaxed">
+                                Begitu pelayanan selesai, tekan tombol <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-emerald-400">F4</kbd> atau <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-emerald-400">Ctrl+Enter</kbd>. Statistik harian Anda akan otomatis tercatat dan loket kembali siap memanggil pemohon baru.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="rounded-xl bg-emerald-950/40 p-3 text-xs text-emerald-300 border border-emerald-500/30 flex items-center justify-between">
+                        <span class="font-semibold">Pintasan keyboard dapat dibuka kapan saja dengan menekan:</span>
+                        <kbd class="px-2 py-0.5 rounded bg-zinc-900 border border-emerald-500/50 font-mono text-xs font-bold text-white">?</kbd>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Action Footer -->
+            <div class="flex items-center justify-between border-t border-zinc-800 pt-4">
+                <flux:button 
+                    variant="ghost" 
+                    size="sm" 
+                    x-show="onboardingStep > 1" 
+                    x-on:click="prevOnboardingStep()"
+                    class="text-zinc-400 hover:text-white"
+                >
+                    Kembali
+                </flux:button>
+                <div x-show="onboardingStep === 1">
+                    <button x-on:click="completeOnboarding()" class="text-xs text-zinc-500 hover:text-zinc-300 underline">
+                        Lewati Panduan
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <flux:button 
+                        variant="filled" 
+                        color="cyan" 
+                        size="sm" 
+                        x-on:click="nextOnboardingStep()"
+                        class="font-bold shadow-md shadow-cyan-600/30"
+                    >
+                        <span x-text="onboardingStep === 4 ? 'Mulai Bertugas Sekarang' : 'Lanjut'"></span>
+                        <flux:icon.arrow-right class="size-4 ml-1" />
+                    </flux:button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

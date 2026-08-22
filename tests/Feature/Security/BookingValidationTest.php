@@ -2,9 +2,10 @@
 
 use App\Models\QueuePool;
 use App\Models\Service;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 
 beforeEach(function () {
-    $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+    $this->withoutMiddleware(ValidateCsrfToken::class);
 
     $pool = QueuePool::factory()->create(['code' => 'UMUM']);
     $this->service = Service::factory()->for($pool)->create([

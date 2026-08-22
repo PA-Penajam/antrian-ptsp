@@ -27,5 +27,35 @@ class DatabaseSeeder extends Seeder
                 'password' => 'password',
             ]
         );
+
+        User::query()->firstOrCreate(
+            ['email' => 'officer@example.com'],
+            [
+                'name' => 'Petugas Loket Demo',
+                'role' => UserRole::Officer->value,
+                'email_verified_at' => now(),
+                'password' => 'password',
+            ]
+        );
+
+        User::query()->firstOrCreate(
+            ['email' => 'frontdesk@example.com'],
+            [
+                'name' => 'Petugas Frontdesk Demo',
+                'role' => UserRole::Frontdesk->value,
+                'email_verified_at' => now(),
+                'password' => 'password',
+            ]
+        );
+
+        User::query()->firstOrCreate(
+            ['email' => 'monitor@example.com'],
+            [
+                'name' => 'Pimpinan Monitor Demo',
+                'role' => UserRole::Monitor->value,
+                'email_verified_at' => now(),
+                'password' => 'password',
+            ]
+        );
     }
 }

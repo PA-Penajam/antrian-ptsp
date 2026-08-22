@@ -1,21 +1,18 @@
 <x-layouts::app :title="__('Manajemen User')">
-    <div class="mx-auto w-full max-w-6xl space-y-6" x-data="{ tab: '{{ old('_method') !== 'PUT' && $errors->any() ? 'create' : $tab }}' }">
+    <div class="w-full space-y-6" x-data="{ tab: '{{ old('_method') !== 'PUT' && $errors->any() ? 'create' : $tab }}', searchUser: '' }">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div class="space-y-3">
-                <flux:badge color="violet" rounded>Admin Panel</flux:badge>
-                <div>
-                    <flux:heading size="xl" level="1">Manajemen User</flux:heading>
-                    <flux:subheading class="mt-1">Kelola role dan izin layanan setiap user internal.</flux:subheading>
-                </div>
-                <flux:breadcrumbs>
+            <div class="space-y-1">
+                <flux:breadcrumbs class="mb-1">
                     <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
                     <flux:breadcrumbs.item>Users</flux:breadcrumbs.item>
                 </flux:breadcrumbs>
+                <flux:heading size="xl" level="1">Manajemen User</flux:heading>
+                <flux:subheading>Kelola akun internal, pembagian role, dan izin layanan petugas.</flux:subheading>
             </div>
             
             <div class="flex items-center gap-2">
                 <flux:modal.trigger name="create-user">
-                    <flux:button variant="primary" icon="plus">
+                    <flux:button variant="primary" icon="plus" class="w-full sm:w-auto">
                         Tambah User Baru
                     </flux:button>
                 </flux:modal.trigger>
@@ -35,12 +32,12 @@
         @endif
 
         {{-- Tabs Navigation --}}
-        <div class="flex gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-700 dark:bg-zinc-800/50 max-w-fit">
+        <div class="flex w-full overflow-x-auto p-1 gap-1 rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/50 max-w-fit">
             <button
                 type="button"
                 x-on:click="tab = 'list'"
                 :class="tab === 'list' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'"
-                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all whitespace-nowrap"
             >
                 <flux:icon.users class="size-4" />
                 Semua Users
@@ -49,7 +46,7 @@
                 type="button"
                 x-on:click="tab = 'roles'"
                 :class="tab === 'roles' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'"
-                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+                class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all whitespace-nowrap"
             >
                 <flux:icon.shield-check class="size-4" />
                 Role & Izin
@@ -60,11 +57,20 @@
         {{-- Tab 1: Semua Users --}}
         <div x-show="tab === 'list'" x-cloak>
             <flux:card class="space-y-4">
-                <div class="flex items-center gap-3">
-                    <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
-                        <flux:icon.users class="size-5" />
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="admin-icon-box bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400">
+                            <flux:icon.users class="size-5" />
+                        </div>
+                        <flux:heading size="lg">Daftar User</flux:heading>
                     </div>
-                    <flux:heading size="lg">Daftar User</flux:heading>
+                    <flux:input
+                        x-model="searchUser"
+                        placeholder="Cari nama, email, atau role..."
+                        icon="magnifying-glass"
+                        clearable
+                        class="w-full sm:w-64"
+                    />
                 </div>
 
                 @php
@@ -76,43 +82,45 @@
                         <flux:icon name="users" class="h-12 w-12 text-zinc-400" />
                         <flux:heading size="md" class="mt-4">Belum ada user selain Anda</flux:heading>
                         <flux:text class="mt-2 text-zinc-500">
-                            Tambahkan user baru melalui tab "Tambah User" untuk mengelola tim Anda.
+                            Tambahkan user baru melalui tombol di atas untuk mengelola tim Anda.
                         </flux:text>
                     </div>
                 @else
-                    <flux:table>
-                        <flux:table.columns>
-                            <flux:table.column>Nama</flux:table.column>
-                            <flux:table.column>Email</flux:table.column>
-                            <flux:table.column>Role</flux:table.column>
-                            <flux:table.column>Aksi</flux:table.column>
-                        </flux:table.columns>
-                        <flux:table.rows>
-                            @foreach ($otherUsers as $user)
-                                <flux:table.row>
-                                    <flux:table.cell>{{ $user->name }}</flux:table.cell>
-                                    <flux:table.cell>{{ $user->email }}</flux:table.cell>
-                                    <flux:table.cell>
-                                        <flux:badge size="sm" color="{{ $user->role->color() }}">
-                                            {{ $user->role->label() }}
-                                        </flux:badge>
-                                    </flux:table.cell>
-                                    <flux:table.cell>
-                                        <div class="flex items-center gap-2">
-                                            <flux:modal.trigger name="edit-user-{{ $user->id }}">
-                                                <flux:button size="sm" variant="filled" icon="pencil">Edit</flux:button>
-                                            </flux:modal.trigger>
-                                            <flux:modal.trigger name="delete-user-{{ $user->id }}">
-                                                <flux:button size="sm" variant="danger" icon="trash">
-                                                    Hapus
-                                                </flux:button>
-                                            </flux:modal.trigger>
-                                        </div>
-                                    </flux:table.cell>
-                                </flux:table.row>
-                            @endforeach
-                        </flux:table.rows>
-                    </flux:table>
+                    <div class="overflow-x-auto">
+                        <flux:table>
+                            <flux:table.columns>
+                                <flux:table.column>Nama</flux:table.column>
+                                <flux:table.column>Email</flux:table.column>
+                                <flux:table.column>Role</flux:table.column>
+                                <flux:table.column>Aksi</flux:table.column>
+                            </flux:table.columns>
+                            <flux:table.rows>
+                                @foreach ($otherUsers as $user)
+                                    <flux:table.row x-show="!searchUser || '{{ strtolower(addslashes($user->name . ' ' . $user->email . ' ' . $user->role->label())) }}'.includes(searchUser.toLowerCase())">
+                                        <flux:table.cell class="font-medium whitespace-nowrap">{{ $user->name }}</flux:table.cell>
+                                        <flux:table.cell class="whitespace-nowrap">{{ $user->email }}</flux:table.cell>
+                                        <flux:table.cell>
+                                            <flux:badge size="sm" color="{{ $user->role->color() }}">
+                                                {{ $user->role->label() }}
+                                            </flux:badge>
+                                        </flux:table.cell>
+                                        <flux:table.cell>
+                                            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                                <flux:modal.trigger name="edit-user-{{ $user->id }}">
+                                                    <flux:button size="sm" variant="filled" icon="pencil">Edit</flux:button>
+                                                </flux:modal.trigger>
+                                                <flux:modal.trigger name="delete-user-{{ $user->id }}">
+                                                    <flux:button size="sm" variant="danger" icon="trash">
+                                                        Hapus
+                                                    </flux:button>
+                                                </flux:modal.trigger>
+                                            </div>
+                                        </flux:table.cell>
+                                    </flux:table.row>
+                                @endforeach
+                            </flux:table.rows>
+                        </flux:table>
+                    </div>
                 @endif
             </flux:card>
         </div>
@@ -126,14 +134,15 @@
                     </div>
                     <flux:heading size="lg">Role & Izin Layanan</flux:heading>
                 </div>
-                <flux:table>
-                    <flux:table.columns>
-                        <flux:table.column>Nama</flux:table.column>
-                        <flux:table.column>Email</flux:table.column>
-                        <flux:table.column>Role & Aksi</flux:table.column>
-                        <flux:table.column>Layanan</flux:table.column>
-                    </flux:table.columns>
-                    <flux:table.rows>
+                <div class="overflow-x-auto">
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column>Nama</flux:table.column>
+                            <flux:table.column>Email</flux:table.column>
+                            <flux:table.column>Role & Aksi</flux:table.column>
+                            <flux:table.column>Layanan</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
                         @foreach ($users as $user)
                             <flux:table.row>
                                 <flux:table.cell>{{ $user->name }}</flux:table.cell>
@@ -183,7 +192,8 @@
                             </flux:table.row>
                         @endforeach
                     </flux:table.rows>
-                </flux:table>
+                    </flux:table>
+                </div>
             </flux:card>
         </div>
 

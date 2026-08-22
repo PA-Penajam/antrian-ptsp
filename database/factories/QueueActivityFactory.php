@@ -3,12 +3,13 @@
 namespace Database\Factories;
 
 use App\Models\Counter;
+use App\Models\QueueActivity;
 use App\Models\QueueTicket;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\QueueActivity>
+ * @extends Factory<QueueActivity>
  */
 class QueueActivityFactory extends Factory
 {

@@ -2,6 +2,7 @@
 
 use App\Models\QueuePool;
 use App\Models\Service;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 
 test('public user can open booking page and see active services', function () {
     $pool = QueuePool::factory()->create();
@@ -24,7 +25,7 @@ test('public user can submit booking and receive confirmation', function () {
         'booking_enabled' => true,
     ]);
 
-    $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+    $this->withoutMiddleware(ValidateCsrfToken::class);
 
     $response = $this->post('/antrian', [
         'service_id' => $service->id,

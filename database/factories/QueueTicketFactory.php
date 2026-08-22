@@ -5,12 +5,13 @@ namespace Database\Factories;
 use App\Enums\QueueStatus;
 use App\Models\Counter;
 use App\Models\QueuePool;
+use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\QueueTicket>
+ * @extends Factory<QueueTicket>
  */
 class QueueTicketFactory extends Factory
 {

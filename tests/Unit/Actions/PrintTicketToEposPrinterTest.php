@@ -4,6 +4,7 @@ use App\Actions\Queue\PrintTicketToEposPrinter;
 use App\Models\QueuePool;
 use App\Models\QueueTicket;
 use App\Models\Service;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -80,7 +81,7 @@ it('returns false when printer returns non-2xx', function () {
 
 it('returns false when printer is unreachable', function () {
     Http::fake(function () {
-        throw new \Illuminate\Http\Client\ConnectionException('Connection refused');
+        throw new ConnectionException('Connection refused');
     });
 
     $result = app(PrintTicketToEposPrinter::class)->handle(makePrintableTicket());

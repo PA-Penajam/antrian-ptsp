@@ -3,11 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Counter;
+use App\Models\CounterSession;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\CounterSession>
+ * @extends Factory<CounterSession>
  */
 class CounterSessionFactory extends Factory
 {

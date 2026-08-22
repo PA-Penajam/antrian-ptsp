@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\QueuePoolFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class QueuePool extends Model
 {
-    /** @use HasFactory<\Database\Factories\QueuePoolFactory> */
+    /** @use HasFactory<QueuePoolFactory> */
     use HasFactory;
 
     protected $fillable = [

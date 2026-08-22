@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\WeekdayOnly;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePublicQueueBookingRequest extends FormRequest
@@ -17,13 +19,13 @@ class StorePublicQueueBookingRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'service_id' => ['required', 'integer', 'exists:services,id'],
-            'service_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:+14 days', new \App\Rules\WeekdayOnly],
+            'service_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:+14 days', new WeekdayOnly],
             'visitor_name' => ['required', 'string', 'max:255'],
             'visitor_identifier' => ['required', 'string', 'max:64'],
             'visitor_phone' => ['required', 'string', 'max:30'],

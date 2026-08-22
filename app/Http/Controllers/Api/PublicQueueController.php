@@ -9,6 +9,7 @@ use App\Http\Requests\Api\StoreBookingRequest;
 use App\Http\Resources\PublicQueueTicketResource;
 use App\Http\Resources\QueueTicketResource;
 use App\Models\QueueTicket;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 
 class PublicQueueController extends Controller
@@ -48,7 +49,7 @@ class PublicQueueController extends Controller
     {
         try {
             $id = decrypt($encryptedId);
-        } catch (\Illuminate\Contracts\Encryption\DecryptException) {
+        } catch (DecryptException) {
             return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
         }
 

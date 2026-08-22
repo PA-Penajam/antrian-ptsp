@@ -4,6 +4,7 @@ namespace App\Actions\Queue;
 
 use App\Enums\QueueStatus;
 use App\Enums\UserRole;
+use App\Events\TicketCalled;
 use App\Models\Counter;
 use App\Models\QueueTicket;
 use App\Models\User;
@@ -87,7 +88,7 @@ class CallNextTicket
                 ]
             );
 
-            \App\Events\TicketCalled::dispatch($queueTicket->id);
+            TicketCalled::dispatch($queueTicket->id);
 
             return $queueTicket->refresh();
         });

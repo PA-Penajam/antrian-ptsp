@@ -81,5 +81,5 @@ test('it throws a runtime exception when all replacement strategies fail', funct
     };
 
     expect(fn () => $filesystem->replace($path, 'new'))
-        ->toThrow(\RuntimeException::class, "Unable to replace [{$path}]");
+        ->toThrow(RuntimeException::class, "Unable to replace [{$path}]");
 });

@@ -5,9 +5,10 @@ use App\Models\Counter;
 use App\Models\QueuePool;
 use App\Models\QueueTicket;
 use App\Models\Service;
+use Tests\TestCase;
 
 it('returns institution data', function () {
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->getJson('/api/institution');
 
     $response->assertStatus(200)
@@ -28,7 +29,7 @@ it('returns active services', function () {
         'sort_order' => 1,
     ]);
 
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->getJson('/api/services');
 
     $response->assertStatus(200)
@@ -49,7 +50,7 @@ it('creates a new booking', function () {
         'booking_enabled' => true,
     ]);
 
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->postJson('/api/queue/booking', [
         'service_id' => $service->id,
         'service_date' => now()->nextWeekday()->format('Y-m-d'),
@@ -81,7 +82,7 @@ it('looks up a ticket', function () {
         'status' => QueueStatus::Booked,
     ]);
 
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->getJson('/api/queue/lookup?ticket_number='.$ticket->ticket_number.'&service_date='.$ticket->service_date->format('Y-m-d'));
 
     $response->assertStatus(200)

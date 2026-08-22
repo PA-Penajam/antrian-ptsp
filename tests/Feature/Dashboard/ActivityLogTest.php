@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Dashboard\AdminDashboard;
 use App\Models\Counter;
 use App\Models\QueueActivity;
 use App\Models\QueueTicket;
@@ -33,7 +34,7 @@ describe('Activity Log', function () {
             ]);
         }
 
-        $component = Livewire::test(\App\Livewire\Dashboard\AdminDashboard::class);
+        $component = Livewire::test(AdminDashboard::class);
 
         expect($component->recentActivities)->toHaveCount(20);
         expect($component->recentActivities->first()->created_at->greaterThan(
@@ -42,7 +43,7 @@ describe('Activity Log', function () {
     });
 
     it('shows empty state message when no activities exist', function () {
-        Livewire::test(\App\Livewire\Dashboard\AdminDashboard::class)
+        Livewire::test(AdminDashboard::class)
             ->assertSee('Belum ada aktivitas');
     });
 
@@ -62,7 +63,7 @@ describe('Activity Log', function () {
             'action' => 'ticket_completed',
         ]);
 
-        Livewire::test(\App\Livewire\Dashboard\AdminDashboard::class)
+        Livewire::test(AdminDashboard::class)
             ->assertSee('Aktivitas Terkini')
             ->assertSee('A001')
             ->assertSee('Test Service')
@@ -72,7 +73,7 @@ describe('Activity Log', function () {
     });
 
     it('returns correct action labels', function () {
-        $component = Livewire::test(\App\Livewire\Dashboard\AdminDashboard::class);
+        $component = Livewire::test(AdminDashboard::class);
 
         expect($component->instance()->actionLabel('ticket_called'))->toBe('Dipanggil');
         expect($component->instance()->actionLabel('ticket_completed'))->toBe('Selesai');
@@ -83,7 +84,7 @@ describe('Activity Log', function () {
     });
 
     it('returns correct action colors', function () {
-        $component = Livewire::test(\App\Livewire\Dashboard\AdminDashboard::class);
+        $component = Livewire::test(AdminDashboard::class);
 
         expect($component->instance()->actionColor('ticket_called'))->toBe('blue');
         expect($component->instance()->actionColor('ticket_recalled'))->toBe('blue');
@@ -106,7 +107,7 @@ describe('Activity Log', function () {
             'action' => 'ticket_completed',
         ]);
 
-        Livewire::test(\App\Livewire\Dashboard\AdminDashboard::class)
+        Livewire::test(AdminDashboard::class)
             ->assertSee('Aktivitas Terkini')
             ->assertSee('-');
     });

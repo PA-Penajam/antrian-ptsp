@@ -3,6 +3,7 @@
 namespace App\Actions\Queue;
 
 use App\Enums\QueueStatus;
+use App\Events\TicketCalled;
 use App\Models\Counter;
 use App\Models\QueueTicket;
 use Carbon\CarbonImmutable;
@@ -41,7 +42,7 @@ class RecallTicket
             ]
         );
 
-        \App\Events\TicketCalled::dispatch($queueTicket->id);
+        TicketCalled::dispatch($queueTicket->id);
 
         return $queueTicket->refresh();
     }

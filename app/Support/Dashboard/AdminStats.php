@@ -4,6 +4,7 @@ namespace App\Support\Dashboard;
 
 use App\Enums\QueueStatus;
 use App\Models\QueueTicket;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -91,7 +92,7 @@ class AdminStats
      */
     public function getTrendData(?string $date = null): array
     {
-        $endDate = $date ? \Carbon\Carbon::parse($date) : now();
+        $endDate = $date ? Carbon::parse($date) : now();
         $startDate = $endDate->copy()->subDays(6)->startOfDay();
         $endDate = $endDate->endOfDay();
 

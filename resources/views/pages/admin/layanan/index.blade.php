@@ -1,21 +1,18 @@
 <x-layouts::app :title="__('Manajemen Layanan')">
-    <div class="mx-auto w-full max-w-6xl space-y-6">
+    <div class="w-full space-y-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div class="space-y-3">
-                <flux:badge color="cyan" rounded>Admin Panel</flux:badge>
-                <div>
-                    <flux:heading size="xl" level="1">Manajemen Layanan</flux:heading>
-                    <flux:subheading class="mt-1">Kelola layanan aktif dan konfigurasi kanal layanan.</flux:subheading>
-                </div>
-                <flux:breadcrumbs>
+            <div class="space-y-1">
+                <flux:breadcrumbs class="mb-1">
                     <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
                     <flux:breadcrumbs.item>Layanan</flux:breadcrumbs.item>
                 </flux:breadcrumbs>
+                <flux:heading size="xl" level="1">Manajemen Layanan</flux:heading>
+                <flux:subheading>Kelola layanan aktif dan konfigurasi kanal layanan.</flux:subheading>
             </div>
             <div class="flex items-center gap-2">
-                <flux:badge size="sm" color="green" class="hidden sm:flex">{{ $services->total() ?? $services->count() }} layanan</flux:badge>
+                <flux:badge size="sm" color="cyan" class="hidden sm:inline-flex">{{ $services->total() ?? $services->count() }} layanan</flux:badge>
                 <flux:modal.trigger name="create-service">
-                    <flux:button variant="primary" icon="plus">
+                    <flux:button variant="primary" icon="plus" class="w-full sm:w-auto">
                         Tambah Layanan Baru
                     </flux:button>
                 </flux:modal.trigger>
@@ -53,88 +50,90 @@
                 </form>
             </div>
 
-            <flux:table>
-                <flux:table.columns>
-                    <flux:table.column>
-                        <a href="{{ route('admin.layanan.index', ['sort_by' => 'name', 'sort_direction' => $sortBy === 'name' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
-                            Nama
-                            @if ($sortBy === 'name')
-                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
-                            @endif
-                        </a>
-                    </flux:table.column>
-                    <flux:table.column>
-                        <a href="{{ route('admin.layanan.index', ['sort_by' => 'code', 'sort_direction' => $sortBy === 'code' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
-                            Kode
-                            @if ($sortBy === 'code')
-                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
-                            @endif
-                        </a>
-                    </flux:table.column>
-                    <flux:table.column>Pool</flux:table.column>
-                    <flux:table.column>
-                        <a href="{{ route('admin.layanan.index', ['sort_by' => 'is_active', 'sort_direction' => $sortBy === 'is_active' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline">
-                            Status
-                            @if ($sortBy === 'is_active')
-                                <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
-                            @endif
-                        </a>
-                    </flux:table.column>
-                    <flux:table.column>Aksi</flux:table.column>
-                </flux:table.columns>
-                <flux:table.rows>
-                    @forelse ($services as $service)
-                        <flux:table.row>
-                            <flux:table.cell class="font-medium">{{ $service->name }}</flux:table.cell>
-                            <flux:table.cell>
-                                <flux:badge size="sm" color="zinc">{{ $service->code }}</flux:badge>
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $service->queuePool?->name ?? '-' }}</flux:table.cell>
-                            <flux:table.cell>
-                                @if ($service->is_active)
-                                    <flux:badge size="sm" color="green" icon="check-circle">Aktif</flux:badge>
-                                @else
-                                    <flux:badge size="sm" color="zinc" icon="x-circle">Nonaktif</flux:badge>
+            <div class="overflow-x-auto">
+                <flux:table>
+                    <flux:table.columns>
+                        <flux:table.column>
+                            <a href="{{ route('admin.layanan.index', ['sort_by' => 'name', 'sort_direction' => $sortBy === 'name' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline whitespace-nowrap">
+                                Nama
+                                @if ($sortBy === 'name')
+                                    <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
                                 @endif
-                            </flux:table.cell>
-                            <flux:table.cell>
-                                <div class="flex flex-wrap gap-2">
-                                    <form method="POST" action="{{ route('admin.layanan.update', $service) }}" class="inline">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="name" value="{{ $service->name }}">
-                                        <input type="hidden" name="description" value="{{ $service->description }}">
-                                        <input type="hidden" name="is_active" value="{{ $service->is_active ? 0 : 1 }}">
-                                        <flux:button type="submit" variant="ghost" size="sm">
-                                            {{ $service->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
-                                        </flux:button>
-                                    </form>
-                                    <flux:modal.trigger name="edit-service-{{ $service->id }}">
-                                        <flux:button size="sm" variant="filled" icon="pencil">
-                                            Edit
-                                        </flux:button>
-                                    </flux:modal.trigger>
-                                    <flux:modal.trigger name="delete-service-{{ $service->id }}">
-                                        <flux:button size="sm" variant="danger" icon="trash">
-                                            Hapus
-                                        </flux:button>
-                                    </flux:modal.trigger>
-                                </div>
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @empty
-                        <flux:table.row>
-                            <flux:table.cell colspan="5">
-                                <div class="flex flex-col items-center justify-center py-8 text-center">
-                                    <flux:icon name="inbox" class="h-12 w-12 text-zinc-300 dark:text-zinc-600" />
-                                    <p class="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">Belum ada layanan</p>
-                                    <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Silakan tambah layanan baru menggunakan tombol di atas.</p>
-                                </div>
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @endforelse
-                </flux:table.rows>
-            </flux:table>
+                            </a>
+                        </flux:table.column>
+                        <flux:table.column>
+                            <a href="{{ route('admin.layanan.index', ['sort_by' => 'code', 'sort_direction' => $sortBy === 'code' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline whitespace-nowrap">
+                                Kode
+                                @if ($sortBy === 'code')
+                                    <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                                @endif
+                            </a>
+                        </flux:table.column>
+                        <flux:table.column class="whitespace-nowrap">Pool</flux:table.column>
+                        <flux:table.column>
+                            <a href="{{ route('admin.layanan.index', ['sort_by' => 'is_active', 'sort_direction' => $sortBy === 'is_active' && $sortDirection === 'asc' ? 'desc' : 'asc', 'search' => request('search')]) }}" class="flex items-center gap-1 hover:underline whitespace-nowrap">
+                                Status
+                                @if ($sortBy === 'is_active')
+                                    <flux:icon name="{{ $sortDirection === 'asc' ? 'arrow-up' : 'arrow-down' }}" class="size-3" />
+                                @endif
+                            </a>
+                        </flux:table.column>
+                        <flux:table.column class="whitespace-nowrap">Aksi</flux:table.column>
+                    </flux:table.columns>
+                    <flux:table.rows>
+                        @forelse ($services as $service)
+                            <flux:table.row>
+                                <flux:table.cell class="font-medium whitespace-nowrap">{{ $service->name }}</flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">
+                                    <flux:badge size="sm" color="zinc">{{ $service->code }}</flux:badge>
+                                </flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">{{ $service->queuePool?->name ?? '-' }}</flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">
+                                    @if ($service->is_active)
+                                        <flux:badge size="sm" color="green" icon="check-circle">Aktif</flux:badge>
+                                    @else
+                                        <flux:badge size="sm" color="zinc" icon="x-circle">Nonaktif</flux:badge>
+                                    @endif
+                                </flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">
+                                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                        <form method="POST" action="{{ route('admin.layanan.update', $service) }}" class="inline">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="name" value="{{ $service->name }}">
+                                            <input type="hidden" name="description" value="{{ $service->description }}">
+                                            <input type="hidden" name="is_active" value="{{ $service->is_active ? 0 : 1 }}">
+                                            <flux:button type="submit" variant="ghost" size="sm">
+                                                {{ $service->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                            </flux:button>
+                                        </form>
+                                        <flux:modal.trigger name="edit-service-{{ $service->id }}">
+                                            <flux:button size="sm" variant="filled" icon="pencil">
+                                                Edit
+                                            </flux:button>
+                                        </flux:modal.trigger>
+                                        <flux:modal.trigger name="delete-service-{{ $service->id }}">
+                                            <flux:button size="sm" variant="danger" icon="trash">
+                                                Hapus
+                                            </flux:button>
+                                        </flux:modal.trigger>
+                                    </div>
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @empty
+                            <flux:table.row>
+                                <flux:table.cell colspan="5">
+                                    <div class="flex flex-col items-center justify-center py-8 text-center">
+                                        <flux:icon name="inbox" class="h-12 w-12 text-zinc-300 dark:text-zinc-600" />
+                                        <p class="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">Belum ada layanan</p>
+                                        <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Silakan tambah layanan baru menggunakan tombol di atas.</p>
+                                    </div>
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @endforelse
+                    </flux:table.rows>
+                </flux:table>
+            </div>
 
             @if ($services->hasPages())
                 <div class="mt-4">

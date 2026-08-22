@@ -299,14 +299,14 @@ it('loads dashboard stats efficiently', function () {
         ->for($service)
         ->create([
             'service_date' => today(),
-            'status' => \App\Enums\QueueStatus::Completed,
+            'status' => QueueStatus::Completed,
             'channel' => 'online_booking',
             'called_at' => now()->subMinutes(10),
             'completed_at' => now(),
         ]);
     QueueTicket::factory()->create([
         'service_date' => today(),
-        'status' => \App\Enums\QueueStatus::Waiting,
+        'status' => QueueStatus::Waiting,
     ]);
 
     $user = User::factory()->create([
@@ -314,7 +314,7 @@ it('loads dashboard stats efficiently', function () {
     ]);
 
     Livewire::actingAs($user)
-        ->test(\App\Livewire\Dashboard\AdminDashboard::class)
+        ->test(AdminDashboard::class)
         ->assertSet('startDate', today()->toDateString())
         ->assertOk();
 });

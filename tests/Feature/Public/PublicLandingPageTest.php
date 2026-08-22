@@ -1,6 +1,11 @@
 <?php
 
+use App\Enums\QueueStatus;
+use App\Livewire\PublicQueueMonitor;
+use App\Models\QueuePool;
+use App\Models\QueueTicket;
 use App\Models\Service;
+use Livewire\Livewire;
 
 use function Pest\Laravel\get;
 
@@ -54,4 +59,42 @@ test('landing page renders live queue monitor with active calling ticket', funct
         ->assertSeeText('Total Tiket Terdaftar')
         ->assertSeeText('Sedang Menunggu')
         ->assertSeeText('Selesai Dilayani');
+});
+
+test('public queue monitor livewire component renders and performs quick lookup', function () {
+    $pool = QueuePool::factory()->create(['code' => 'UMUM']);
+    $service = Service::factory()->for($pool)->create(['name' => 'Pendaftaran Perkara']);
+
+    $ticket1 = QueueTicket::factory()->for($service)->for($pool)->create([
+        'ticket_number' => 'UMUM-0001',
+        'service_date' => today(),
+        'sequence_number' => 1,
+        'status' => QueueStatus::Waiting,
+    ]);
+
+    $ticket2 = QueueTicket::factory()->for($service)->for($pool)->create([
+        'ticket_number' => 'UMUM-0002',
+        'service_date' => today(),
+        'sequence_number' => 2,
+        'status' => QueueStatus::Waiting,
+    ]);
+
+    Livewire::test(PublicQueueMonitor::class)
+        ->assertSee('Pantauan Antrian Hari Ini')
+        ->assertSee('Total Tiket Terdaftar')
+        ->set('quickTicketNumber', 'UMUM-0002')
+        ->call('searchTicket')
+        ->assertSee('UMUM-0002')
+        ->assertSee('Sisa Antrian Di Depan')
+        ->assertSee('Orang')
+        ->assertSee('Ada 1 antrian sebelum giliran Anda')
+        ->call('clearLookup')
+        ->assertDontSee('Sisa Antrian Di Depan');
+});
+
+test('public queue monitor displays error when ticket is not found', function () {
+    Livewire::test(PublicQueueMonitor::class)
+        ->set('quickTicketNumber', 'NONEXISTENT')
+        ->call('searchTicket')
+        ->assertSee('tidak ditemukan untuk antrian hari ini');
 });

@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\QueueActivityFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QueueActivity extends Model
 {
-    /** @use HasFactory<\Database\Factories\QueueActivityFactory> */
+    /** @use HasFactory<QueueActivityFactory> */
     use HasFactory;
 
     protected $fillable = [

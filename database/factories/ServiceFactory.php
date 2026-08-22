@@ -3,11 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\QueuePool;
+use App\Models\Service;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Service>
+ * @extends Factory<Service>
  */
 class ServiceFactory extends Factory
 {

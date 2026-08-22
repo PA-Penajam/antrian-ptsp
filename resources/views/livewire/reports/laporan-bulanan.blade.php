@@ -1,13 +1,10 @@
 <div class="space-y-6">
     {{-- Header --}}
-    <div class="space-y-3">
-        <flux:badge color="blue" rounded>Laporan Bulanan</flux:badge>
-        <div>
-            <flux:heading size="xl" level="1">Laporan Bulanan</flux:heading>
-            <flux:subheading class="mt-1">
-                {{ Carbon\Carbon::create($tahun, $bulan, 1)->locale('id')->isoFormat('MMMM YYYY') }}
-            </flux:subheading>
-        </div>
+    <div>
+        <flux:heading size="xl" level="1">Laporan Bulanan</flux:heading>
+        <flux:subheading class="mt-1">
+            Periode {{ Carbon\Carbon::create($tahun, $bulan, 1)->locale('id')->isoFormat('MMMM YYYY') }}
+        </flux:subheading>
     </div>
 
     {{-- Filter Bulan & Tahun --}}
@@ -22,32 +19,34 @@
                     <flux:text class="text-xs text-zinc-500">Pilih bulan dan tahun laporan</flux:text>
                 </div>
             </div>
-            <div class="flex items-end gap-3">
-                <flux:field>
+            <div class="grid w-full grid-cols-1 gap-3 sm:w-auto sm:grid-cols-2 md:flex md:items-end">
+                <flux:field class="w-full">
                     <flux:label>Bulan</flux:label>
                     <flux:select wire:model.live="bulan">
                         @foreach (range(1, 12) as $m)
-                            <option wire:key="bulan-{{ $m }}" value="{{ $m }}">
+                            <flux:select.option wire:key="bulan-{{ $m }}" value="{{ $m }}">
                                 {{ Carbon\Carbon::create()->month($m)->locale('id')->isoFormat('MMMM') }}
-                            </option>
+                            </flux:select.option>
                         @endforeach
                     </flux:select>
                 </flux:field>
-                <flux:field>
+                <flux:field class="w-full">
                     <flux:label>Tahun</flux:label>
                     <flux:select wire:model.live="tahun">
                         @foreach (range(today()->year, today()->subYears(5)->year) as $th)
-                            <option wire:key="tahun-{{ $th }}" value="{{ $th }}">{{ $th }}</option>
+                            <flux:select.option wire:key="tahun-{{ $th }}" value="{{ $th }}">{{ $th }}</flux:select.option>
                         @endforeach
                     </flux:select>
                 </flux:field>
                 @if ($report['ringkasan']['total'] > 0)
-                    <flux:button icon="document-text" variant="primary" wire:click="downloadExcel">
-                        Excel
-                    </flux:button>
-                    <flux:button icon="printer" variant="outline" wire:click="downloadPdf">
-                        PDF
-                    </flux:button>
+                    <div class="flex items-center gap-2">
+                        <flux:button icon="document-text" variant="primary" wire:click="downloadExcel" wire:loading.attr="disabled" wire:target="downloadExcel" class="w-full sm:w-auto" aria-label="Unduh Laporan Excel">
+                            Excel
+                        </flux:button>
+                        <flux:button icon="printer" variant="outline" wire:click="downloadPdf" wire:loading.attr="disabled" wire:target="downloadPdf" class="w-full sm:w-auto" aria-label="Unduh Laporan PDF">
+                            PDF
+                        </flux:button>
+                    </div>
                 @endif
             </div>
         </div>
@@ -55,7 +54,7 @@
 
     @if ($report['ringkasan']['total'] > 0)
         {{-- Ringkasan Cards --}}
-        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <flux:card class="p-5">
                 <div class="flex items-start justify-between">
                     <div class="space-y-1">
@@ -131,30 +130,32 @@
             </div>
 
             @if (count($report['per_layanan']) > 0)
-                <flux:table>
-                    <flux:table.columns>
-                        <flux:table.column>Layanan</flux:table.column>
-                        <flux:table.column>Total</flux:table.column>
-                        <flux:table.column>Selesai</flux:table.column>
-                        <flux:table.column>Dibatalkan</flux:table.column>
-                    </flux:table.columns>
-                    <flux:table.rows>
-                        @foreach ($report['per_layanan'] as $item)
-                            <flux:table.row wire:key="layanan-{{ $item['id'] }}">
-                                <flux:table.cell>{{ $item['name'] }}</flux:table.cell>
-                                <flux:table.cell>
-                                    <flux:badge size="sm">{{ $item['total'] }}</flux:badge>
-                                </flux:table.cell>
-                                <flux:table.cell>
-                                    <flux:badge size="sm" color="green">{{ $item['completed'] }}</flux:badge>
-                                </flux:table.cell>
-                                <flux:table.cell>
-                                    <flux:badge size="sm" color="red">{{ $item['cancelled'] }}</flux:badge>
-                                </flux:table.cell>
-                            </flux:table.row>
-                        @endforeach
-                    </flux:table.rows>
-                </flux:table>
+                <div class="overflow-x-auto">
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column class="whitespace-nowrap">Layanan</flux:table.column>
+                            <flux:table.column class="whitespace-nowrap">Total</flux:table.column>
+                            <flux:table.column class="whitespace-nowrap">Selesai</flux:table.column>
+                            <flux:table.column class="whitespace-nowrap">Dibatalkan</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @foreach ($report['per_layanan'] as $item)
+                                <flux:table.row wire:key="layanan-{{ $item['id'] }}">
+                                    <flux:table.cell class="font-medium whitespace-nowrap">{{ $item['name'] }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        <flux:badge size="sm">{{ $item['total'] }}</flux:badge>
+                                    </flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        <flux:badge size="sm" color="green">{{ $item['completed'] }}</flux:badge>
+                                    </flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        <flux:badge size="sm" color="red">{{ $item['cancelled'] }}</flux:badge>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
             @else
                 <flux:text class="text-zinc-500">Tidak ada data layanan.</flux:text>
             @endif
@@ -169,30 +170,32 @@
                 <flux:heading size="lg">Per Hari</flux:heading>
             </div>
 
-            <flux:table>
-                <flux:table.columns>
-                    <flux:table.column>Tanggal</flux:table.column>
-                    <flux:table.column>Hari</flux:table.column>
-                    <flux:table.column>Total</flux:table.column>
-                    <flux:table.column>Online</flux:table.column>
-                    <flux:table.column>Kiosk</flux:table.column>
-                    <flux:table.column>Langsung</flux:table.column>
-                </flux:table.columns>
-                <flux:table.rows>
-                    @foreach ($report['per_hari'] as $item)
-                        <flux:table.row wire:key="hari-{{ $item['date'] }}">
-                            <flux:table.cell>{{ $item['date'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $item['nama_hari'] }}</flux:table.cell>
-                            <flux:table.cell>
-                                <flux:badge size="sm">{{ $item['total'] }}</flux:badge>
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $item['online'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $item['kiosk'] }}</flux:table.cell>
-                            <flux:table.cell>{{ $item['assisted'] }}</flux:table.cell>
-                        </flux:table.row>
-                    @endforeach
-                </flux:table.rows>
-            </flux:table>
+            <div class="overflow-x-auto">
+                <flux:table>
+                    <flux:table.columns>
+                        <flux:table.column class="whitespace-nowrap">Tanggal</flux:table.column>
+                        <flux:table.column class="whitespace-nowrap">Hari</flux:table.column>
+                        <flux:table.column class="whitespace-nowrap">Total</flux:table.column>
+                        <flux:table.column class="whitespace-nowrap">Online</flux:table.column>
+                        <flux:table.column class="whitespace-nowrap">Kiosk</flux:table.column>
+                        <flux:table.column class="whitespace-nowrap">Langsung</flux:table.column>
+                    </flux:table.columns>
+                    <flux:table.rows>
+                        @foreach ($report['per_hari'] as $item)
+                            <flux:table.row wire:key="hari-{{ $item['date'] }}">
+                                <flux:table.cell class="whitespace-nowrap">{{ $item['date'] }}</flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">{{ $item['nama_hari'] }}</flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">
+                                    <flux:badge size="sm">{{ $item['total'] }}</flux:badge>
+                                </flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">{{ $item['online'] }}</flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">{{ $item['kiosk'] }}</flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">{{ $item['assisted'] }}</flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.rows>
+                </flux:table>
+            </div>
         </flux:card>
 
         {{-- Per Channel --}}
@@ -204,26 +207,28 @@
                 <flux:heading size="lg">Per Kanal</flux:heading>
             </div>
 
-            <flux:table>
-                <flux:table.columns>
-                    <flux:table.column>Kanal</flux:table.column>
-                    <flux:table.column>Total</flux:table.column>
-                    <flux:table.column>Persentase</flux:table.column>
-                </flux:table.columns>
-                <flux:table.rows>
-                    @foreach ($report['per_channel'] as $item)
-                        <flux:table.row wire:key="channel-{{ $item['channel'] }}">
-                            <flux:table.cell>
-                                {{ $item['channel'] }}
-                            </flux:table.cell>
-                            <flux:table.cell>
-                                <flux:badge size="sm">{{ $item['total'] }}</flux:badge>
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $item['persen'] }}%</flux:table.cell>
-                        </flux:table.row>
-                    @endforeach
-                </flux:table.rows>
-            </flux:table>
+            <div class="overflow-x-auto">
+                <flux:table>
+                    <flux:table.columns>
+                        <flux:table.column class="whitespace-nowrap">Kanal</flux:table.column>
+                        <flux:table.column class="whitespace-nowrap">Total</flux:table.column>
+                        <flux:table.column class="whitespace-nowrap">Persentase</flux:table.column>
+                    </flux:table.columns>
+                    <flux:table.rows>
+                        @foreach ($report['per_channel'] as $item)
+                            <flux:table.row wire:key="channel-{{ $item['channel'] }}">
+                                <flux:table.cell class="whitespace-nowrap">
+                                    {{ $item['channel'] }}
+                                </flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">
+                                    <flux:badge size="sm">{{ $item['total'] }}</flux:badge>
+                                </flux:table.cell>
+                                <flux:table.cell class="whitespace-nowrap">{{ $item['persen'] }}%</flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.rows>
+                </flux:table>
+            </div>
         </flux:card>
     @else
         {{-- Empty State --}}

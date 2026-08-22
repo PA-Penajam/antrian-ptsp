@@ -3,7 +3,9 @@
 namespace App\Livewire\Dashboard;
 
 use App\Enums\QueueStatus;
+use App\Models\QueueActivity;
 use App\Models\QueueTicket;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -15,10 +17,38 @@ class AdminDashboard extends Component
 
     public ?string $endDate = null;
 
+    public string $search = '';
+
     public function mount(): void
     {
         $this->startDate = today()->toDateString();
         $this->endDate = today()->toDateString();
+    }
+
+    public function setPreset(string $preset): void
+    {
+        match ($preset) {
+            'today' => [
+                $this->startDate = today()->toDateString(),
+                $this->endDate = today()->toDateString(),
+            ],
+            '7days' => [
+                $this->startDate = today()->subDays(6)->toDateString(),
+                $this->endDate = today()->toDateString(),
+            ],
+            'month' => [
+                $this->startDate = today()->startOfMonth()->toDateString(),
+                $this->endDate = today()->toDateString(),
+            ],
+            default => null,
+        };
+
+        $this->filterByDate();
+    }
+
+    public function updatedSearch(): void
+    {
+        // Triggers reactive re-evaluation of recentActivities
     }
 
     public function filterByDate(): void
@@ -194,10 +224,24 @@ class AdminDashboard extends Component
      * latest activity feed regardless of the selected date filter.
      */
     #[Computed]
-    public function recentActivities(): \Illuminate\Database\Eloquent\Collection
+    public function recentActivities(): Collection
     {
-        return \App\Models\QueueActivity::query()
+        return QueueActivity::query()
             ->with(['queueTicket.service', 'user', 'counter'])
+            ->when($this->search !== '', function ($query) {
+                $term = "%{$this->search}%";
+                $query->where(function ($q) use ($term) {
+                    $q->whereHas('queueTicket', function ($ticketQuery) use ($term) {
+                        $ticketQuery->where('ticket_number', 'like', $term)
+                            ->orWhere('visitor_name', 'like', $term)
+                            ->orWhereHas('service', fn ($s) => $s->where('name', 'like', $term));
+                    })->orWhereHas('user', function ($userQuery) use ($term) {
+                        $userQuery->where('name', 'like', $term);
+                    })->orWhereHas('counter', function ($counterQuery) use ($term) {
+                        $counterQuery->where('name', 'like', $term);
+                    });
+                });
+            })
             ->orderByDesc('created_at')
             ->limit(20)
             ->get();

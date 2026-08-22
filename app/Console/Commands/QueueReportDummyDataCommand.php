@@ -7,11 +7,14 @@ use App\Enums\UserRole;
 use App\Models\Counter;
 use App\Models\CounterSession;
 use App\Models\QueueActivity;
+use App\Models\QueuePool;
 use App\Models\QueueTicket;
 use App\Models\Service;
 use App\Models\User;
+use App\Support\Reports\QueueReportBuilder;
 use Database\Seeders\QueueMvpSeeder;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class QueueReportDummyDataCommand extends Command
@@ -58,7 +61,7 @@ class QueueReportDummyDataCommand extends Command
         $this->table(
             ['Metric', 'Count'],
             [
-                ['Pools', \App\Models\QueuePool::count()],
+                ['Pools', QueuePool::count()],
                 ['Services', Service::count()],
                 ['Counters', Counter::count()],
                 ['Officers', count($officers)],
@@ -137,7 +140,7 @@ class QueueReportDummyDataCommand extends Command
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Collection<int, QueueTicket>
+     * @return Collection<int, QueueTicket>
      */
     private function createQueueTickets()
     {
@@ -207,7 +210,7 @@ class QueueReportDummyDataCommand extends Command
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Collection<int, QueueTicket>  $tickets
+     * @param  Collection<int, QueueTicket>  $tickets
      * @param  array<string, CounterSession>  $sessions
      */
     private function createQueueActivities($tickets, array $sessions): void
@@ -232,7 +235,7 @@ class QueueReportDummyDataCommand extends Command
 
     private function verifyReport(): void
     {
-        $builder = app(\App\Support\Reports\QueueReportBuilder::class);
+        $builder = app(QueueReportBuilder::class);
         $report = $builder->build(now()->subDays(1)->toDateString(), now()->addDays(1)->toDateString());
 
         $byStatusCompleted = $report['by_status'][QueueStatus::Completed->value] ?? 0;
