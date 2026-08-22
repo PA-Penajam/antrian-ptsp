@@ -1183,7 +1183,7 @@ new class extends Component
             <flux:card class="admin-card-elevated p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/50 space-y-2.5">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Pintasan Keyboard Loket</span>
-                    <button type="button" x-on:click="Flux.modal('workstation-hotkeys-modal').show()" class="text-xs text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 font-semibold inline-flex items-center gap-1">
+                    <button type="button" x-on:click="showHotkeysModal = true" class="text-xs text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 font-semibold inline-flex items-center gap-1">
                         <span>Lihat Semua</span>
                         <flux:icon.arrow-top-right-on-square class="size-3" />
                     </button>
@@ -1424,80 +1424,94 @@ new class extends Component
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/60 backdrop-blur-xs p-4"
         x-on:click.self="showHotkeysModal = false"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="hotkeys-modal-title"
     >
-        <div class="w-full max-w-lg rounded-3xl border border-zinc-700 bg-zinc-900 p-6 shadow-2xl text-zinc-100 space-y-5">
-            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div class="flex items-center gap-2.5">
-                    <flux:icon.command-line class="size-6 text-cyan-400" />
-                    <flux:heading size="lg" class="text-white font-bold">Panduan Pintasan Keyboard (Hotkeys)</flux:heading>
+        <div class="w-full max-w-lg rounded-3xl border border-zinc-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl shadow-zinc-950/15 dark:shadow-black/60 text-zinc-900 dark:text-zinc-100 space-y-5">
+            <div class="flex items-center justify-between border-b border-zinc-200/80 dark:border-zinc-800 pb-3.5">
+                <div class="flex items-center gap-3">
+                    <div class="flex size-9 items-center justify-center rounded-xl bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-200/80 dark:border-cyan-800/60 text-cyan-700 dark:text-cyan-400 shadow-2xs">
+                        <flux:icon.command-line class="size-5" />
+                    </div>
+                    <div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-400">Pintasan Cepat</div>
+                        <flux:heading id="hotkeys-modal-title" size="lg" class="text-zinc-900 dark:text-white font-bold">Panduan Pintasan Keyboard</flux:heading>
+                    </div>
                 </div>
-                <button x-on:click="showHotkeysModal = false" class="rounded-xl p-1 text-zinc-400 hover:bg-zinc-800 hover:text-white">
+                <button 
+                    x-on:click="showHotkeysModal = false" 
+                    class="rounded-xl p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" 
+                    title="Tutup Panduan"
+                    aria-label="Tutup Panduan"
+                >
                     <flux:icon.x-mark class="size-5" />
                 </button>
             </div>
 
-            <div class="space-y-3 text-sm">
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+            <div class="space-y-2.5 text-sm">
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 transition-colors hover:border-cyan-300 dark:hover:border-cyan-800">
                     <div>
-                        <div class="font-bold text-white">Panggil Antrean Berikutnya</div>
-                        <div class="text-xs text-zinc-400">Memanggil tiket terdepan di pool loket aktif</div>
+                        <div class="font-bold text-zinc-900 dark:text-white text-sm">Panggil Antrean Berikutnya</div>
+                        <div class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Memanggil tiket terdepan di pool loket aktif</div>
                     </div>
-                    <div class="flex items-center gap-1.5">
-                        <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-cyan-400">Space</kbd>
-                        <span class="text-xs text-zinc-500">atau</span>
-                        <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-cyan-400">F2</kbd>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <kbd class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300 shadow-2xs">Space</kbd>
+                        <span class="text-xs text-zinc-400 dark:text-zinc-500 font-medium">atau</span>
+                        <kbd class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300 shadow-2xs">F2</kbd>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 transition-colors hover:border-sky-300 dark:hover:border-sky-800">
                     <div>
-                        <div class="font-bold text-white">Panggil Ulang (Recall)</div>
-                        <div class="text-xs text-zinc-400">Memanggil ulang tiket yang sedang aktif</div>
+                        <div class="font-bold text-zinc-900 dark:text-white text-sm">Panggil Ulang (Recall)</div>
+                        <div class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Memanggil ulang tiket yang sedang aktif</div>
                     </div>
-                    <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-sky-400">F1</kbd>
+                    <kbd class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-sky-700 dark:text-sky-300 shadow-2xs">F1</kbd>
                 </div>
 
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 transition-colors hover:border-amber-300 dark:hover:border-amber-800">
                     <div>
-                        <div class="font-bold text-white">Lewati Tiket (Skip)</div>
-                        <div class="text-xs text-zinc-400">Membuka dialog konfirmasi untuk skip</div>
+                        <div class="font-bold text-zinc-900 dark:text-white text-sm">Lewati Tiket (Skip)</div>
+                        <div class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Membuka dialog konfirmasi untuk skip tiket</div>
                     </div>
-                    <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-amber-400">F3</kbd>
+                    <kbd class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-amber-700 dark:text-amber-300 shadow-2xs">F3</kbd>
                 </div>
 
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 transition-colors hover:border-emerald-300 dark:hover:border-emerald-800">
                     <div>
-                        <div class="font-bold text-white">Selesai Dilayani (Complete)</div>
-                        <div class="text-xs text-zinc-400">Menandai pelayanan tiket selesai</div>
+                        <div class="font-bold text-zinc-900 dark:text-white text-sm">Selesai Dilayani (Complete)</div>
+                        <div class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Menandai pelayanan tiket selesai</div>
                     </div>
-                    <div class="flex items-center gap-1.5">
-                        <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-emerald-400">F4</kbd>
-                        <span class="text-xs text-zinc-500">atau</span>
-                        <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-emerald-400">Ctrl+Enter</kbd>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <kbd class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs">F4</kbd>
+                        <span class="text-xs text-zinc-400 dark:text-zinc-500 font-medium">atau</span>
+                        <kbd class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs">Ctrl+Enter</kbd>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 transition-colors hover:border-rose-300 dark:hover:border-rose-800">
                     <div>
-                        <div class="font-bold text-white">Batalkan Tiket</div>
-                        <div class="text-xs text-zinc-400">Membuka dialog konfirmasi pembatalan</div>
+                        <div class="font-bold text-zinc-900 dark:text-white text-sm">Batalkan Tiket</div>
+                        <div class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Membuka dialog konfirmasi pembatalan tiket</div>
                     </div>
-                    <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-rose-400">F8</kbd>
+                    <kbd class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-rose-700 dark:text-rose-300 shadow-2xs">F8</kbd>
                 </div>
 
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/80 border border-zinc-700/60">
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60">
                     <div>
-                        <div class="font-bold text-white">Buka Panduan Ini</div>
-                        <div class="text-xs text-zinc-400">Menampilkan atau menutup popup hotkeys</div>
+                        <div class="font-bold text-zinc-900 dark:text-white text-sm">Buka Panduan Ini</div>
+                        <div class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Menampilkan atau menutup popup hotkeys</div>
                     </div>
-                    <kbd class="px-2 py-1 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-zinc-300">?</kbd>
+                    <kbd class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-2xs">?</kbd>
                 </div>
             </div>
 
-            <div class="pt-2 text-right">
-                <flux:button variant="filled" color="cyan" x-on:click="showHotkeysModal = false">
+            <div class="pt-2 flex items-center justify-between border-t border-zinc-200/80 dark:border-zinc-800">
+                <span class="text-xs text-zinc-500 dark:text-zinc-400">Tekan <kbd class="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-semibold text-zinc-700 dark:text-zinc-300">Esc</kbd> untuk menutup</span>
+                <flux:button variant="filled" color="cyan" x-on:click="showHotkeysModal = false" class="font-bold shadow-xs">
                     Tutup Panduan
                 </flux:button>
             </div>
@@ -1514,40 +1528,48 @@ new class extends Component
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/65 backdrop-blur-xs p-4"
         x-on:click.self="completeOnboarding()"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="onboarding-modal-title"
     >
-        <div class="w-full max-w-xl rounded-3xl border border-zinc-700 bg-zinc-900 p-6 sm:p-7 shadow-2xl text-zinc-100 space-y-6">
+        <div class="w-full max-w-xl rounded-3xl border border-zinc-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sm:p-7 shadow-2xl shadow-zinc-950/15 dark:shadow-black/60 text-zinc-900 dark:text-zinc-100 space-y-6">
             <!-- Header & Step Indicator -->
-            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+            <div class="flex items-center justify-between border-b border-zinc-200/80 dark:border-zinc-800 pb-4">
                 <div class="flex items-center gap-3">
-                    <div class="flex size-9 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-400">
+                    <div class="flex size-10 items-center justify-center rounded-2xl bg-cyan-100 dark:bg-cyan-500/20 border border-cyan-200/80 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400 shadow-2xs">
                         <flux:icon.sparkles class="size-5" />
                     </div>
                     <div>
-                        <div class="text-xs font-bold uppercase tracking-wider text-cyan-400">Panduan Operasional Loket</div>
-                        <flux:heading size="lg" class="text-white font-black">Tur Cepat Workstation Petugas</flux:heading>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-400">Panduan Operasional Loket</div>
+                        <flux:heading id="onboarding-modal-title" size="lg" class="text-zinc-900 dark:text-white font-extrabold text-lg sm:text-xl">Tur Cepat Workstation Petugas</flux:heading>
                     </div>
                 </div>
-                <button x-on:click="completeOnboarding()" class="rounded-xl p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors" title="Tutup Panduan">
+                <button 
+                    x-on:click="completeOnboarding()" 
+                    class="rounded-xl p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" 
+                    title="Tutup Panduan"
+                    aria-label="Tutup Panduan"
+                >
                     <flux:icon.x-mark class="size-5" />
                 </button>
             </div>
 
             <!-- Step Progress Indicator -->
-            <div class="space-y-1.5">
-                <div class="flex items-center justify-between text-xs font-semibold text-zinc-400">
-                    <span>Langkah <strong class="text-cyan-400" x-text="onboardingStep"></strong> dari 4</span>
-                    <span x-show="onboardingStep === 1">1. Pemilihan Loket & Pool</span>
-                    <span x-show="onboardingStep === 2">2. Panggilan & Stopwatch</span>
-                    <span x-show="onboardingStep === 3">3. Panggil Ulang & Skip</span>
-                    <span x-show="onboardingStep === 4">4. Penyelesaian & Kinerja</span>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                    <span>Langkah <strong class="text-cyan-700 dark:text-cyan-400 text-sm" x-text="onboardingStep"></strong> dari 4</span>
+                    <span class="text-zinc-700 dark:text-zinc-300 font-bold" x-show="onboardingStep === 1">1. Pemilihan Loket & Pool</span>
+                    <span class="text-zinc-700 dark:text-zinc-300 font-bold" x-show="onboardingStep === 2">2. Panggilan & Stopwatch</span>
+                    <span class="text-zinc-700 dark:text-zinc-300 font-bold" x-show="onboardingStep === 3">3. Panggil Ulang & Skip</span>
+                    <span class="text-zinc-700 dark:text-zinc-300 font-bold" x-show="onboardingStep === 4">4. Penyelesaian & Kinerja</span>
                 </div>
                 <div class="grid grid-cols-4 gap-2">
-                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 1 ? 'bg-cyan-500' : 'bg-zinc-800'"></div>
-                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 2 ? 'bg-cyan-500' : 'bg-zinc-800'"></div>
-                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 3 ? 'bg-cyan-500' : 'bg-zinc-800'"></div>
-                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 4 ? 'bg-cyan-500' : 'bg-zinc-800'"></div>
+                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 1 ? 'bg-cyan-600 dark:bg-cyan-500 shadow-2xs' : 'bg-zinc-200 dark:bg-zinc-800'"></div>
+                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 2 ? 'bg-cyan-600 dark:bg-cyan-500 shadow-2xs' : 'bg-zinc-200 dark:bg-zinc-800'"></div>
+                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 3 ? 'bg-cyan-600 dark:bg-cyan-500 shadow-2xs' : 'bg-zinc-200 dark:bg-zinc-800'"></div>
+                    <div class="h-1.5 rounded-full transition-all duration-300" :class="onboardingStep >= 4 ? 'bg-cyan-600 dark:bg-cyan-500 shadow-2xs' : 'bg-zinc-200 dark:bg-zinc-800'"></div>
                 </div>
             </div>
 
@@ -1555,44 +1577,44 @@ new class extends Component
             <div class="min-h-[220px]">
                 <!-- Step 1: Counter Selection -->
                 <div x-show="onboardingStep === 1" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4">
-                    <div class="rounded-2xl border border-cyan-500/30 bg-cyan-950/30 p-4 flex items-start gap-3.5">
-                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-400">
+                    <div class="rounded-2xl border border-cyan-200/90 dark:border-cyan-500/30 bg-gradient-to-br from-cyan-50/90 to-sky-50/50 dark:from-cyan-950/40 dark:to-zinc-900/40 p-4.5 flex items-start gap-3.5 shadow-2xs">
+                        <div class="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-cyan-600 text-white dark:bg-cyan-500/20 dark:text-cyan-400 shadow-xs">
                             <flux:icon.building-office class="size-6" />
                         </div>
-                        <div class="space-y-1">
-                            <h4 class="text-sm font-bold text-white">1. Pilih & Kunci Loket Shift Anda</h4>
-                            <p class="text-xs text-zinc-300 leading-relaxed">
+                        <div class="space-y-1.5">
+                            <h4 class="text-sm font-bold text-zinc-900 dark:text-white">1. Pilih & Kunci Loket Shift Anda</h4>
+                            <p class="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
                                 Workstation ini terhubung dengan <strong>Pool Antrean</strong> pelayanan PTSP. Pastikan Anda memilih loket yang tepat sebelum mulai bertugas agar antrean pemohon diarahkan ke loket Anda.
                             </p>
                         </div>
                     </div>
-                    <div class="rounded-xl bg-zinc-800/60 p-3 text-xs text-zinc-400 border border-zinc-700/50 flex items-center justify-between">
-                        <span>Loket yang saat ini aktif:</span>
+                    <div class="rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 p-3.5 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-700/60 flex items-center justify-between shadow-2xs">
+                        <span class="font-medium">Loket yang saat ini aktif:</span>
                         <flux:badge color="cyan" size="sm" class="font-bold">{{ $this->selectedCounterName }}</flux:badge>
                     </div>
                 </div>
 
                 <!-- Step 2: Calling & Live Stopwatch -->
                 <div x-show="onboardingStep === 2" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4">
-                    <div class="rounded-2xl border border-emerald-500/30 bg-emerald-950/30 p-4 flex items-start gap-3.5">
-                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+                    <div class="rounded-2xl border border-emerald-200/90 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50/90 to-teal-50/50 dark:from-emerald-950/40 dark:to-zinc-900/40 p-4.5 flex items-start gap-3.5 shadow-2xs">
+                        <div class="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white dark:bg-emerald-500/20 dark:text-emerald-400 shadow-xs">
                             <flux:icon.megaphone class="size-6" />
                         </div>
-                        <div class="space-y-1">
-                            <h4 class="text-sm font-bold text-white">2. Panggil Antrean & Pantau Stopwatch</h4>
-                            <p class="text-xs text-zinc-300 leading-relaxed">
-                                Tekan tombol <strong>Panggil Berikutnya</strong> atau tekan tombol <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-cyan-400">Space</kbd> / <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-cyan-400">F2</kbd>. Suara panggilan otomatis berbunyi dan stopwatch durasi live mulai menghitung.
+                        <div class="space-y-1.5">
+                            <h4 class="text-sm font-bold text-zinc-900 dark:text-white">2. Panggil Antrean & Pantau Stopwatch</h4>
+                            <p class="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                                Tekan tombol <strong>Panggil Berikutnya</strong> atau tekan tombol <kbd class="px-1.5 py-0.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300 shadow-2xs">Space</kbd> / <kbd class="px-1.5 py-0.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300 shadow-2xs">F2</kbd>. Suara panggilan otomatis berbunyi dan stopwatch durasi live mulai menghitung.
                             </p>
                         </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                        <div class="rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-2 text-emerald-300 font-semibold">
+                    <div class="grid grid-cols-3 gap-2.5 text-center text-xs">
+                        <div class="rounded-xl border border-emerald-200/90 dark:border-emerald-500/40 bg-emerald-50/90 dark:bg-emerald-950/50 p-2.5 text-emerald-800 dark:text-emerald-200 font-bold shadow-2xs">
                             &lt; 10m: Normal
                         </div>
-                        <div class="rounded-xl border border-amber-500/30 bg-amber-950/40 p-2 text-amber-300 font-semibold">
+                        <div class="rounded-xl border border-amber-200/90 dark:border-amber-500/40 bg-amber-50/90 dark:bg-amber-950/50 p-2.5 text-amber-800 dark:text-amber-200 font-bold shadow-2xs">
                             10-20m: Sedang
                         </div>
-                        <div class="rounded-xl border border-rose-500/30 bg-rose-950/40 p-2 text-rose-300 font-semibold">
+                        <div class="rounded-xl border border-rose-200/90 dark:border-rose-500/40 bg-rose-50/90 dark:bg-rose-950/50 p-2.5 text-rose-800 dark:text-rose-200 font-bold shadow-2xs">
                             &gt; 20m: Lama
                         </div>
                     </div>
@@ -1600,67 +1622,68 @@ new class extends Component
 
                 <!-- Step 3: Recall & Skip Tray -->
                 <div x-show="onboardingStep === 3" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4">
-                    <div class="rounded-2xl border border-amber-500/30 bg-amber-950/30 p-4 flex items-start gap-3.5">
-                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+                    <div class="rounded-2xl border border-amber-200/90 dark:border-amber-500/30 bg-gradient-to-br from-amber-50/90 to-orange-50/50 dark:from-amber-950/40 dark:to-zinc-900/40 p-4.5 flex items-start gap-3.5 shadow-2xs">
+                        <div class="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-amber-600 text-white dark:bg-amber-500/20 dark:text-amber-400 shadow-xs">
                             <flux:icon.forward class="size-6" />
                         </div>
-                        <div class="space-y-1">
-                            <h4 class="text-sm font-bold text-white">3. Panggil Ulang (F1) & Lewati/Skip (F3)</h4>
-                            <p class="text-xs text-zinc-300 leading-relaxed">
-                                Bila pemohon belum mendekat, panggil ulang dengan tombol <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-sky-400">F1</kbd>. Jika tetap tidak hadir, tekan <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-amber-400">F3</kbd> (Lewati) untuk memarkir tiket ke <strong>Daftar Skip</strong> dan lanjut melayani antrean berikutnya.
+                        <div class="space-y-1.5">
+                            <h4 class="text-sm font-bold text-zinc-900 dark:text-white">3. Panggil Ulang (F1) & Lewati/Skip (F3)</h4>
+                            <p class="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                                Bila pemohon belum mendekat, panggil ulang dengan tombol <kbd class="px-1.5 py-0.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-sky-700 dark:text-sky-300 shadow-2xs">F1</kbd>. Jika tetap tidak hadir, tekan <kbd class="px-1.5 py-0.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-amber-700 dark:text-amber-300 shadow-2xs">F3</kbd> (Lewati) untuk memarkir tiket ke <strong>Daftar Skip</strong> dan lanjut melayani antrean berikutnya.
                             </p>
                         </div>
                     </div>
-                    <div class="rounded-xl bg-zinc-800/60 p-3 text-xs text-zinc-300 border border-zinc-700/50 flex items-center justify-between">
-                        <span>Tiket di Daftar Skip dapat dipanggil kembali kapan saja:</span>
+                    <div class="rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 p-3.5 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-700/60 flex items-center justify-between shadow-2xs">
+                        <span class="font-medium">Tiket di Daftar Skip dapat dipanggil kembali:</span>
                         <flux:badge color="amber" size="sm" class="font-bold">1-Klik Panggil</flux:badge>
                     </div>
                 </div>
 
                 <!-- Step 4: Complete & Daily Stats -->
                 <div x-show="onboardingStep === 4" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4">
-                    <div class="rounded-2xl border border-emerald-500/30 bg-emerald-950/30 p-4 flex items-start gap-3.5">
-                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+                    <div class="rounded-2xl border border-emerald-200/90 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50/90 to-teal-50/50 dark:from-emerald-950/40 dark:to-zinc-900/40 p-4.5 flex items-start gap-3.5 shadow-2xs">
+                        <div class="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white dark:bg-emerald-500/20 dark:text-emerald-400 shadow-xs">
                             <flux:icon.check-circle class="size-6" />
                         </div>
-                        <div class="space-y-1">
-                            <h4 class="text-sm font-bold text-white">4. Tuntaskan Layanan & Pantau Kinerja</h4>
-                            <p class="text-xs text-zinc-300 leading-relaxed">
-                                Begitu pelayanan selesai, tekan tombol <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-emerald-400">F4</kbd> atau <kbd class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700 font-mono text-xs font-bold text-emerald-400">Ctrl+Enter</kbd>. Statistik harian Anda akan otomatis tercatat dan loket kembali siap memanggil pemohon baru.
+                        <div class="space-y-1.5">
+                            <h4 class="text-sm font-bold text-zinc-900 dark:text-white">4. Tuntaskan Layanan & Pantau Kinerja</h4>
+                            <p class="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                                Begitu pelayanan selesai, tekan tombol <kbd class="px-1.5 py-0.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs">F4</kbd> atau <kbd class="px-1.5 py-0.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs">Ctrl+Enter</kbd>. Statistik harian Anda akan otomatis tercatat dan loket kembali siap memanggil pemohon baru.
                             </p>
                         </div>
                     </div>
-                    <div class="rounded-xl bg-emerald-950/40 p-3 text-xs text-emerald-300 border border-emerald-500/30 flex items-center justify-between">
-                        <span class="font-semibold">Pintasan keyboard dapat dibuka kapan saja dengan menekan:</span>
-                        <kbd class="px-2 py-0.5 rounded bg-zinc-900 border border-emerald-500/50 font-mono text-xs font-bold text-white">?</kbd>
+                    <div class="rounded-2xl bg-emerald-50/90 dark:bg-emerald-950/40 p-3.5 text-xs text-emerald-900 dark:text-emerald-200 border border-emerald-200/90 dark:border-emerald-500/30 flex items-center justify-between shadow-2xs">
+                        <span class="font-semibold">Buka panduan pintasan kapan saja dengan tombol:</span>
+                        <kbd class="px-2.5 py-0.5 rounded-lg bg-white dark:bg-zinc-900 border border-emerald-300 dark:border-emerald-500/50 font-mono text-xs font-bold text-emerald-800 dark:text-emerald-200 shadow-2xs">?</kbd>
                     </div>
                 </div>
             </div>
 
             <!-- Modal Action Footer -->
-            <div class="flex items-center justify-between border-t border-zinc-800 pt-4">
+            <div class="flex items-center justify-between border-t border-zinc-200/80 dark:border-zinc-800 pt-4">
                 <flux:button 
                     variant="ghost" 
                     size="sm" 
                     x-show="onboardingStep > 1" 
                     x-on:click="prevOnboardingStep()"
-                    class="text-zinc-400 hover:text-white"
+                    class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                 >
-                    Kembali
+                    <flux:icon.arrow-left class="size-4 mr-1" />
+                    <span>Kembali</span>
                 </flux:button>
                 <div x-show="onboardingStep === 1">
-                    <button x-on:click="completeOnboarding()" class="text-xs text-zinc-500 hover:text-zinc-300 underline">
+                    <button x-on:click="completeOnboarding()" class="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 underline font-medium">
                         Lewati Panduan
                     </button>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 ml-auto">
                     <flux:button 
                         variant="filled" 
                         color="cyan" 
                         size="sm" 
                         x-on:click="nextOnboardingStep()"
-                        class="font-bold shadow-md shadow-cyan-600/30"
+                        class="font-bold shadow-md shadow-cyan-600/20"
                     >
                         <span x-text="onboardingStep === 4 ? 'Mulai Bertugas Sekarang' : 'Lanjut'"></span>
                         <flux:icon.arrow-right class="size-4 ml-1" />
