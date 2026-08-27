@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-22T08:10:00.000Z",
+  "generatedAt": "2026-08-27T08:04:30.000Z",
   "title": "Design System: Antrian PTSP",
   "extensions": {
     "colorMeta": {
@@ -40,11 +40,47 @@
         "canonical": "#f59e0b",
         "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fef3c7"]
       },
+      "amber-glow-light": {
+        "role": "accent",
+        "displayName": "Amber Glow Light",
+        "canonical": "#fef3c7",
+        "tonalRamp": ["#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fef3c7", "#fffbeb"]
+      },
+      "amber-glow-border": {
+        "role": "accent",
+        "displayName": "Amber Glow Border",
+        "canonical": "#fcd34d",
+        "tonalRamp": ["#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fcd34d", "#fef3c7"]
+      },
+      "amber-glow-active": {
+        "role": "accent",
+        "displayName": "Amber Glow Active",
+        "canonical": "#fde68a",
+        "tonalRamp": ["#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fde68a", "#fef3c7"]
+      },
       "coral-crimson": {
         "role": "accent",
         "displayName": "Coral Crimson",
         "canonical": "#ef4444",
         "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fee2e2"]
+      },
+      "coral-crimson-light": {
+        "role": "accent",
+        "displayName": "Coral Crimson Light",
+        "canonical": "#fee2e2",
+        "tonalRamp": ["#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fee2e2", "#fef2f2"]
+      },
+      "coral-crimson-border": {
+        "role": "accent",
+        "displayName": "Coral Crimson Border",
+        "canonical": "#fca5a5",
+        "tonalRamp": ["#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fca5a5", "#fee2e2"]
+      },
+      "coral-crimson-active": {
+        "role": "accent",
+        "displayName": "Coral Crimson Active",
+        "canonical": "#fecaca",
+        "tonalRamp": ["#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fecaca", "#fee2e2"]
       },
       "deep-slate": {
         "role": "neutral",
@@ -84,6 +120,7 @@
       }
     },
     "typographyMeta": {
+      "mega": { "displayName": "Mega Display", "purpose": "Nomor antrian raksasa pada pencetakan tiket thermal Kiosk." },
       "display": { "displayName": "Display", "purpose": "Nomor antrian raksasa pada TV Display dan Kiosk." },
       "headline": { "displayName": "Headline", "purpose": "Judul modul, halaman publik, dan header kartu." },
       "title": { "displayName": "Title", "purpose": "Nama loket, kelompok layanan, dialog title." },

@@ -32,7 +32,7 @@
         background-color: #f8fafc;
         background-image: 
             linear-gradient(180deg, rgba(248, 250, 252, 0.90) 0%, rgba(241, 245, 249, 0.94) 100%),
-            url("{{ asset('metronic-assets/media/misc/kiosk-bg-bright.jpg') }}");
+            url("{{ asset('images/kiosk-bg-bright.webp') }}");
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;

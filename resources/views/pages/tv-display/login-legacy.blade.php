@@ -33,7 +33,7 @@
         background-color: #f8fafc;
         background-image:
             linear-gradient(135deg, rgba(248, 250, 252, 0.93) 0%, rgba(241, 245, 249, 0.90) 50%, rgba(226, 232, 240, 0.94) 100%),
-            url('{{ asset('metronic-assets/media/misc/tv-bg-bright.jpg') }}');
+            url('{{ asset('images/tv-bg-bright.webp') }}');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;

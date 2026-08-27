@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="3840" height="2160" viewBox="0 0 3840 2160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Base Canvas Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="35%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#f0f9ff" />
+      <stop offset="100%" stop-color="#e0f2fe" />
+    </linearGradient>
+
+    <radialGradient id="sunburstGlow" cx="12%" cy="10%" r="65%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.22" />
+      <stop offset="35%" stop-color="#0891b2" stop-opacity="0.10" />
+      <stop offset="70%" stop-color="#0e7490" stop-opacity="0.03" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="bottomEmeraldGlow" cx="88%" cy="92%" r="60%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.18" />
+      <stop offset="40%" stop-color="#0f766e" stop-opacity="0.08" />
+      <stop offset="80%" stop-color="#047857" stop-opacity="0.02" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="centerCivicGlow" cx="50%" cy="48%" r="52%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="55%" stop-color="#f8fcfd" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#f0fdf4" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Wave Gradients -->
+    <linearGradient id="waveGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0891b2" stop-opacity="0.14" />
+      <stop offset="50%" stop-color="#0284c7" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#0f766e" stop-opacity="0.03" />
+    </linearGradient>
+
+    <linearGradient id="waveGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.14" />
+      <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.07" />
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02" />
+    </linearGradient>
+
+    <linearGradient id="waveGrad3" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0e7490" stop-opacity="0.09" />
+      <stop offset="70%" stop-color="#14b8a6" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+
+    <linearGradient id="ribbonGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0891b2" stop-opacity="0" />
+      <stop offset="30%" stop-color="#0891b2" stop-opacity="0.25" />
+      <stop offset="70%" stop-color="#10b981" stop-opacity="0.30" />
+      <stop offset="100%" stop-color="#0e7490" stop-opacity="0" />
+    </linearGradient>
+
+    <linearGradient id="ribbonGrad2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity="0" />
+      <stop offset="40%" stop-color="#06b6d4" stop-opacity="0.22" />
+      <stop offset="80%" stop-color="#059669" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Glass Architectural Ribbon Gradients -->
+    <linearGradient id="glassRibbon1" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.75" />
+      <stop offset="50%" stop-color="#e0f2fe" stop-opacity="0.40" />
+      <stop offset="100%" stop-color="#ccfbf1" stop-opacity="0.25" />
+    </linearGradient>
+
+    <!-- Geometric Civic Pattern (8-point Star / Balai Motif) -->
+    <pattern id="civicPattern" width="120" height="120" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="120" y2="120" stroke="#0891b2" stroke-width="0.75" stroke-opacity="0.04" />
+      <line x1="120" y1="0" x2="0" y2="120" stroke="#0891b2" stroke-width="0.75" stroke-opacity="0.04" />
+      <line x1="60" y1="0" x2="60" y2="120" stroke="#0f766e" stroke-width="0.75" stroke-opacity="0.03" />
+      <line x1="0" y1="60" x2="120" y2="60" stroke="#0f766e" stroke-width="0.75" stroke-opacity="0.03" />
+      
+      <polygon points="60,38 65,55 82,60 65,65 60,82 55,65 38,60 55,55" fill="none" stroke="#0e7490" stroke-width="1" stroke-opacity="0.05" />
+      <polygon points="60,43 72,48 77,60 72,72 60,77 48,72 43,60 48,48" fill="none" stroke="#10b981" stroke-width="0.75" stroke-opacity="0.04" />
+      
+      <circle cx="0" cy="0" r="3" fill="#0891b2" fill-opacity="0.05" />
+      <circle cx="120" cy="0" r="3" fill="#0891b2" fill-opacity="0.05" />
+      <circle cx="0" cy="120" r="3" fill="#0891b2" fill-opacity="0.05" />
+      <circle cx="120" cy="120" r="3" fill="#0891b2" fill-opacity="0.05" />
+      <circle cx="60" cy="60" r="2" fill="#0f766e" fill-opacity="0.07" />
+    </pattern>
+
+    <!-- Dot Matrix Grid -->
+    <pattern id="dotGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="1.2" fill="#0284c7" fill-opacity="0.04" />
+    </pattern>
+  </defs>
+
+  <!-- Base Solid & Gradient Background -->
+  <rect width="3840" height="2160" fill="url(#bgGrad)" />
+
+  <!-- Ambient Light Orbs -->
+  <rect width="3840" height="2160" fill="url(#sunburstGlow)" />
+  <rect width="3840" height="2160" fill="url(#bottomEmeraldGlow)" />
+  <circle cx="1920" cy="1080" r="1728" fill="url(#centerCivicGlow)" />
+
+  <!-- Subtle Structural Civic Geometry Layer -->
+  <rect width="3840" height="2160" fill="url(#civicPattern)" opacity="0.85" />
+  <rect width="3840" height="2160" fill="url(#dotGrid)" opacity="0.6" />
+
+  <!-- Flowing Architectural Curves (The Digital Balai Canopy Waves) -->
+  <!-- Wave 1: Sweeping upper canopy -->
+  <path d="M-100,-100 
+           L3940,-100 
+           L3940,907.1999999999999 
+           C2880,756 2112,1252.8 1152,820.8 
+           C576,540 0,1036.8 -100,777.6 Z" 
+        fill="url(#waveGrad1)" />
+
+  <!-- Wave 2: Bottom-right supporting emerald wave -->
+  <path d="M-100,2260 
+           L3940,2260 
+           L3940,1339.2 
+           C3148.7999999999997,1555.2 2380.8,1123.2 1536,1620 
+           C844.8,1944 307.2,1404 -100,1684.8 Z" 
+        fill="url(#waveGrad2)" />
+
+  <!-- Wave 3: Deep gentle center-right arc -->
+  <path d="M1728,-100 
+           C2496,540 3264,864 3940,1080 
+           L3940,-100 Z" 
+        fill="url(#waveGrad3)" />
+
+  <!-- Glass Architectural Ribbon 1 -->
+  <path d="M-100,475.2 
+           C960,216 1728,820.8 2688,432 
+           C3264,216 3648,604.8000000000001 3940,388.8 
+           L3940,475.2 
+           C3648,691.2 3264,302.40000000000003 2688,518.4 
+           C1728,907.1999999999999 960,302.40000000000003 -100,561.6 Z" 
+        fill="url(#glassRibbon1)" 
+        stroke="url(#ribbonGrad1)" 
+        stroke-width="3" />
+
+  <!-- Glass Architectural Ribbon 2 -->
+  <path d="M-100,1771.1999999999998 
+           C768,1404 1843.1999999999998,1987.2 2764.7999999999997,1512 
+           C3379.2,1188 3648,1620 3940,1339.2 
+           L3940,1425.6000000000001 
+           C3648,1706.4 3379.2,1274.3999999999999 2764.7999999999997,1598.4 
+           C1843.1999999999998,2073.6 768,1490.3999999999999 -100,1857.6 Z" 
+        fill="url(#glassRibbon1)" 
+        stroke="url(#ribbonGrad2)" 
+        stroke-width="3" />
+
+  <!-- Accent Contour Lines -->
+  <path d="M-50,388.8 
+           C1152,108 1920,756 2880,324 
+           C3456,108 3840,475.2 3890,259.2" 
+        fill="none" 
+        stroke="url(#ribbonGrad1)" 
+        stroke-width="2.5" 
+        stroke-dasharray="16 8" />
+
+  <path d="M-50,1900.8 
+           C960,1512 2112,2116.8 3072,1620 
+           C3532.8,1339.2 3840,1728 3890,1468.8000000000002" 
+        fill="none" 
+        stroke="url(#ribbonGrad2)" 
+        stroke-width="2.5" 
+        stroke-dasharray="12 6" />
+
+  <!-- Subtle Perspective Civic Sunray Highlights -->
+  <polygon points="0,0 960,0 460.79999999999995,972 0,648" 
+           fill="#ffffff" 
+           fill-opacity="0.45" />
+  <polygon points="0,0 1612.8,0 844.8,1512 0,1188" 
+           fill="#06b6d4" 
+           fill-opacity="0.05" />
+  <polygon points="0,0 2304,0 1459.2,2160 0,1836" 
+           fill="#10b981" 
+           fill-opacity="0.04" />
+
+  <!-- Elegant Floating Geometric Civic Accents -->
+  <circle cx="3379.2" cy="302.40000000000003" r="180" fill="none" stroke="#0891b2" stroke-width="1.5" stroke-opacity="0.12" stroke-dasharray="8 6" />
+  <circle cx="3379.2" cy="302.40000000000003" r="120" fill="none" stroke="#10b981" stroke-width="1" stroke-opacity="0.10" />
+  <circle cx="3379.2" cy="302.40000000000003" r="8" fill="#0891b2" fill-opacity="0.25" />
+
+  <circle cx="460.79999999999995" cy="475.2" r="140" fill="none" stroke="#06b6d4" stroke-width="1.2" stroke-opacity="0.12" stroke-dasharray="6 6" />
+  <circle cx="460.79999999999995" cy="475.2" r="6" fill="#0891b2" fill-opacity="0.3" />
+
+  <circle cx="384" cy="1771.1999999999998" r="220" fill="none" stroke="#0e7490" stroke-width="1.5" stroke-opacity="0.09" stroke-dasharray="10 8" />
+  <circle cx="384" cy="1771.1999999999998" r="160" fill="none" stroke="#047857" stroke-width="1" stroke-opacity="0.08" />
+
+  <circle cx="3532.8" cy="1836" r="160" fill="none" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.14" stroke-dasharray="8 6" />
+  <circle cx="3532.8" cy="1836" r="8" fill="#10b981" fill-opacity="0.3" />
+
+  <!-- Micro Polished Particles -->
+  <g fill="#0891b2" fill-opacity="0.25">
+    <circle cx="844.8" cy="604.8000000000001" r="3" />
+    <circle cx="1075.2" cy="388.8" r="2" />
+    <circle cx="1344" cy="691.2" r="2.5" />
+    <circle cx="2496" cy="345.6" r="3" />
+    <circle cx="2995.2000000000003" cy="561.6" r="2" />
+    <circle cx="3148.7999999999997" cy="820.8" r="3" />
+    <circle cx="691.1999999999999" cy="1468.8000000000002" r="2.5" />
+    <circle cx="921.5999999999999" cy="1684.8" r="3" />
+    <circle cx="2764.7999999999997" cy="1771.1999999999998" r="2.5" />
+    <circle cx="3072" cy="1555.2" r="3" />
+    <circle cx="3302.4" cy="1382.4" r="2" />
+  </g>
+</svg>
