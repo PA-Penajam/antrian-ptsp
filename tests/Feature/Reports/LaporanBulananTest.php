@@ -309,6 +309,7 @@ test('builder mengembalikan detail pengunjung dengan kolom no tanggal nama alama
         'status' => QueueStatus::Completed,
         'channel' => 'online_booking',
         'visitor_name' => 'Budi Santoso',
+        'visitor_phone' => '081234567890',
         'visitor_wilayah_kode' => '640102',
         'completed_at' => '2026-04-14 10:00:00',
     ]);
@@ -320,6 +321,7 @@ test('builder mengembalikan detail pengunjung dengan kolom no tanggal nama alama
     expect($report['detail_pengunjung'][0])->toMatchArray([
         'no' => 1,
         'tanggal' => '14/04/2026',
+        'telepon' => '081234567890',
         'nama' => 'Budi Santoso',
         'alamat' => 'Penajam',
         'layanan' => 'Pendaftaran',
@@ -349,6 +351,7 @@ test('export excel mengandung sheet detail pengunjung dengan header tanggal pend
     expect($detailSheet->headings())->toBe([
         'No',
         'Tanggal Pendaftaran',
+        'No. HP/Telepon',
         'Nama Pengunjung',
         'Alamat/Wilayah',
         'Layanan yang diambil',
@@ -374,7 +377,7 @@ test('export excel detail pengunjung menghindari formula injection', function ()
     $detailSheet = collect($sheets)->first(fn ($sheet) => $sheet->title() === 'Detail Pengunjung');
     $rows = $detailSheet->array();
 
-    expect($rows[0][2])->toBe("' =HYPERLINK(\"http://evil\",\"Budi\")");
+    expect($rows[0][3])->toBe("' =HYPERLINK(\"http://evil\",\"Budi\")");
 });
 
 test('export excel per layanan menghindari formula injection', function () {
